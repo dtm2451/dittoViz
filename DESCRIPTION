@@ -1,0 +1,47 @@
+Package: dittoViz
+Type: Package
+Title: User Friendly Visualization
+Version: 0.1.0
+Authors@R: c(person("Daniel", "Bunis", email = "daniel.bunis@ucsf.edu", role=c("aut", "cre")))
+Description: A comprehensive visualization toolkit built with coders of any
+    level and color-blind audiences in mind that allows highly customizable
+    creation of color blindness friendly, publication-quality figures. Spawned
+    out of the scRNAseq-focused dittoSeq-package, this package contains all of
+    it's visualization machinery with none of the added (sc)RNAseq-related
+    dependency requirements. Visualizations include scatterplots, compositional
+    bar plots, violin, box, and ridge plots, and more. Customizations range from
+    size and title adjustments to automatic generation of annotations for
+    heatmaps, hidden data overlay upon cursor hovering via ggplotly conversion,
+    and many more. All with simple, discrete inputs. Color blindness
+    friendliness is powered by legend adjustments (enlarged keys), and by
+    allowing the use of shapes or letter-overlay in addition to the carefully
+    selected dittoColors.
+License: MIT + file LICENSE
+Encoding: UTF-8
+LazyData: true
+Depends: ggplot2
+Imports: methods,
+    colorspace (>= 1.4),
+    gridExtra,
+    cowplot,
+    reshape2,
+    pheatmap,
+    grDevices,
+    ggrepel,
+    ggridges,
+    stats,
+    utils,
+    S4Vectors
+Suggests: plotly,
+    testthat,
+    ggplot.multistats,
+    knitr,
+    rmarkdown,
+    BiocStyle,
+    ggrastr (>= 0.2.0),
+    ComplexHeatmap,
+biocViews: 
+    Software,
+    Visualization
+VignetteBuilder: knitr
+RoxygenNote: 7.1.2
