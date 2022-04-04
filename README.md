@@ -1,9 +1,12 @@
 # dittoViz
 
-A data.frame focues version of dittoSeq.  Not fully functional yet, and not even a full package in a lot of senses.  Read: Early.
+This packagae is not fully functional yet.  Very much in a "Use at your own risk" state as I will not be shying away from making breaking changes at this early stage when I'm still determining the 'right' way to code things!
 
 ## Scope
 
-The goal is for this package to encompass as much functionality from dittoSeq as makes sense when targeting data stored in a data.frame-type object instead of a Seurat/SingleCellExperiemnt/SummarizedExperiment object. 
+This package will be a data.frame focused version of [dittoSeq](https://github.com/dtm2451/dittoSeq), where all the simplified plot setup and color blindness friendly tweaks afforded by dittoSeq can be applied to any data type, not just to omics data.
 
-Additionally, this package will have a similarly named, largely equivalent, python companion which would target `pandas.DataFrame`s using similar syntax.  (Similarity level is a question, due to divergent constraints on the R vs. python versions, but the priority is there.)
+The two major goals for this package:
+
+1. Carry over as much functionality from dittoSeq as makes sense for targeting data stored in a data.frame-type object (rather than in Seurat/SingleCellExperiemnt/SummarizedExperiment objects).
+2. Python counterpart: a similarly named, largely equivalent, python companion which would target `pandas.DataFrame`s using similar syntax. (Similarity level is a question, due to divergent constraints on the R vs. python versions, but the priority is there.)
