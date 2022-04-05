@@ -2,8 +2,7 @@
 #' @import ggplot2
 #'
 #' @param data_frame A data.frame.
-#' @param var Single string representing the name of a metadata or gene, OR a vector with length equal to the total number of cells/samples in the dataset.
-#' This is the data that will be displayed.
+#' @param var Single string representing the name of a column of \code{data_frame} to be used as the y-axis data.
 #' @param group.by String representing the name of a metadata to use for separating the cells/samples into discrete groups.
 #' @param color.by String representing the name of a metadata to use for setting fills.
 #' Great for highlighting supersets or subgroups when wanted, but it defaults to \code{group.by} so this input can be skipped otherwise.
@@ -25,7 +24,6 @@
 #' Order matters: c("vlnplot", "boxplot", "jitter") will put a violin plot in the back, boxplot in the middle, and then individual dots in the front.
 #'
 #' See details section for more info.
-#' @param swap.rownames String. For SummarizeedExperiment or SingleCellExperiment objects, the column name of rowData(object) to be used to identify features instead of rownames(object).
 #' @param do.hover Logical. Default = \code{FALSE}.
 #' If set to \code{TRUE}: object will be converted to a ggplotly object so that data about individual cells will be displayed when you hover your cursor over the jitter points (assuming that there is a "jitter" in \code{plots}),
 #' @param hover.data String vector, a list of variable names, c("meta1","gene1","meta2",...) which determines what data to show upon hover when do.hover is set to \code{TRUE}.

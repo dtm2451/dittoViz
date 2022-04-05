@@ -28,9 +28,9 @@ scatterPlot(
   rename.shape.groups = NULL,
   min.color = "#F0E442",
   max.color = "#0072B2",
-  min = NULL,
-  max = NULL,
-  order = c("unordered", "increasing", "decreasing"),
+  min.value = NULL,
+  max.value = NULL,
+  plot.order = c("unordered", "increasing", "decreasing"),
   xlab = x.by,
   ylab = y.by,
   main = "make",
@@ -126,9 +126,9 @@ Default is a set of 6, \code{c(16,15,17,23,25,8)}, the first being a simple, sol
 
 \item{max.color}{color for \code{max} value of \code{color.by} data. Default = blue}
 
-\item{min, max}{Number which sets the \code{color.by}-data value associated with the minimum or maximum colors.}
+\item{min.value, max.value}{Number which sets the \code{color.by}-data value associated with the minimum or maximum colors.}
 
-\item{order}{String. If the data should be plotted based on the order of the color data, sets whether to plot in "increasing" or "decreasing" order.}
+\item{plot.order}{String. If the data should be plotted based on the order of the color data, sets whether to plot in "increasing" or "decreasing" order.}
 
 \item{xlab, ylab}{Strings which set the labels for the axes. To remove, set to \code{NULL}.}
 

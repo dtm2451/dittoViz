@@ -34,16 +34,15 @@ barPlot(
   main = "make",
   sub = NULL,
   legend.show = TRUE,
-  legend.title = NULL,
-  calc.for.freq = FALSE
+  legend.title = NULL
 )
 }
 \arguments{
 \item{data_frame}{A data.frame.}
 
-\item{var}{String name of a metadata that contains discrete data, or a factor or vector containing such data for all cells/samples in the target \code{object}.}
+\item{var}{Single string representing the name of a column of \code{data_frame} to quantify within x-axis groups.}
 
-\item{group.by}{String name of a metadata to use for separating the cells/samples into discrete groups.}
+\item{group.by}{Single string representing the name of a column of \code{data_frame} to use for separating data across discrete x-axis groups.}
 
 \item{scale}{"count" or "percent". Sets whether data should be shown as counts versus percentage.}
 
@@ -62,6 +61,8 @@ Set to TRUE to faithfully reflect ordering of groupings encoded in factor levels
 but Note that this will also force retention of groupings that could otherwise be removed via \code{rows.use}.}
 
 \item{data.out}{Logical. When set to \code{TRUE}, changes the output, from the plot alone, to a list containing the plot ("p") and a data.frame ("data") containing the underlying data.}
+
+\item{data.only}{Logical. When set to \code{TRUE}, the underlying data will be returned, but not the plot itself.}
 
 \item{do.hover}{Logical which sets whether the ggplot output should be converted to a ggplotly object with data about individual bars displayed when you hover your cursor over them.}
 

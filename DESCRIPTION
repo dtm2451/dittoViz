@@ -20,18 +20,10 @@ License: MIT + file LICENSE
 Encoding: UTF-8
 LazyData: true
 Depends: ggplot2
-Imports: methods,
-    colorspace (>= 1.4),
-    gridExtra,
-    cowplot,
-    reshape2,
-    pheatmap,
-    grDevices,
+Imports: cowplot,
     ggrepel,
     ggridges,
-    stats,
-    utils,
-    S4Vectors
+    stats
 Suggests: plotly,
     testthat,
     ggplot.multistats,
@@ -40,6 +32,7 @@ Suggests: plotly,
     BiocStyle,
     ggrastr (>= 0.2.0),
     ComplexHeatmap,
+    dittoSeq
 biocViews: 
     Software,
     Visualization

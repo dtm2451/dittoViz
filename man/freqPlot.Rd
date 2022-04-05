@@ -112,6 +112,8 @@ Alternatively, a Logical vector, the same length as the number of cells in the o
 
 \item{data.out}{Logical. When set to \code{TRUE}, changes the output, from the plot alone, to a list containing the plot (\code{p}) and data (\code{data}).}
 
+\item{data.only}{Logical. When set to \code{TRUE}, the underlying data will be returned, but not the plot itself.}
+
 \item{do.hover}{Logical. Default = \code{FALSE}.
 If set to \code{TRUE}: object will be converted to a ggplotly object so that data about individual cells will be displayed when you hover your cursor over the jitter points (assuming that there is a "jitter" in \code{plots}),}
 
@@ -305,6 +307,7 @@ Linetype and color are set with \code{line.linetype}, which is "dashed" by defau
 }
 
 \examples{
+library(dittoSeq)
 # Establish some workable example data
 example(importDittoBulk, echo = FALSE)
 myRNA1 <- myRNA

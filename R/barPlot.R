@@ -2,8 +2,8 @@
 #' @import ggplot2
 #'
 #' @inheritParams yPlot
-#' @param var String name of a metadata that contains discrete data, or a factor or vector containing such data for all cells/samples in the target \code{object}.
-#' @param group.by String name of a metadata to use for separating the cells/samples into discrete groups.
+#' @param var Single string representing the name of a column of \code{data_frame} to quantify within x-axis groups.
+#' @param group.by Single string representing the name of a column of \code{data_frame} to use for separating data across discrete x-axis groups.
 #' @param scale "count" or "percent". Sets whether data should be shown as counts versus percentage.
 #' @param do.hover Logical which sets whether the ggplot output should be converted to a ggplotly object with data about individual bars displayed when you hover your cursor over them.
 #' @param theme A ggplot theme which will be applied before dittoViz adjustments.
@@ -44,6 +44,7 @@
 #' @param retain.factor.levels Logical which controls whether factor identities of \code{var} and \code{group.by} data should be respected.
 #' Set to TRUE to faithfully reflect ordering of groupings encoded in factor levels,
 #' but Note that this will also force retention of groupings that could otherwise be removed via \code{rows.use}.
+#' @param data.only Logical. When set to \code{TRUE}, the underlying data will be returned, but not the plot itself.
 #'
 #' @return A ggplot plot where discrete data, grouped by sample, condition, cluster, etc. on the x-axis, is shown on the y-axis as either counts or percent-of-total-per-grouping in a stacked barplot.
 #'
@@ -133,8 +134,7 @@ barPlot <- function(
     main = "make",
     sub = NULL,
     legend.show = TRUE,
-    legend.title = NULL,
-    calc.for.freq = FALSE) {
+    legend.title = NULL) {
 
     scale = match.arg(scale)
 
@@ -183,7 +183,7 @@ barPlot <- function(
     ### Add extra features
     if (!is.null(split.by)) {
         p <- .add_splitting(
-            p, split.by, split.nrow, split.ncol, data_frame, split.adjust)
+            p, split.by, split.nrow, split.ncol, split.adjust)
     }
 
     if (!legend.show) {

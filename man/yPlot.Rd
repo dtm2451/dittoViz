@@ -77,8 +77,7 @@ boxPlot(..., plots = c("boxplot", "jitter"))
 \arguments{
 \item{data_frame}{A data.frame.}
 
-\item{var}{Single string representing the name of a metadata or gene, OR a vector with length equal to the total number of cells/samples in the dataset.
-This is the data that will be displayed.}
+\item{var}{Single string representing the name of a column of \code{data_frame} to be used as the y-axis data.}
 
 \item{group.by}{String representing the name of a metadata to use for separating the cells/samples into discrete groups.}
 
@@ -240,8 +239,6 @@ Defaults to "dashed", but any ggplot linetype will work.}
 
 \item{...}{arguments passed to yPlot by dittoRidgePlot, dittoRidgeJitter, and dittoBoxPlot wrappers.
 Options are all the ones above.}
-
-\item{swap.rownames}{String. For SummarizeedExperiment or SingleCellExperiment objects, the column name of rowData(object) to be used to identify features instead of rownames(object).}
 }
 \value{
 a ggplot where continuous data, grouped by sample, age, cluster, etc., shown on either the y-axis by a violin plot, boxplot, and/or jittered points, or on the x-axis by a ridgeplot with or without jittered points.

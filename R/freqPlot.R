@@ -93,6 +93,7 @@
 #' \code{\link{barPlot}} for a data representation that emphasizes total makeup of samples/groups rather than focusing on the \code{var}-data values individually.
 #'
 #' @examples
+#' library(dittoSeq)
 #' # Establish some workable example data
 #' example(importDittoBulk, echo = FALSE)
 #' myRNA1 <- myRNA
