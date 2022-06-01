@@ -1,6 +1,6 @@
 # dittoViz
 
-This packagae is not fully functional yet.  Very much in a "Use at your own risk" state as I will not be shying away from making breaking changes at this early stage when I'm still determining the 'right' way to code things!
+Caution: Early Development Stage. Although much functionality is already pulled over, the package is not fully functional yet and is very much in a "Use at your own risk" state. I will not shy away from making breaking changes at this early stage, where I'm still determining the 'right' way to code things, if if making that breaking change now will make the package easier to use in the future!
 
 ## Scope
 
