@@ -230,9 +230,11 @@ freqPlot <- function(
 
     # Check that sample definitions are 1:1 with groupings/colorings
     if (!is.null(sample.by)) {
-        samps <- data_frame[,sample.by]
+        samps <- ._col(sample.by, data_frame, add.names = FALSE)
         .check_1value_per_group(samps, group.by, "group.by", data_frame)
-        .check_1value_per_group(samps, color.by, "color.by", data_frame)
+        if (color.by != group.by) {
+            .check_1value_per_group(samps, color.by, "color.by", data_frame)
+        }
     }
 
     # Gather data (use split.by to ensure per- color.by & sample.by calculation)
@@ -300,15 +302,10 @@ freqPlot <- function(
 
 .check_1value_per_group <- function(groupings, check, input.name, data_frame) {
 
-    values <- data_frame[,check]
-    any_non_1 <- !all(vapply(
-        unique(groupings),
-        function (group) {
-            length(unique(values[groupings == group]))==1
-        }, FUN.VALUE = logical(1)
-        ))
-    if (any_non_1) {
-        stop("Unable to interpret '", input.name,"' with 'samples.by'. '",
-             check, "' data does not map 1:1 per sample.")
+    values <- data_frame[,check, drop = TRUE]
+    pairs <- paste(groupings, values)
+    if (length(unique(groupings)) != length(unique(pairs))) {
+        stop("Unable to interpret '", input.name,"' with 'sample.by'. '",
+             check, "' data does not map 1 per sample.")
     }
 }
