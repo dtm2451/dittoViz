@@ -262,6 +262,13 @@ barPlot <- function(
                     count = as.vector(data.frame(table(y.var, x.var))))
                 if (ncol(new)!=3) {
                     warning("data is missing!")
+                    cat("facet\n")
+                    print(facet)
+                    cat("x.var_facet\n")
+                    print(x.var)
+                    cat("y.var_facet\n")
+                    print(y.var)
+                    cat("facet table\n")
                     print(new)
                 }
                 names(new) <- c("label", "grouping", "count")
