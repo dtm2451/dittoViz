@@ -57,6 +57,9 @@
 #' @param adj.fxn A function which takes a vector (of metadata values) and returns a vector of the same length.
 #'
 #' For example, \code{function(x) \{log2(x)\}} or \code{as.factor}
+#' @param rows.use String vector of rownames names OR an integer vector specifying the row-indices of data points which should be targetted.
+#'
+#' Alternatively, a Logical vector, the same length as the number of cells in the object, which sets which cells to include.
 #' @return A named vector.
 #' @details
 #' Retrieves the values of a metadata slot from \code{object}, or the clustering slot if \code{meta = "ident"} and the \code{object} is a Seurat.
@@ -84,16 +87,23 @@
 #' @export
 
 ._col <- function(col, data_frame,
-                 adjustment = NULL, adj.fxn = NULL) {
+                 adjustment = NULL, adj.fxn = NULL,
+                 rows.use = NULL) {
 
     if (!.isCol(col, data_frame)) {
         stop(dQuote(col)," is not a column of 'data_frame'")
     }
 
-    # Retrieve target columns's values
-    values <- data_frame[,col, drop = TRUE]
+    # Trim by rows.use
+    if (!is.null(rows.use)) {
+        rows.use <- .which_rows(rows.use, data_frame)
+        data_frame <- data_frame[rows.use,]
+    }
 
-    # Add adjustments
+    # Retrieve target columns's values
+    values <- data_frame[, col, drop = TRUE]
+
+    # Add 'string' adjustments
     if (is.numeric(values)) {
 
         if (!is.null(adjustment) && !is.na(adjustment)) {
@@ -106,6 +116,7 @@
         }
     }
 
+    # Apply adj.fxn
     if (!is.null(adj.fxn)) {
         values <- adj.fxn(values)
     }
@@ -157,7 +168,7 @@
         values <- ._col(col, data_frame)
     }
     if (!is.null(rows.use)) {
-        all.rows <- .all_rows(data_frame)
+        all.rows <- rownames(data_frame)
         rows.use <- .which_rows(rows.use, data_frame)
         values <- values[all.rows %in% rows.use]
     }

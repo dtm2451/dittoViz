@@ -282,7 +282,7 @@ yPlot <- function(
     #Populate rows.use with a list of names if it was given anything else.
     rows.use <- .which_rows(rows.use, data_frame)
     #Establish the full list of cell/sample names
-    all.rows <- .all_rows(data_frame)
+    all.rows <- rownames(data_frame)
 
     #Parse Title Defaults
     main <- .leave_default_or_null(

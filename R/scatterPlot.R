@@ -231,7 +231,7 @@ scatterPlot <- function(
 
     # Standardize rows vectors.
     rows.use <- .which_rows(rows.use, data_frame)
-    all.rows <- .all_rows(data_frame)
+    all.rows <- rownames(data_frame)
 
     ### Make dataframe edits
     # Adjustments
