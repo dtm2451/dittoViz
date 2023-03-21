@@ -137,18 +137,30 @@ dotPlot <- function(
         group.by,
         summary.fxn.color = function(x) {mean(x)},
         summary.fxn.size = function(x) {length(x)},
-        legend.color.title = waiver(),
-        legend.size.title = waiver(),
         scale = TRUE,
         split.by = NULL,
         rows.use = NULL,
         size = 6,
         min.size = 0.01,
         max.size = NA,
+        legend.size.title = waiver(),
+        scale_for_size = scale_size(
+            name = legend.size.title,
+            limits = c(min.size, max.size),
+            range = c(0, size)),
         min.color = "grey90",
         max.color = "#C51B7D",
         min.value.color = NA,
         max.value.color = NA,
+        legend.color.title = waiver(),
+        legend.color.breaks = waiver(),
+        legend.color.breaks.labels = waiver(),
+        scale_for_color = scale_color_gradient(
+            name = legend.color.title,
+            low= min.color, high = max.color,
+            limits = c(min.value.color,max.value.color),
+            breaks = legend.color.breaks,
+            labels = legend.color.breaks.labels),
         var.adjustment = NULL,
         var.adj.fxn = NULL,
         do.hover = FALSE,
@@ -164,8 +176,6 @@ dotPlot <- function(
         split.adjust = list(),
         theme = theme_classic(),
         legend.show = TRUE,
-        legend.color.breaks = waiver(),
-        legend.color.breaks.labels = waiver(),
         data.out = FALSE,
         numeric.only = TRUE
         ) {
@@ -199,10 +209,7 @@ dotPlot <- function(
     # Generate Plot
     p <- .dot_plot(
         data, do.hover, main, sub, ylab, xlab, x.labels.rotate, scale,
-        min.color, max.color, min.value.color, max.value.color,
-        size, min.size, max.size, theme,
-        legend.color.title, legend.color.breaks, legend.color.breaks.labels,
-        legend.size.title, legend.show)
+        scale_for_size, scale_for_color, theme, legend.show)
 
     ### Add extra features
     if (!is.null(split.by)) {
@@ -234,34 +241,17 @@ dotPlot <- function(
         xlab,
         x.labels.rotate,
         scale,
-        min.color,
-        max.color,
-        min.value.color,
-        max.value.color,
-        size,
-        min.size,
-        max.size,
+        scale_for_size,
+        scale_for_color,
         theme,
-        legend.color.title,
-        legend.color.breaks,
-        legend.color.breaks.labels,
-        legend.size.title,
         legend.show) {
 
     p <- ggplot(data,
                 aes_string(x = "var", y = "grouping", color = "color", size = "size")) +
         theme +
         ggtitle(main, sub) + xlab(xlab) + ylab(ylab) +
-        scale_size(
-            name = legend.size.title,
-            limits = c(min.size, max.size),
-            range = c(0, size)) +
-        scale_color_gradient(
-            name = legend.color.title,
-            low= min.color, high = max.color,
-            limits = c(min.value.color,max.value.color),
-            breaks = legend.color.breaks,
-            labels = legend.color.breaks.labels)
+        scale_for_size +
+        scale_for_color
 
     if (do.hover) {
         p <- p + suppressWarnings(
