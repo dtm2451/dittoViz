@@ -14,6 +14,10 @@
 #' @param size Number which sets the dot size associated with the highest value shown by dot size (default: percent non-zero expression).
 #' @param min.size,max.size Numbers between 0 and 1 which sets the minimum and maximum percent expression to show.
 #' When set to NA, the minimum/maximum of the data are used.
+#' @param scale_for_size,scale_for_color a ggplot scale to use for color and size aesthetics. Default values are the only place that makes use of related dotPlot inputs, so if you use your own scale, you either need to write it with these inputs included, or else they will not get utilized: \itemize{
+#' \item size, min.size, max.size, legend.size.title for \code{scale_for_size}
+#' \item min.color, max.color, min.value.color, max.value.color, legend.color.title, legend.color.breaks, legend.color.breaks.labels for \code{scale_for_color}
+#' }
 #' @param min.color,max.color colors to use for minimum and maximum color values.
 #' Default = light grey and purple.
 #' @param min.value.color,max.value.color Numbers which set the values associated with the minimum and maximum colors.
@@ -82,6 +86,7 @@
 #' \code{\link{dittoPlot}} and \code{\link{multi_dittoPlot}} for plotting of expression and metadata vars, each as separate plots, on a per cell/sample basis.
 #'
 #' @examples
+#' library(dittoSeq)
 #' example(importDittoBulk, echo = FALSE)
 #' myRNA
 #'
@@ -157,7 +162,7 @@ dotPlot <- function(
         legend.color.breaks.labels = waiver(),
         scale_for_color = scale_color_gradient(
             name = legend.color.title,
-            low= min.color, high = max.color,
+            low = min.color, high = max.color,
             limits = c(min.value.color,max.value.color),
             breaks = legend.color.breaks,
             labels = legend.color.breaks.labels),
