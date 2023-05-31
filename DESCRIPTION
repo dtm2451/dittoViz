@@ -24,12 +24,14 @@ Imports: cowplot,
     ggrepel,
     ggridges,
     stats
-Suggests: plotly,
-    testthat,
+Suggests: 
+    plotly,
+    testthat (>= 3.0.0),
     ggplot.multistats,
     knitr,
     rmarkdown,
     BiocStyle,
+    palmerpenguins,
     ggrastr (>= 0.2.0),
     ComplexHeatmap,
     dittoSeq
@@ -37,4 +39,5 @@ biocViews:
     Software,
     Visualization
 VignetteBuilder: knitr
-RoxygenNote: 7.1.2
+RoxygenNote: 7.2.3
+Config/testthat/edition: 3

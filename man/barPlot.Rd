@@ -72,9 +72,7 @@ Default = \code{dittoColors()}.}
 \item{colors}{Integer vector, the indexes / order, of colors from color.panel to actually use.
 (Provides an alternative to directly modifying \code{color.panel}.)}
 
-\item{split.nrow}{Integers which set the dimensions of faceting/splitting when a single metadata is given to \code{split.by}.}
-
-\item{split.ncol}{Integers which set the dimensions of faceting/splitting when a single metadata is given to \code{split.by}.}
+\item{split.nrow, split.ncol}{Integers which set the dimensions of faceting/splitting when a single metadata is given to \code{split.by}.}
 
 \item{split.adjust}{A named list which allows extra parameters to be pushed through to the faceting function call.
 List elements should be valid inputs to the faceting functions, e.g. `list(scales = "free")`.

@@ -32,11 +32,11 @@
 
 .add_letters_ellipses_labels_if_discrete <- function(
     p, data, x.by, y.by, color.by,
-    is.discrete, do.letter, do.ellipse, do.label,
+    do.letter, do.ellipse, do.label,
     labels.highlight, labels.size, labels.repel, labels.split.by,
     letter.size, letter.opacity, letter.legend.title, letter.legend.size) {
 
-    if (is.discrete) {
+    if (!is.numeric(data[,color.by])) {
 
         if (do.letter) {
             p <- .add_letters(
@@ -181,18 +181,18 @@
         cent.x = vapply(
             groups,
             function(level) {
-                median(x.y.group.df[x.by, x.y.group.df[,group.col]==level], na.rm = TRUE)
+                median(x.y.group.df[x.y.group.df[,group.col]==level, x.by], na.rm = TRUE)
             }, FUN.VALUE = numeric(1)),
         cent.y = vapply(
             groups,
             function(level) {
-                median(x.y.group.df[y.by, x.y.group.df[,group.col]==level], na.rm = TRUE)
+                median(x.y.group.df[x.y.group.df[,group.col]==level, y.by], na.rm = TRUE)
             }, FUN.VALUE = numeric(1)),
         label = groups)
 }
 
 .add_trajectories_by_groups <- function(
-    p, data, x.by, y.by, trajectories, group.by, arrow.size = 0.15, data_frame) {
+    p, data, x.by, y.by, trajectories, group.by, arrow.size = 0.15) {
     # Add trajectory path arrows, following sets of group-to-group paths, from group median to group median.
     # (Scatter plots)
     #
@@ -203,7 +203,7 @@
     # arrow.size = numeric scalar that sets the arrow length (in inches) at the endpoints of trajectory lines.
 
     # Determine medians
-    cluster.levels <- .colLevels(group.by, data_frame)
+    cluster.levels <- .colLevels(group.by, data)
     group_medians <- .calc_xy_medians(data, group.by, x.by, y.by)
 
     #Add trajectories
@@ -211,6 +211,28 @@
         p <- p + geom_path(
             data = group_medians[as.character(trajectories[[i]]),],
             aes_string(x = "cent.x", y = "cent.y"),
+            arrow = arrow(
+                angle = 20, type = "closed", length = unit(arrow.size, "inches")))
+    }
+    p
+}
+
+.add_trajectory_curves <- function(
+    p, trajectories, arrow.size = 0.15) {
+    # Add trajectory path arrows following sets of given (x,y) coordinates.
+    # (Dim and Scatter plots)
+    #
+    # p = a ggplot to add to
+    # trajectories = List of matrices (or data.frames) containing trajectory curves, all with two columns, x and y coordinates.
+    # arrow.size = numeric scalar that sets the arrow length (in inches) at the endpoints of trajectory lines.
+
+    # Add trajectories for general list of matrices provision method.
+    for (i in seq_along(trajectories)) {
+        data <- as.data.frame(trajectories[[i]])
+        names(data) <- c("x", "y")
+        p <- p + geom_path(
+            data = data,
+            aes_string(x = "x", y = "y"),
             arrow = arrow(
                 angle = 20, type = "closed", length = unit(arrow.size, "inches")))
     }
