@@ -84,7 +84,8 @@
 #' @export
 
 ._col <- function(col, data_frame,
-                 adjustment = NULL, adj.fxn = NULL) {
+                 adjustment = NULL, adj.fxn = NULL,
+                 add.names = TRUE) {
 
     if (!.isCol(col, data_frame)) {
         stop(dQuote(col)," is not a column of 'data_frame'")
@@ -111,7 +112,9 @@
     }
 
     # Add names
-    names(values) <- .all_rows(data_frame)
+    if (add.names) {
+        names(values) <- .all_rows(data_frame)
+    }
 
     values
 }

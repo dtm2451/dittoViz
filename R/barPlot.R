@@ -122,7 +122,7 @@ barPlot <- function(
     split.adjust = list(),
     y.breaks = NA,
     min = 0,
-    max = NULL,
+    max = NA,
     var.labels.rename = NULL,
     var.labels.reorder = NULL,
     x.labels = NULL,
@@ -215,11 +215,12 @@ barPlot <- function(
 ) {
 
     rows.use <- .which_rows(rows.use, data_frame)
-    all.rows <- .all_rows(data_frame)
+
+    data_frame_use <- data_frame[rows.use, , drop = FALSE]
 
     # Extract x.grouping and y.labels data
-    y.var <- data_frame[rows.use, var]
-    x.var <- data_frame[rows.use, group.by]
+    y.var <- ._col(var, data_frame_use, add.names = FALSE)
+    x.var <- ._col(group.by, data_frame_use, add.names = FALSE)
 
     # Factor editting
     if(!retain.factor.levels.var) {
@@ -238,7 +239,7 @@ barPlot <- function(
     split.data <- list()
     if (!is.null(split.by)) {
         for (by in seq_along(split.by)) {
-            split.data[[by]] <- data_frame[rows.use, split.by[by]]
+            split.data[[by]] <- data_frame_use[, split.by[by]]
         }
         facet <- do.call(paste, split.data)
     }
@@ -251,12 +252,25 @@ barPlot <- function(
             function(this_facet) {
 
                 # Subset data per facet
-                y.var <- y.var[facet==this_facet]
-                x.var <- x.var[facet==this_facet]
+                use <- facet==this_facet
+                use_first <- which(use)[1]
+                y.var <- y.var[use]
+                x.var <- x.var[use]
 
                 # Create data frame
                 new <- data.frame(
                     count = as.vector(data.frame(table(y.var, x.var))))
+                if (ncol(new)!=3) {
+                    warning("data is missing!")
+                    cat("facet\n")
+                    print(facet)
+                    cat("x.var_facet\n")
+                    print(x.var)
+                    cat("y.var_facet\n")
+                    print(y.var)
+                    cat("facet table\n")
+                    print(new)
+                }
                 names(new) <- c("label", "grouping", "count")
 
                 new$label.count.total.per.facet <- rep(
@@ -269,7 +283,7 @@ barPlot <- function(
 
                 # Add facet info
                 for (by in seq_along(split.by)) {
-                    new[[split.by[by]]] <- (split.data[[by]][facet==this_facet])[1]
+                    new[[split.by[by]]] <- split.data[[by]][use_first]
                 }
 
                 new

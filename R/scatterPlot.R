@@ -191,8 +191,8 @@ scatterPlot <- function(
     rename.shape.groups = NULL,
     min.color = "#F0E442",
     max.color = "#0072B2",
-    min.value = NULL,
-    max.value = NULL,
+    min.value = NA,
+    max.value = NA,
     plot.order = c("unordered", "increasing", "decreasing", "randomize"),
     xlab = x.by,
     ylab = y.by,
@@ -391,9 +391,7 @@ scatterPlot <- function(
             p <- p +
                 scale_colour_gradient(
                     name = legend.color.title, low= min.color, high = max.color,
-                    limits = c(
-                        ifelse(is.null(min.value), min(Target_data[,color.by]), min.value),
-                        ifelse(is.null(max.value), max(Target_data[,color.by]), max.value)),
+                    limits = c(min.value, max.value),
                     breaks = legend.color.breaks,
                     labels = legend.color.breaks.labels)
         } else {

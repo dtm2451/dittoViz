@@ -22,7 +22,7 @@ barPlot(
   split.adjust = list(),
   y.breaks = NA,
   min = 0,
-  max = NULL,
+  max = NA,
   var.labels.rename = NULL,
   var.labels.reorder = NULL,
   x.labels = NULL,
