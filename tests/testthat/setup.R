@@ -4,10 +4,6 @@ set.seed(1)
 library(palmerpenguins)
 df <- penguins[!apply(penguins, 1, function(x) { any(is.na(x)) }), ]
 
-# Expression
-nsamples <- nrow
-ngenes <- 3
-
 # Dimensionality reduction
 pca <- prcomp(df[, c("bill_length_mm", "bill_depth_mm", "flipper_length_mm", "body_mass_g")])
 df <- cbind(df, pca$x)
@@ -51,6 +47,15 @@ de_df <- do.call(
 # Additional 'random' observations
 df$groups <- sample(c("A","B","C","D","E"), nrow(df), replace = TRUE)
 df$age <- sample(c("1","2","3","4"), nrow(df), replace = TRUE)
+df$number <- as.numeric(seq_len(nrow(df)))
+
+# For rows.use subsetting checks
+rows.nums <- sort(sample(seq_len(nrow(df)), 40))
+rows.names <- rownames(df)[rows.nums]
+rows.logical <- seq_len(nrow(df)) %in% rows.nums
+
+# Alternative colors
+cols <- c("red", "blue", "yellow", "green", "black", "gray", "white")
 
 # Remove the unneeded external data
 rm(pca)

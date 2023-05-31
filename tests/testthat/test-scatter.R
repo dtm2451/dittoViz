@@ -7,11 +7,6 @@ cont2 <- "bill_length_mm"
 disc <- "species"
 disc2 <- "island"
 
-rows.names <- rownames(df)[1:40]
-rows.logical <- c(rep(TRUE, 40), rep(FALSE,nrow(df)-40))
-
-cols <- c("red", "blue", "yellow", "green", "black", "gray", "white")
-
 test_that("scatterPlot can plot continuous or discrete data", {
     expect_s3_class(
         scatterPlot(
@@ -123,7 +118,7 @@ test_that("scatterPlots can be subset to show only certain rows with any rows.us
     expect_s3_class(
         {c3 <- scatterPlot(
             df, "PC1", "PC2", disc, data.out = TRUE,
-            rows.use = 1:40)
+            rows.use = rows.nums)
         c2$p},
         "ggplot")
 
