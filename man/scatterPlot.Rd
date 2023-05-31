@@ -30,7 +30,7 @@ scatterPlot(
   max.color = "#0072B2",
   min.value = NA,
   max.value = NA,
-  plot.order = c("unordered", "increasing", "decreasing"),
+  plot.order = c("unordered", "increasing", "decreasing", "randomize"),
   xlab = x.by,
   ylab = y.by,
   main = "make",
