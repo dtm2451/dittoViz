@@ -42,8 +42,7 @@
 #' If set to \code{TRUE} the ggplot output will be converted to an interactive plotly object in which underlying data for individual dots will be displayed when you hover your cursor over them.
 #'
 #' @param numeric.only Logical. Whether the function should error if data given by \code{vars} is not numeric.
-#' @inheritParams dittoPlotVarsAcrossGroups
-#' @inheritParams dittoScatterPlot
+#' @inheritParams scatterPlot
 #'
 #' @return a ggplot object where dots of different colors and sizes summarize continuous data for multiple features (columns) per multiple groups (rows)
 #'
@@ -96,24 +95,24 @@
 #' logcounts(myRNA)[1:4,1:40] <- 0
 #'
 #' df <- cbind(colData(myRNA), t(logcounts(myRNA)))
-#' dotPlot(
+#' dotPlotCalc(
 #'     df, c("gene1", "gene2", "gene3", "gene4"),
 #'     group.by = "clustering")
 #'
 #' # 'size' adjusts the dot-size associated with the highest percent expression
-#' dotPlot(df, c("gene1", "gene2", "gene3", "gene4"), "clustering",
+#' dotPlotCalc(df, c("gene1", "gene2", "gene3", "gene4"), "clustering",
 #'     size = 12)
 #'
 #' # 'scale' input can be used to control / turn off scaling of avg exp values.
-#' dotPlot(df, c("gene1", "gene2", "gene3", "gene4"), "clustering",
+#' dotPlotCalc(df, c("gene1", "gene2", "gene3", "gene4"), "clustering",
 #'     scale = FALSE)
 #'
 #' # x-axis label rotation can be controlled with 'x.labels.rotate'
-#' dotPlot(df, c("gene1", "gene2", "gene3", "gene4"), "clustering",
+#' dotPlotCalc(df, c("gene1", "gene2", "gene3", "gene4"), "clustering",
 #'     x.labels.rotate = FALSE)
 #'
 #' # Title are adjustable via various discrete inputs:
-#' dotPlot(df, c("gene1", "gene2", "gene3", "gene4"), "clustering",
+#' dotPlotCalc(df, c("gene1", "gene2", "gene3", "gene4"), "clustering",
 #'     main = "Title",
 #'     sub = "Subtitle",
 #'     ylab = "y-axis label",
@@ -126,7 +125,7 @@
 #' #   summary.fxn.color & summary.fxn.size
 #' #     Requirement for each: Any function that takes in a numeric vector &
 #' #     returns, as output, a single numeric value.
-#' dotPlot(df, c("gene1", "gene2", "gene3", "gene4"), "clustering",
+#' dotPlotCalc(df, c("gene1", "gene2", "gene3", "gene4"), "clustering",
 #'     summary.fxn.color = mean,
 #'     legend.color.title = "mean\nexpression\nincluding 0s",
 #'     main = "scater::plotDots() defaulting recreation",
@@ -136,7 +135,7 @@
 #' @author Daniel Bunis
 #' @export
 #'
-dotPlot <- function(
+dotPlotCalc <- function(
         data_frame,
         vars,
         group.by,
@@ -213,7 +212,9 @@ dotPlot <- function(
 
     # Generate Plot
     p <- .dot_plot(
-        data, do.hover, main, sub, ylab, xlab, x.labels.rotate, scale,
+        data,
+        x = "var", y = "grouping", color = "color", size = "size",
+        do.hover, main, sub, ylab, xlab, x.labels.rotate, scale,
         scale_for_size, scale_for_color, theme, legend.show)
 
     ### Add extra features
@@ -237,8 +238,109 @@ dotPlot <- function(
     }
 }
 
+#' Compact plotting of per group summaries for expression of multiple features
+#' @param color.by Single string denoting the name of a column of \code{data_frame} to use for the color of plotted dots.
+#' @param size.by Single string denoting the name of a column of \code{data_frame} to use for the size plotted dots.
+#' @param scale "none", "rows", "cols". Sets whether or not to z-score transform each row, or each column, of color-values.
+#' @inheritParams scatterPlot
+#' @author Daniel Bunis
+#' @export
+#'
+dotPlot <- function(
+        data_frame,
+        x.by,
+        y.by,
+        color.by,
+        size.by,
+        scale = "none",
+        split.by = NULL,
+        rows.use = NULL,
+        size = 6,
+        min.size = 0.01,
+        max.size = NA,
+        legend.size.title = waiver(),
+        scale_for_size = scale_size(
+            name = legend.size.title,
+            limits = c(min.size, max.size),
+            range = c(0, size)),
+        min.color = "grey90",
+        max.color = "#C51B7D",
+        min.value.color = NA,
+        max.value.color = NA,
+        legend.color.title = waiver(),
+        legend.color.breaks = waiver(),
+        legend.color.breaks.labels = waiver(),
+        scale_for_color = scale_color_gradient(
+            name = legend.color.title,
+            low = min.color, high = max.color,
+            limits = c(min.value.color,max.value.color),
+            breaks = legend.color.breaks,
+            labels = legend.color.breaks.labels),
+        # do.hover = FALSE,
+        main = NULL,
+        sub = NULL,
+        ylab = y.by,
+        y.labels = NULL,
+        y.reorder = NULL,
+        xlab = x.by,
+        x.labels.rotate = TRUE,
+        split.nrow = NULL,
+        split.ncol = NULL,
+        split.adjust = list(),
+        theme = theme_classic(),
+        legend.show = TRUE,
+        data.out = FALSE
+) {
+
+    rows.use <- .which_rows(rows.use, data_frame)
+    data_frame <- data_frame[rows.use, ]
+
+    if (scale) {
+        data_frame$pre.scale <- data_frame[, color.by]
+        for (i in vars) {
+            data$color[data$var == i] <-
+                # center, if multiple groups express this var, also scale
+                if (sum(!is.na(data$color[data$var == i]))>1) {
+                    scale(data$color[data$var == i])
+                } else {
+                    scale(data$color[data$var == i], scale = FALSE)
+                }
+        }
+    }
+
+    # Generate Plot
+    p <- .dot_plot(
+        data_frame, x.by, y.by, color.by, size.by,
+        FALSE, main, sub, ylab, xlab, x.labels.rotate, scale,
+        scale_for_size, scale_for_color, theme, legend.show)
+
+    ### Add extra features
+    if (!is.null(split.by)) {
+        p <- .add_splitting(
+            p, split.by, split.nrow, split.ncol, split.adjust)
+    }
+
+    # if (do.hover) {
+    #     .error_if_no_plotly()
+    #     p <- plotly::ggplotly(p, tooltip = "text")
+    # }
+
+    # DONE. Return
+    if (data.out) {
+        list(
+            p = p,
+            data = data)
+    } else {
+        p
+    }
+}
+
 .dot_plot <- function(
         data,
+        x,
+        y,
+        color,
+        size,
         do.hover,
         main,
         sub,
@@ -252,7 +354,7 @@ dotPlot <- function(
         legend.show) {
 
     p <- ggplot(data,
-                aes_string(x = "var", y = "grouping", color = "color", size = "size")) +
+                aes_string(x = x, y = y, color = color, size = size)) +
         theme +
         ggtitle(main, sub) + xlab(xlab) + ylab(ylab) +
         scale_for_size +
@@ -415,7 +517,7 @@ dotPlot <- function(
             df_adj <- apply(df_adj, 2, function(x) {(x-mean(x))/sd(x)})
         }
         if (var.adjustment=="relative.to.max") {
-            df_adj <- apply(df_adj, 2, function(x) {x/max.value.color(x)})
+            df_adj <- apply(df_adj, 2, function(x) {x/max(x)})
         }
     }
 
