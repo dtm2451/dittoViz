@@ -252,7 +252,7 @@ yPlot <- function(
     jitter.size = 1,
     jitter.width = 0.2,
     jitter.color = "black",
-    jitter.shape.legend.size = NA,
+    jitter.shape.legend.size = 5,
     jitter.shape.legend.show = TRUE,
     jitter.position.dodge = boxplot.position.dodge,
     boxplot.width = 0.2,

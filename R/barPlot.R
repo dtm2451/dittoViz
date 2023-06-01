@@ -258,8 +258,7 @@ barPlot <- function(
                 x.var <- x.var[use]
 
                 # Create data frame
-                new <- data.frame(
-                    count = as.vector(data.frame(table(y.var, x.var))))
+                new <- data.frame(table(y.var, x.var))
                 if (ncol(new)!=3) {
                     warning("data is missing!")
                     cat("facet\n")

@@ -2,7 +2,9 @@
 
 set.seed(1)
 library(palmerpenguins)
-df <- penguins[!apply(penguins, 1, function(x) { any(is.na(x)) }), ]
+df <- as.data.frame(penguins[!apply(penguins, 1, function(x) { any(is.na(x)) }), ])
+
+rownames(df) <- paste0("row", rownames(df))
 
 # Dimensionality reduction
 pca <- prcomp(df[, c("bill_length_mm", "bill_depth_mm", "flipper_length_mm", "body_mass_g")])
