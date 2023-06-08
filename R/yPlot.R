@@ -567,11 +567,11 @@ boxPlot <- function(..., plots = c("boxplot","jitter")){ yPlot(..., plots = plot
     } else {
         .error_if_no_plotly()
         # Add hover.text to jitter, else just convert.
-        # if ("jitter" %in% plots) {
-        #     p <- plotly::ggplotly(p, tooltip = "text")
-        # } else {
-        #     p <- plotly::ggplotly(p)
-        # }
+        if ("jitter" %in% plots) {
+            p <- plotly::ggplotly(p, tooltip = "text")
+        } else {
+            p <- plotly::ggplotly(p)
+        }
     }
     p
 }
