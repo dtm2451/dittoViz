@@ -221,6 +221,9 @@ barPlot <- function(
     # Extract x.grouping and y.labels data
     y.var <- ._col(var, data_frame_use, add.names = FALSE)
     x.var <- ._col(group.by, data_frame_use, add.names = FALSE)
+    if (any(is.na(x.var))) {
+        stop('Cannot calculate composition among grouping data containing NAs. Offending column: ', group.by)
+    }
 
     # Factor editting
     if(!retain.factor.levels.var) {
@@ -240,6 +243,9 @@ barPlot <- function(
     if (!is.null(split.by)) {
         for (by in seq_along(split.by)) {
             split.data[[by]] <- data_frame_use[, split.by[by]]
+            if (any(is.na(split.data[[by]]))) {
+                stop('Cannot calculate composition among sub-grouping data containing NAs. Offending column: ', split.by[by])
+            }
         }
         facet <- do.call(paste, split.data)
     }
@@ -259,17 +265,6 @@ barPlot <- function(
 
                 # Create data frame
                 new <- data.frame(table(y.var, x.var))
-                if (ncol(new)!=3) {
-                    warning("data is missing!")
-                    cat("facet\n")
-                    print(facet)
-                    cat("x.var_facet\n")
-                    print(x.var)
-                    cat("y.var_facet\n")
-                    print(y.var)
-                    cat("facet table\n")
-                    print(new)
-                }
                 names(new) <- c("label", "grouping", "count")
 
                 new$label.count.total.per.facet <- rep(
