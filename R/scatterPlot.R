@@ -191,9 +191,9 @@ scatterPlot <- function(
     rename.shape.groups = NULL,
     min.color = "#F0E442",
     max.color = "#0072B2",
-    min.value = NULL,
-    max.value = NULL,
-    plot.order = c("unordered", "increasing", "decreasing"),
+    min.value = NA,
+    max.value = NA,
+    plot.order = c("unordered", "increasing", "decreasing", "randomize"),
     xlab = x.by,
     ylab = y.by,
     main = "make",
@@ -260,11 +260,13 @@ scatterPlot <- function(
     Target_data <- data_frame[rows.use,]
     Others_data <- data_frame[!(all.rows %in% rows.use),]
 
-    if (plot.order != "unordered") {
+    if (plot.order %in% c("increasing", "decreasing")) {
         decreasing <- switch(plot.order,
                              "decreasing" = TRUE,
                              "increasing" = FALSE)
         Target_data <- Target_data[order(Target_data[,color.by], decreasing = decreasing),]
+    } else if (plot.order == "randomize") {
+        Target_data <- Target_data[sample(nrow(Target_data)),]
     }
 
     # Set title if "make"
@@ -295,15 +297,19 @@ scatterPlot <- function(
 
     p <- .add_letters_ellipses_labels_if_discrete(
         p, Target_data, x.by, y.by, color.by,
-        is.discrete = !is.numeric(Target_data[color.by]),
         do.letter, do.ellipse, do.label,
         labels.highlight, labels.size, labels.repel, labels.split.by,
         size, opacity, legend.color.title, legend.color.size)
 
     if (is.list(add.trajectory.by.groups)) {
         p <- .add_trajectories_by_groups(
-            p, data_frame, add.trajectory.by.groups,
-            trajectory.group.by, trajectory.arrow.size, data_frame)
+            p, data_frame, x.by, y.by, add.trajectory.by.groups,
+            trajectory.group.by, trajectory.arrow.size)
+    }
+
+    if (is.list(add.trajectory.curves)) {
+        p <- .add_trajectory_curves(
+            p, add.trajectory.curves, arrow.size = trajectory.arrow.size)
     }
 
     if (do.hover) {
@@ -385,9 +391,7 @@ scatterPlot <- function(
             p <- p +
                 scale_colour_gradient(
                     name = legend.color.title, low= min.color, high = max.color,
-                    limits = c(
-                        ifelse(is.null(min.value), min(Target_data[,color.by]), min.value),
-                        ifelse(is.null(max.value), max(Target_data[,color.by]), max.value)),
+                    limits = c(min.value, max.value),
                     breaks = legend.color.breaks,
                     labels = legend.color.breaks.labels)
         } else {

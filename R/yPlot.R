@@ -238,8 +238,8 @@ yPlot <- function(
     sub = NULL,
     ylab = "make",
     y.breaks = NULL,
-    min = NULL,
-    max = NULL,
+    min = NA,
+    max = NA,
     xlab = group.by,
     x.labels = NULL,
     x.labels.rotate = NA,
@@ -252,7 +252,7 @@ yPlot <- function(
     jitter.size = 1,
     jitter.width = 0.2,
     jitter.color = "black",
-    jitter.shape.legend.size = NA,
+    jitter.shape.legend.size = 5,
     jitter.shape.legend.show = TRUE,
     jitter.position.dodge = boxplot.position.dodge,
     boxplot.width = 0.2,
@@ -383,13 +383,9 @@ yPlot <- function(
     if (!is.null(y.breaks)) {
         p <- p + scale_y_continuous(breaks = y.breaks)
     }
-    if (is.null(min)) {
-        min <- min(Target_data[,var])
+    if (!is.na(min) || !is.na(max)) {
+        p <- p + coord_cartesian(ylim=c(min,max))
     }
-    if (is.null(max)) {
-        max <- max(Target_data[,var])
-    }
-    p <- p + coord_cartesian(ylim=c(min,max))
 
     # Add Plots
     for (i in seq_along(plots)) {
@@ -504,13 +500,9 @@ yPlot <- function(
     if (!is.null(y.breaks)) {
         p <- p + scale_x_continuous(breaks = y.breaks)
     }
-    if (is.null(min)) {
-        min <- min(Target_data[,var])
+    if (!is.na(min) || !is.na(max)) {
+        p <- p + coord_cartesian(xlim=c(min,max))
     }
-    if (is.null(max)) {
-        max <- max(Target_data[,var])
-    }
-    p <- p + coord_cartesian(xlim=c(min,max))
 
     # For stylistic issues with plotting defaults, also adjust grouping-axis limits
     if (is.na(ridgeplot.ymax.expansion)) {
@@ -575,11 +567,11 @@ boxPlot <- function(..., plots = c("boxplot","jitter")){ yPlot(..., plots = plot
     } else {
         .error_if_no_plotly()
         # Add hover.text to jitter, else just convert.
-        # if ("jitter" %in% plots) {
-        #     p <- plotly::ggplotly(p, tooltip = "text")
-        # } else {
-        #     p <- plotly::ggplotly(p)
-        # }
+        if ("jitter" %in% plots) {
+            p <- plotly::ggplotly(p, tooltip = "text")
+        } else {
+            p <- plotly::ggplotly(p)
+        }
     }
     p
 }
