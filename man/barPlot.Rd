@@ -38,7 +38,7 @@ barPlot(
 )
 }
 \arguments{
-\item{data_frame}{A data.frame.}
+\item{data_frame}{A data_frame where columns are features and rows are observations you wish to visualize.}
 
 \item{var}{Single string representing the name of a column of \code{data_frame} to quantify within x-axis groups.}
 
@@ -46,15 +46,15 @@ barPlot(
 
 \item{scale}{"count" or "percent". Sets whether data should be shown as counts versus percentage.}
 
-\item{split.by}{1 or 2 strings naming discrete metadata to use for splitting the cells/samples into multiple plots with ggplot faceting.
+\item{split.by}{1 or 2 strings denoting the name(s) of column(s) of \code{data_frame} containing discrete data to use for faceting / separating data points into separate plots.
 
-When 2 metadatas are named, c(row,col), the first is used as rows and the second is used for columns of the resulting grid.
+When 2 columns are named, c(row,col), the first is used as rows and the second is used for columns of the resulting facet grid.
 
-When 1 metadata is named, shape control can be achieved with \code{split.nrow} and \code{split.ncol}}
+When 1 column is named, shape control can be achieved with \code{split.nrow} and \code{split.ncol}}
 
-\item{rows.use}{String vector of rownames names OR an integer vector specifying the row-indices of data points which should be targetted.
+\item{rows.use}{String vector of rownames of \code{data_frame} OR an integer vector specifying the row-indices of data points which should be plotted.
 
-Alternatively, a Logical vector, the same length as the number of cells in the object, which sets which cells to include.}
+Alternatively, a Logical vector, the same length as the number of rows in \code{data_frame}, where \code{TRUE} values indicate which rows to plot.}
 
 \item{retain.factor.levels}{Logical which controls whether factor identities of \code{var} and \code{group.by} data should be respected.
 Set to TRUE to faithfully reflect ordering of groupings encoded in factor levels,
@@ -66,13 +66,16 @@ but Note that this will also force retention of groupings that could otherwise b
 
 \item{do.hover}{Logical which sets whether the ggplot output should be converted to a ggplotly object with data about individual bars displayed when you hover your cursor over them.}
 
-\item{color.panel}{String vector which sets the colors to draw from for plot fills.
-Default = \code{dittoColors()}.}
+\item{color.panel}{String vector which sets the colors to draw from for data representation fills.
+Default = \code{dittoColors()}.
 
-\item{colors}{Integer vector, the indexes / order, of colors from color.panel to actually use.
-(Provides an alternative to directly modifying \code{color.panel}.)}
+A named vector can be used if names are matched to the distinct values of the \code{color.by} data.}
 
-\item{split.nrow, split.ncol}{Integers which set the dimensions of faceting/splitting when a single metadata is given to \code{split.by}.}
+\item{colors}{Integer vector, the indexes / order, of colors from \code{color.panel} to actually use.
+
+Useful for quickly swapping around colors of the default set (when not using names for color matching).}
+
+\item{split.nrow, split.ncol}{Integers which set the dimensions of faceting/splitting when a single column name is given to \code{split.by}.}
 
 \item{split.adjust}{A named list which allows extra parameters to be pushed through to the faceting function call.
 List elements should be valid inputs to the faceting functions, e.g. `list(scales = "free")`.
@@ -86,11 +89,12 @@ OR when giving 2 metadatas to \code{split.by}, see \code{\link[ggplot2]{facet_gr
 These inputs set the minimum / maximum values of the y-axis.
 Default = set based on the limits of the data, 0 to 1 for \code{scale = "percent"}, or 0 to maximum count for 0 to 1 for \code{scale = "count"}.}
 
-\item{var.labels.rename}{String vector for renaming the distinct identities of \code{var} values.
+\item{var.labels.rename}{String vector for renaming the distinct identities of \code{var}-values.
+This vector must be the same length as the number of levels or unique values in the \code{var}-data.
 
-Hint: use \code{\link{metaLevels}} or \code{unique(<var-data>)} to assess current values.}
+Hint: use \code{\link{colLevels}} or \code{unique(data_frame[,var])} to original values.}
 
-\item{var.labels.reorder}{Integer vector. A sequence of numbers, from 1 to the number of distinct \code{var} value identities, for rearranging the order of labels' groupings within the plot.
+\item{var.labels.reorder}{Integer vector. A sequence of numbers, from 1 to the number of distinct \code{var}-value identities, for rearranging the order labels' groupings within the plot space.
 
 Method: Make a first plot without this input.
 Then, treating the top-most grouping as index 1, and the bottom-most as index n.
@@ -141,7 +145,8 @@ Outputs a stacked bar plot to show the percent composition of samples, groups, c
 }
 \details{
 The function creates a dataframe containing counts and percent makeup of \code{var} identities for each x-axis grouping (determined by the \code{group.by} input).
-If a set of cells/samples to use is indicated with the \code{rows.use} input, only those cells/samples are used for counts and percent makeup calculations.
+If a subset of data points to use is indicated with the \code{rows.use} input, only those rows of the \code{data_frame} are used for counts and percent makeup calculations.
+In other words, the \code{row.use} input adjusts the universe that compositions are calculated within.
 Then, a vertical bar plot is generated (\code{ggplot2::geom_col()}) showing either percent makeup if
 \code{scale = "percent"}, which is the default, or raw counts if \code{scale = "count"}.
 }

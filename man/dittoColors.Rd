@@ -2,14 +2,14 @@
 % Please edit documentation in R/dittoColors.R
 \name{dittoColors}
 \alias{dittoColors}
-\title{Extracts the dittoSeq default colors}
+\title{Extracts the dittoViz default colors}
 \usage{
 dittoColors(reps = 100, get.names = FALSE)
 }
 \arguments{
 \item{reps}{Integer which sets how many times the original set of colors should be repeated}
 
-\item{get.names}{Logical, whether only the names of the default dittoSeq color panel should be returned instead}
+\item{get.names}{Logical, whether only the names of the default dittoViz color panel should be returned instead}
 }
 \value{
 A string vector with length = 24.
@@ -21,7 +21,7 @@ Or, if \code{get.names} is set to \code{TRUE}, outputs the names of the colors w
 These colors are a modification of the protanope and deuteranope friendly colors from Wong, B. Nature Methods, 2011.
 
 Truly, only the first 1-7 are maximally (red-green) color-blindness friendly, but the lightened and darkened versions (plus grey) in slots 8-40 still work releatively well at extending their utility further.
-Note that past 40, the colors simply repeat in order to most easily allow dittoSeq visualizations to handle situations requiring even more colors.
+Note that past 40, the colors simply repeat in order to most easily allow dittoViz visualizations to handle situations requiring even more colors.
 
 The colors are:
 

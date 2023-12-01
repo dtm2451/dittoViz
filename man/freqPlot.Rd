@@ -2,7 +2,7 @@
 % Please edit documentation in R/freqPlot.R
 \name{freqPlot}
 \alias{freqPlot}
-\title{Plot cell type/cluster/identity frequencies per sample and per grouping}
+\title{Plot discrete observation frequencies per sample and per grouping}
 \usage{
 freqPlot(
   data_frame,
@@ -65,25 +65,24 @@ freqPlot(
 )
 }
 \arguments{
-\item{data_frame}{A data.frame.}
+\item{data_frame}{A data_frame where columns are features and rows are observations you wish to visualize.}
 
-\item{var}{String name of a metadata that contains discrete data, or a factor or vector containing such data for all cells/samples in the target \code{object}.}
+\item{var}{Single string representing the name of a column of \code{data_frame} that contains the discrete data you wish to quantify as frequencies.}
 
-\item{sample.by}{String name of a metadata containing which samples each cell belongs to.
+\item{sample.by}{Single string representing the name of a column of \code{data_frame} that contains an indicator of which sample each observation belongs to.
 
 Note that when this is not provided, there will only be one data point per grouping.
-A warning can be expected then for all \code{plots} options except \code{"jitter"},
-but this can be a useful exercise when simply trying to quantify cell type frequency fluctuations among 2 particular metadata (given to group.by & color.by) combinations.}
+A warning can be expected then for all \code{plots} options except \code{"jitter"}.}
 
-\item{group.by}{String representing the name of a metadata to use for separating the cells/samples into discrete groups.}
+\item{group.by}{Single string representing the name of a column of \code{data_frame} containing discrete data to use for separating the data points into groups.}
 
-\item{color.by}{String representing the name of a metadata to use for setting fills.
-Great for highlighting supersets or subgroups when wanted, but it defaults to \code{group.by} so this input can be skipped otherwise.}
+\item{color.by}{Single string representing the name of a column of \code{data_frame} containing discrete data to use for setting data representation color fills.
+This data does not need to be the same as \code{group.by}, which is great for highlighting supersets or subgroups when wanted, but it defaults to \code{group.by} so the input can often be skipped.}
 
 \item{vars.use}{String or string vector naming a subset of the values of \code{var}-data which should be shown.
 If left as \code{NULL}, all values are shown.
 
-Hint: use \code{\link{metaLevels}} or \code{unique(<var-data>)} to assess options.
+Hint: use \code{\link{colLevels}} or \code{unique(data_frame[,var])} to assess options.
 
 Note: When \code{var.labels.rename} is jointly utilized to update how the \code{var}-values are shown, the \strong{updated} values must be used.}
 
@@ -91,7 +90,9 @@ Note: When \code{var.labels.rename} is jointly utilized to update how the \code{
 
 \item{max.normalize}{Logical which sets whether the data for each \code{var}-data value (each facet) should be normalized to have the same maximum value.
 
-When set to \code{TRUE}, lower frequency \code{var}-values will make use of just as much plot space as higher frequency vars.}
+When set to \code{TRUE}, lower frequency \code{var}-values will make use of just as much plot space as higher frequency vars.
+
+Note: Similarly equal plot space utilization can be achieved by using \code{split.adjust = list(scales = "free_y")}, and that alternative route retains original values of the data.}
 
 \item{plots}{String vector which sets the types of plots to include: possibilities = "jitter", "boxplot", "vlnplot", "ridgeplot".
 
@@ -99,39 +100,41 @@ Order matters: c("vlnplot", "boxplot", "jitter") will put a violin plot in the b
 
 See details section for more info.}
 
-\item{split.nrow, split.ncol}{Integers which set the dimensions of the facet grid. (the \code{split.nrow} and \code{split.ncol} equivalent of other functions)}
+\item{split.nrow, split.ncol}{Integers which set the dimensions of the facet grid.}
 
 \item{split.adjust}{A named list which allows extra parameters to be pushed through to the faceting function call.
-List elements should be valid inputs to the faceting functions, e.g. `list(scales = "free")`.
+List elements should be valid inputs to the faceting function \code{\link[ggplot2]{facet_wrap}}, e.g. `list(scales = "free_y")`.
 
-Faceting for this freqPlot is always by the \code{var}-data, so see \code{\link[ggplot2]{facet_wrap}} for options.}
+See \code{\link[ggplot2]{facet_wrap}} for options.}
 
-\item{rows.use}{String vector of rownames names OR an integer vector specifying the row-indices of data points which should be targetted.
+\item{rows.use}{String vector of rownames of \code{data_frame} OR an integer vector specifying the row-indices of data points which should be plotted.
 
-Alternatively, a Logical vector, the same length as the number of cells in the object, which sets which cells to include.}
+Alternatively, a Logical vector, the same length as the number of rows in \code{data_frame}, where \code{TRUE} values indicate which rows to plot.}
 
 \item{data.out}{Logical. When set to \code{TRUE}, changes the output, from the plot alone, to a list containing the plot (\code{p}) and data (\code{data}).}
 
 \item{data.only}{Logical. When set to \code{TRUE}, the underlying data will be returned, but not the plot itself.}
 
-\item{do.hover}{Logical. Default = \code{FALSE}.
-If set to \code{TRUE}: object will be converted to a ggplotly object so that data about individual cells will be displayed when you hover your cursor over the jitter points (assuming that there is a "jitter" in \code{plots}),}
+\item{do.hover}{Logical which controls whether the ggplot output will be converted to a plotly object so that data about individual points can be displayed when you hover your cursor over them.
+The \code{hover.data} argument is used to determine what data to show upon hover.}
 
-\item{color.panel}{String vector which sets the colors to draw from for plot fills.
-Default = \code{dittoColors()}.}
+\item{color.panel}{String vector which sets the colors to draw from for data representation fills.
+Default = \code{dittoColors()}.
 
-\item{colors}{Integer vector, the indexes / order, of colors from color.panel to actually use.
-(Provides an alternative to directly modifying \code{color.panel}.)}
+A named vector can be used if names are matched to the distinct values of the \code{color.by} data.}
 
-\item{y.breaks}{Numeric vector, a set of breaks that should be used as major gridlines. c(break1,break2,break3,etc.).}
+\item{colors}{Integer vector, the indexes / order, of colors from \code{color.panel} to actually use.
 
-\item{min, max}{Scalars which control the zoom of the plot.
-These inputs set the minimum / maximum values of the data to show.
-Default = set based on the limits of the data in var.}
+Useful for quickly swapping around colors of the default set (when not using names for color matching).}
+
+\item{y.breaks}{Numeric vector, a set of breaks that should be used as major grid lines. c(break1,break2,break3,etc.).}
+
+\item{min, max}{Scalars which control the zoom on the continuous axis of the plot.}
 
 \item{var.labels.rename}{String vector for renaming the distinct identities of \code{var}-values.
+This vector must be the same length as the number of levels or unique values in the \code{var}-data.
 
-Hint: use \code{\link{metaLevels}} or \code{unique(<var-data>)} to assess current values.}
+Hint: use \code{\link{colLevels}} or \code{unique(data_frame[,var])} to original values.}
 
 \item{var.labels.reorder}{Integer vector. A sequence of numbers, from 1 to the number of distinct \code{var}-value identities, for rearranging the order of facets within the plot space.
 
@@ -153,7 +156,7 @@ Values of x.reorder should be these indices, but in the order that you would lik
 Recommendation for advanced users: If you find yourself coming back to this input too many times, an alternative solution that can be easier long-term
 is to make the target data into a factor, and to put its levels in the desired order: \code{factor(data, levels = c("level1", "level2", ...))}.}
 
-\item{theme}{A ggplot theme which will be applied before dittoSeq adjustments.
+\item{theme}{A ggplot theme which will be applied before internal adjustments.
 Default = \code{theme_classic()}.
 See \url{https://ggplot2.tidyverse.org/reference/ggtheme.html} for other options and ideas.}
 
@@ -161,11 +164,11 @@ See \url{https://ggplot2.tidyverse.org/reference/ggtheme.html} for other options
 Set to \code{NULL} to remove.}
 
 \item{ylab}{String, sets the continuous-axis label (=y-axis for box and violin plots, x-axis for ridgeplots).
-Default = "make" and if left as make, a title will be automatically generated.}
+Default = "make" and if left as make, this title will be automatically generated.}
 
 \item{main}{String, sets the plot title. Default = "make" and if left as make, a title will be automatically generated.  To remove, set to \code{NULL}.}
 
-\item{sub}{String, sets the plot subtitle}
+\item{sub}{String, sets the plot subtitle.}
 
 \item{jitter.size}{Scalar which sets the size of the jitter shapes.}
 
@@ -215,10 +218,10 @@ Higher numbers lead to greater overlap.  Default = 1.25}
 
 \item{ridgeplot.ymax.expansion}{Scalar which adjusts the minimal space between the topmost grouping and the top of the plot in order to ensure the curve is not cut off by the plotting grid.
 The larger the value, the greater the space requested.
-When left as NA, dittoSeq will attempt to determine an ideal value itself based on the number of groups & linear interpolation between these goal posts: #groups of 3 or fewer: 0.6; #groups=12: 0.1; #groups or 34 or greater: 0.05.}
+When left as NA, dittoViz will attempt to determine an ideal value itself based on the number of groups & linear interpolation between these goal posts: #groups of 3 or fewer: 0.6; #groups=12: 0.1; #groups or 34 or greater: 0.05.}
 
 \item{ridgeplot.shape}{Either "smooth" or "hist", sets whether ridges will be smoothed (the typical, and default) versus rectangular like a histogram.
-(Note: as of the time shape "hist" was added, combination of jittered points is not supported by the \code{\link[ggridges]{stat_binline}} that dittoSeq relies on.)}
+(Note: as of the time shape "hist" was added, combination of jittered points is not supported by the \code{\link[ggridges]{stat_binline}} that dittoViz relies on.)}
 
 \item{ridgeplot.bins}{Integer which sets how many chunks to break the x-axis into when \code{ridgeplot.shape = "hist"}.
 Overridden by \code{ridgeplot.binwidth} when that input is provided.}
@@ -238,38 +241,41 @@ Defaults to "dashed", but any ggplot linetype will work.}
 \item{legend.title}{String or \code{NULL}, sets the title for the main legend which includes colors and data representations.}
 }
 \value{
-A ggplot plot where frequencies of discrete data, grouped by sample, condition, etc., is shown on the y-axis by a violin plot, boxplot, and/or jittered points, or on the x-axis by a ridgeplot with or without jittered points.
+A ggplot plot where frequencies of discrete \code{var}-data per sample, grouped by condition, timepoint, etc., is shown on the y-axis by a violin plot, boxplot, and/or jittered points, or on the x-axis by a ridgeplot with or without jittered points.
 
 Alternatively, if \code{data.out = TRUE}, a list containing the plot ("p") and a dataframe of the underlying data ("data").
 
 Alternatively, if \code{do.hover = TRUE}, a plotly conversion of the ggplot output in which underlying data can be retrieved upon hovering the cursor over the plot.
 }
 \description{
-Plot cell type/cluster/identity frequencies per sample and per grouping
+Plot discrete observation frequencies per sample and per grouping
 }
 \details{
 The function creates a dataframe containing counts and percent makeup of \code{var} identities per sample if \code{sample.by} is given, or per group if only \code{group.by} is given.
 \code{color.by} can optionally be used to add subgroupings to calculations and ultimate plots, or to convey super-groups of \code{group.by} groupings.
 
-Typically, \code{var} will be pointed to clustering or cell type annotations, but in truth it can be given any discrete data.
+Typically, \code{var} might target clustering or observation-type annotations, but in truth it can be given any discrete data.
 
-If a set of cells to use is indicated with the \code{cells.use} input, only those cells/samples are used for counts and percent makeup calculations.
+If a set of rows to use was indicated with the \code{rows.use} input, only the targeted rows are used for counts and percent makeup calculations.
+In other words, the \code{row.use} input adjusts the universe that frequencies are calculated within.
 
-If a set of \code{var}-values to show is indicated with the \code{vars.use} input, the data.frame is trimmed at the end to include only corresponding rows.
+If a set of \code{var}-values to show is indicated with the \code{vars.use} input, the data.frame is trimmed at the end to include only the corresponding rows.
+Thus, this input does not affect the universe for frequency calculation.
 
-If \code{max.normalized} is set to \code{TRUE}, counts and percent data are transformed to a 0-1 scale, which makes better use of white space for lower frequency \code{var}-values.
+If \code{max.normalized} is set to \code{TRUE}, counts and percent data are transformed to a 0-1 scale, which is one method for making better use of white space for lower frequency \code{var}-values.
+Alternatively, \code{split.adjust = list(scales = "free_y")} can be used to achieve the same white-space utilization while retaining original data values.
 
 Either percent of total (\code{scale = "percent"}), which is the default, or counts (if \code{scale = "count"})
-data is then (gg)plotted with the data representation types in \code{plots} by utilizing the same machinery as \code{\link{dittoPlot}}.
-Faceting by \code{var}-data values is utilized to achieve per \code{var}-value (e.g. cluster or cell type) granularity.
+data is then (gg)plotted with the data representation types in \code{plots} by utilizing the same machinery as \code{\link{yPlot}}.
+Faceting by \code{var}-data values is utilized to achieve per \code{var}-value (e.g. cluster) granularity.
 
 See below for additional customization options!
 }
 \section{Calculation Details}{
 
-The function is restricted in that each samples' cells, indicated by the unique values of \code{sample.by}-data, must exist within single \code{group.by} and \code{color.by} groupings.
+The function is restricted in that each samples' observations, indicated by the unique values of \code{sample.by}-data, must exist within single \code{group.by} and \code{color.by} groupings.
 Thus, in order to ensure all valid \code{var}-data composition data points are generated, prior to calculations... \itemize{
-\item \code{var}-data are ensured to be a factor, which ensures a calculation will be run for every \code{var}-value (a.k.a. cell type or cluster)
+\item \code{var}-data are ensured to be a factor, which ensures a calculation will be run for every \code{var}-value (a.k.a. cluster)
 \item \code{group.by}-data and \code{color-by}-data are treated as non-factor data, which ensures that calculations are run only for the groupings that each sample is associated with.
 }
 }
@@ -289,7 +295,7 @@ Additionally:
 \itemize{
 \item \strong{Colors can be adjusted} with \code{color.panel}.
 \item \strong{Subgroupings:} \code{color.by} can be utilized to split major \code{group.by} groupings into subgroups.
-When this is done in y-axis plotting, dittoSeq automatically ensures the centers of all geoms will align,
+When this is done in y-axis plotting, dittoViz automatically ensures the centers of all geoms will align,
 but users will need to manually adjust \code{jitter.width} to less than 0.5/num_subgroups to avoid overlaps.
 There are also three inputs through which one can use to control geom-center placement, but the easiest way to do all at once so is to just adjust \code{vlnplot.width}!
 The other two: \code{boxplot.position.dodge}, and \code{jitter.position.dodge}.
@@ -318,9 +324,9 @@ myRNA
 
 df <- as.data.frame(colData(myRNA))
 
-# There are three main inputs for this function, in addition to 'object'.
-#  var = typically this will be cell types annotations or clustering
-#  sample.by = the name of a metadata containing sample assignment of cells.
+# There are three main inputs for this function, in addition to 'data_frame'.
+#  var = typically this will be observation-type annotations or clustering
+#  sample.by = the name of a column containing sample assignments
 #  group.by = how to group the data on the x-axis (y-axis for ridgeplots)
 freqPlot(df,
     var = "clustering",

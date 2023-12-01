@@ -111,7 +111,7 @@ test_that("freqPlot can trim to individual var-values with vars.use", {
 })
 
 test_that("freqPlot can max.normalize the data", {
-    # MANUAL: should refer to samples, not cells, and ymax = 1
+    # MANUAL: ymax = 1
     expect_s3_class(
         {p <- freqPlot(
             df, disc, sample.by = samp, group.by = grp,

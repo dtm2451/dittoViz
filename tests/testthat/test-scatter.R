@@ -442,7 +442,7 @@ test_that("scatterPlot can be faceted with split.by (1 or 2 vars)", {
         "ggplot")
 })
 
-test_that("scatterPlot faceting and cell.use and split.show.all.others work together", {
+test_that("scatterPlot faceting and rows.use and split.show.all.others work together", {
     expect_s3_class(
         scatterPlot(
             df, "PC1", "PC2", disc,
@@ -474,7 +474,7 @@ test_that("scatterPlot faceting and cell.use and split.show.all.others work toge
         "ggplot")
 })
 
-test_that("scatterPlot added features work with single-metadata faceting", {
+test_that("scatterPlot added features work with single-column faceting", {
     expect_error(
         print(scatterPlot(
             df, "PC1", "PC2", disc,
@@ -527,7 +527,7 @@ test_that("scatterPlot added features work with single-metadata faceting", {
         NA)
 })
 
-test_that("scatterPlot added features work with double-metadata faceting", {
+test_that("scatterPlot added features work with double-column faceting", {
     expect_error(
         print(scatterPlot(
             df, "PC1", "PC2", disc,

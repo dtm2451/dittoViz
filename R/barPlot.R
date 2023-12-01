@@ -31,10 +31,11 @@
 #' Default = set based on the limits of the data, 0 to 1 for \code{scale = "percent"}, or 0 to maximum count for 0 to 1 for \code{scale = "count"}.
 #' @param main String, sets the plot title
 #' @param sub String, sets the plot subtitle
-#' @param var.labels.rename String vector for renaming the distinct identities of \code{var} values.
+#' @param var.labels.rename String vector for renaming the distinct identities of \code{var}-values.
+#' This vector must be the same length as the number of levels or unique values in the \code{var}-data.
 #'
-#' Hint: use \code{\link{metaLevels}} or \code{unique(<var-data>)} to assess current values.
-#' @param var.labels.reorder Integer vector. A sequence of numbers, from 1 to the number of distinct \code{var} value identities, for rearranging the order of labels' groupings within the plot.
+#' Hint: use \code{\link{colLevels}} or \code{unique(data_frame[,var])} to original values.
+#' @param var.labels.reorder Integer vector. A sequence of numbers, from 1 to the number of distinct \code{var}-value identities, for rearranging the order labels' groupings within the plot space.
 #'
 #' Method: Make a first plot without this input.
 #' Then, treating the top-most grouping as index 1, and the bottom-most as index n.
@@ -53,7 +54,8 @@
 #' Alternatively, if \code{do.hover = TRUE}, a plotly conversion of the ggplot output in which underlying data can be retrieved upon hovering the cursor over the plot.
 #' @details
 #' The function creates a dataframe containing counts and percent makeup of \code{var} identities for each x-axis grouping (determined by the \code{group.by} input).
-#' If a set of cells/samples to use is indicated with the \code{rows.use} input, only those cells/samples are used for counts and percent makeup calculations.
+#' If a subset of data points to use is indicated with the \code{rows.use} input, only those rows of the \code{data_frame} are used for counts and percent makeup calculations.
+#' In other words, the \code{row.use} input adjusts the universe that compositions are calculated within.
 #' Then, a vertical bar plot is generated (\code{ggplot2::geom_col()}) showing either percent makeup if
 #' \code{scale = "percent"}, which is the default, or raw counts if \code{scale = "count"}.
 #'

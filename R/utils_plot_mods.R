@@ -73,7 +73,7 @@
 
 .add_contours <- function(
     p, data, x.by, y.by, color, linetype = 1) {
-    # Add contours based on the density of cells/samples
+    # Add contours based on the density of data points
     # (Dim and Scatter plots)
 
     p + geom_density_2d(
@@ -198,12 +198,12 @@
     #
     # p = a ggplot to add to
     # data = a data_frame containing columns of x.by, y.by, and group.by
-    # group.by = the name of the metadata slot that holds the group.by which were used for cluster-based trajectory analysis
-    # trajectories = List of lists of cluster-to-cluster paths. Also, the output of SlingshotDataSet(SCE_with_slingshot)$lineages
+    # group.by = the name of the column that holds the group.by info
+    # trajectories = List of lists of group-to-group paths. If relevant, equivalent to the output of SlingshotDataSet(SCE_with_slingshot)$lineages
     # arrow.size = numeric scalar that sets the arrow length (in inches) at the endpoints of trajectory lines.
 
     # Determine medians
-    cluster.levels <- .colLevels(group.by, data)
+    cluster.levels <- colLevels(group.by, data)
     group_medians <- .calc_xy_medians(data, group.by, x.by, y.by)
 
     #Add trajectories

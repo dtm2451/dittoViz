@@ -24,7 +24,7 @@
 
 .leave_default_or_null <- function(
     target, default, null.if = FALSE, default.when = "make") {
-    # Handles much of dittoSeq's titles defaulting process
+    # Handles much of dittoViz's defaulting process
     # Takes in 'target' and outputs:
     #  - 'default' string when 'target' == 'default.when'
     #  - NULL when logical provided to 'null.if' is TRUE.
@@ -90,7 +90,7 @@
     # and string vector 'relabels'.
     # Turns character vectors into factors
     # Reorders the level of the factor based on indices provided to 'reorder'
-    # Re-labels the levels of the factor based on lebels provided to 'relabels'
+    # Re-labels the levels of the factor based on labels provided to 'relabels'
     if (is.numeric(orig.data)) {
         return(orig.data)
     }
