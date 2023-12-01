@@ -163,3 +163,30 @@ test_that("freqPlot computes for only one grouping per sample", {
         rowSums(table(data$sample, data$grouping)!=0)==1
     ))
 })
+
+test_that("freqPlot errors meaningfully for NAs in group.by or color.by", {
+    df_edit <- df
+    df_edit$sample_groups[df$sample==df$sample[1]] <- NA
+    expect_error(
+        freqPlot(
+            df_edit, disc, sample.by = samp, group.by = grp, color.by = sgrp),
+        "Cannot calculate composition among grouping data containing NAs. Offending column: sample_groups",
+        fixed = TRUE
+    )
+    df_edit <- df
+    df_edit$sample[df$sample==df$sample[1]] <- NA
+    expect_error(
+        freqPlot(
+            df_edit, disc, sample.by = "sample", group.by = grp, color.by = sgrp),
+        "Cannot calculate composition among sub-grouping data containing NAs. Offending column: sample",
+        fixed = TRUE
+    )
+    df_edit <- df
+    df_edit$sample_subgroups[df$sample==df$sample[1]] <- NA
+    expect_error(
+        freqPlot(
+            df_edit, disc, sample.by = samp, group.by = grp, color.by = "sample_subgroups"),
+        "Cannot calculate composition among sub-grouping data containing NAs. Offending column: sample_subgroups",
+        fixed = TRUE
+    )
+})
