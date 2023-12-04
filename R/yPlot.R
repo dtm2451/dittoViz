@@ -173,6 +173,13 @@
 #' yPlot(example_df, "gene1", "timepoint",
 #'     plots = c("ridgeplot", "jitter"))
 #'
+#' # Provided wrappers enable certain easy adjustments of the 'plots' parameter.
+#' # Quickly make a Boxplot
+#' boxPlot(example_df, "gene1", "timepoint")
+#' # Quickly make a Ridgeplot, with or without jitter
+#' ridgePlot(example_df, "gene1", "timepoint")
+#' ridgeJitter(example_df, "gene1", "timepoint")
+#'
 #' # Modify the look with intuitive inputs
 #' yPlot(example_df, "gene1", "timepoint",
 #'     plots = c("vlnplot", "boxplot", "jitter"),

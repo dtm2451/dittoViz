@@ -137,23 +137,83 @@
 #' @examples
 #' example("dittoExampleData", echo = FALSE)
 #'
+#' # The minimal inputs for scatterPlot are the 'data_frame', and 2 column names,
+#' #   given to 'x.by' and 'y.by', indicating which data to use for the x and y
+#' #   axes, respectively.
 #' scatterPlot(
 #'     example_df, x.by = "PC1", y.by = "PC2")
 #'
-#' # Shapes or colors can be overlaid representing discrete metadata
-#' #   or (only colors) continuous metadata / expression data by providing
-#' #   metadata or gene names to 'color.by' and 'shape.by'
+#' # 'color.by' and/or 'shape.by' can also be given column names in order to
+#' #   show represent that columns data in the color or shape of the data points.
+#' #   'shape.by' must be pointed to discrete data, but 'color.by' can be given
+#' #   discrete or numeric data.
 #' scatterPlot(
 #'     example_df, x.by = "PC1", y.by = "PC2",
 #'     color.by = "groups",
 #'     shape.by = "SNP",
 #'     size = 3)
+#' scatterPlot(
+#'     example_df, x.by = "PC1", y.by = "PC2",
+#'     color.by = "gene1",
+#'     size = 3)
 #'
 #' # Data can be "split" or faceted by a discrete variable as well.
-#' scatterPlot(example_df, x.by = "PC1", y.by = "PC2",
+#' scatterPlot(example_df, x.by = "PC1", y.by = "PC2", color.by = "gene1",
 #'     split.by = "timepoint") # single split.by element
-#' scatterPlot(example_df, x.by = "PC1", y.by = "PC2",
+#' scatterPlot(example_df, x.by = "PC1", y.by = "PC2", color.by = "gene1",
 #'     split.by = c("groups","SNP")) # row and col split.by elements
+#'
+#' # Modify the look with intuitive inputs
+#' scatterPlot(example_df, x.by = "PC1", y.by = "PC2", color.by = "groups",
+#'     size = 5,
+#'     opacity = 0.3,
+#'     show.grid.lines = FALSE,
+#'     ylab = NULL, xlab = "PC2 by PC1",
+#'     main = "Plot Title",
+#'     sub = "subtitle",
+#'     legend.color.title = "Legend\nRetitle")
+#'
+#' # You can restrict to only certain data points using the 'rows.use' input.
+#' #   The input can be given rownames, indexes, or a logical vector
+#' #   All "other" points will now only be shown as a gray background, or will not
+#' #   be shown add all if you also add 'show.others = FALSE'
+#' scatterPlot(example_df, x.by = "PC1", y.by = "PC2", color.by = "groups",
+#'     sub = "show only first 40 observations, by index",
+#'     rows.use = 1:40)
+#' scatterPlot(example_df, x.by = "PC1", y.by = "PC2", color.by = "groups",
+#'     sub = "show only 3 observations, by name",
+#'     rows.use = c("obs1", "obs2", "obs25"))
+#' scatterPlot(example_df, x.by = "PC1", y.by = "PC2", color.by = "groups",
+#'     sub = "show groups A,B,D only, by logical, without others as background",
+#'     rows.use = example_df$groups!="C",
+#'     show.others = FALSE)
+#'
+#' # Many extra features are easy to add as well:
+#' #   Each is started via an input starting with 'do.FEATURE*' or 'add.FEATURE*'
+#' #   And when tweaks for that feature are possible, those inputs will start be
+#' #   named starting with 'FEATURE*'. For example, color.by groups can be labeled
+#' #   with 'do.label = TRUE' and the tweaks for this feature are given with inputs
+#' #   'labels.size', 'labels.highlight', and 'labels.repel':
+#' scatterPlot(example_df, x.by = "PC1", y.by = "PC2", color.by = "groups",
+#'     sub = "default labeling",
+#'     do.label = TRUE)          # Turns on the labeling feature
+#' scatterPlot(example_df, x.by = "PC1", y.by = "PC2", color.by = "groups",
+#'     sub = "tweaked labeling",
+#'     do.label = TRUE,          # Turns on the labeling feature
+#'     labels.size = 8,          # Adjust the text size of labels
+#'     labels.highlight = FALSE, # Removes white background behind labels
+#'     labels.repel = FALSE)     # Turns off anti-overlap location adjustments
+#'
+#' # Sometimes, it can be useful for external editing or troubleshooting purposed
+#' #   to see the underlying data that was directly used for plotting.
+#' # 'data.out = TRUE' can be provided in order to obtain not just plot ("plot"),
+#' #   but also the "Target_data" and "Others_data" data.frames returned as a list.
+#' out <- scatterPlot(example_df, x.by = "PC1", y.by = "PC2", color.by = "groups",
+#'     rows.use = 1:40,
+#'     data.out = TRUE)
+#' out$plot
+#' summary(out$Target_data)
+#' summary(out$Others_data)
 #'
 scatterPlot <- function(
     data_frame,

@@ -336,6 +336,20 @@ freqPlot(example_df, "clustering",
     group.by = "category", sample.by = "sample", color.by = "subcategory",
     vars.use = 1:2)
 
+# Particular observations can be ignored from calculations and plotting using
+#   the 'rows.use' input. Note that doing so adjusts the universe in which
+#   frequencies are calculated; all frequencies will now be in terms of freq.
+#   out of the rows.use cells.
+#   This can be useful for quantifying subtypes within a given supertype,
+#     rather than per all observations.
+#   For our example, we'll calculate among clusters 1 and 2, treating clusters 3
+#     and 4 observations as part of an unwanted other group of data. You'll
+#     notice that frequencies are higher here than when we used 'vars.use' in
+#     the previous example.
+freqPlot(example_df, "clustering",
+    group.by = "category", sample.by = "sample", color.by = "subcategory",
+    rows.use = example_df$clustering \%in\% 1:2)
+
 # Lower frequency targets can be expanded to use the entire y-axis by:
 #  turning on 'max.normalize'-ation:
 freqPlot(example_df, "clustering",

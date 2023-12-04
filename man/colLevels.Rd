@@ -24,15 +24,18 @@ String vector, the distinct values of the \code{col} data column (among the \cod
 Gives the distinct values of a column of data from the data_frame
 }
 \examples{
-library(dittoSeq)
-example(importDittoBulk, echo = FALSE)
-df <- getMetas(myRNA, FALSE)
-colLevels("clustering", df)
+example("dittoExampleData", echo = FALSE)
+
+colLevels("conditions", example_df)
 
 # Note: Set 'used.only' (default = TRUE) to FALSE to show unused levels
-#  of metadata that are already factors.  By default, only the in use options
-#  of a metadata are shown.
-colLevels("clustering", df,
+#  of data that are already factors.  By default, only the used options
+#  of the data will be given.
+colLevels("conditions", example_df,
+    rows.use = example_df$conditions!="condition1"
+    )
+colLevels("conditions", example_df,
+    rows.use = example_df$conditions!="condition1",
     used.only = FALSE)
 }
 \author{

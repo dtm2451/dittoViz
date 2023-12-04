@@ -179,6 +179,13 @@ barPlot(
 barPlot(example_df, "clustering", group.by = "groups",
     scale = "count")
 
+# Particular observations can be ignored from calculations and plotting using
+#   the 'rows.use' input.
+#   Here, we'll remove an entire "cluster" from consideration, but notice the
+#     fractions will still sum to 1.
+barPlot(example_df, "clustering", group.by = "groups",
+    rows.use = example_df$clustering!="1")
+
 ### Accessing underlying data:
 # as data.frame, with plot returned too
 barPlot(example_df, "clustering", group.by = "groups",
