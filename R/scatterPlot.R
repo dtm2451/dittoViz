@@ -135,44 +135,25 @@
 #' @author Daniel Bunis
 #' @export
 #' @examples
-#' library(dittoSeq)
-#' example(importDittoBulk, echo = FALSE)
-#' myRNA
-#'
-#' #  == the default way to extract
-#' myRNA$nCount_RNA <- runif(60,200,1000)
-#' myRNA$nFeature_RNA <- myRNA$nCount_RNA*runif(60,0.95,1.05)
-#' # and also percent.mito metadata
-#' myRNA$percent.mito <- sample(c(runif(50,0,0.05),runif(10,0.05,0.2)))
-#'
-#' df <- as.data.frame(colData(myRNA))
-#' df$gene1 <- dittoSeq::gene("gene1", myRNA)
-#' df$gene2 <- dittoSeq::gene("gene2", myRNA)
-#' df$gene3 <- dittoSeq::gene("gene3", myRNA)
-#' df$pca1 <- dittoSeq:::.extract_Reduced_Dim("pca", 1, myRNA)$embeddings
-#' df$pca2 <- dittoSeq:::.extract_Reduced_Dim("pca", 2, myRNA)$embeddings
+#' example("dittoExampleData", echo = FALSE)
 #'
 #' scatterPlot(
-#'     df, x.by = "nCount_RNA", y.by = "nFeature_RNA")
+#'     example_df, x.by = "PC1", y.by = "PC2")
 #'
 #' # Shapes or colors can be overlaid representing discrete metadata
 #' #   or (only colors) continuous metadata / expression data by providing
 #' #   metadata or gene names to 'color.by' and 'shape.by'
 #' scatterPlot(
-#'     df, x.by = "gene1", y.by = "gene2",
+#'     example_df, x.by = "PC1", y.by = "PC2",
 #'     color.by = "groups",
 #'     shape.by = "SNP",
 #'     size = 3)
 #'
 #' # Data can be "split" or faceted by a discrete variable as well.
-#' scatterPlot(df, x.by = "gene1", y.by = "gene2",
+#' scatterPlot(example_df, x.by = "PC1", y.by = "PC2",
 #'     split.by = "timepoint") # single split.by element
-#' scatterPlot(df, x.by = "gene1", y.by = "gene2",
+#' scatterPlot(example_df, x.by = "PC1", y.by = "PC2",
 #'     split.by = c("groups","SNP")) # row and col split.by elements
-#'
-#' # Countours can also be added to help illumunate overlapping samples
-#' scatterPlot(df, x.by = "gene1", y.by = "gene2",
-#'     do.contour = TRUE)
 #'
 scatterPlot <- function(
     data_frame,

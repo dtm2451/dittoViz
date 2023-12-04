@@ -309,75 +309,61 @@ Linetype and color are set with \code{line.linetype}, which is "dashed" by defau
 }
 
 \examples{
-library(dittoSeq)
-# Establish some workable example data
-example(importDittoBulk, echo = FALSE)
-myRNA1 <- myRNA
-colnames(myRNA) <- paste0(colnames(myRNA),"_1")
-example(importDittoBulk, echo = FALSE)
-myRNA <- cbind(myRNA, myRNA1)
-myRNA <- setBulk(myRNA, FALSE)
-myRNA$sample <- rep(1:12, each = 10)
-myRNA$groups <- rep(c("A", "B"), each = 60)
-myRNA$subgroups <- rep(as.character(c(1:3,1:3,1:3,1:3)), each = 10)
-myRNA
-
-df <- as.data.frame(colData(myRNA))
+example("dittoExampleData", echo = FALSE)
 
 # There are three main inputs for this function, in addition to 'data_frame'.
 #  var = typically this will be observation-type annotations or clustering
+#    This is the set of observations for which we will calculate frequencies
+#    (per each unique value of this data) within each sample
 #  sample.by = the name of a column containing sample assignments
-#  group.by = how to group the data on the x-axis (y-axis for ridgeplots)
-freqPlot(df,
+#    We'll treat all observations with the same value in this column as part
+#    of the same sample.
+#  group.by = how to group samples together
+freqPlot(example_df,
     var = "clustering",
     sample.by = "sample",
-    group.by = "groups")
+    group.by = "category")
 
 # 'color.by' can also be set differently from 'group.by' to have the effect
 #  of highlighting supersets or subgroupings:
-freqPlot(df, "clustering",
-    group.by = "groups",
+freqPlot(example_df, "clustering",
+    group.by = "category",
     sample.by = "sample",
-    color.by = "subgroups")
+    color.by = "subcategory")
 
 # The var-values shown can be subset with 'vars.use'
-freqPlot(df, "clustering",
-    group.by = "groups", sample.by = "sample", color.by = "subgroups",
+freqPlot(example_df, "clustering",
+    group.by = "category", sample.by = "sample", color.by = "subcategory",
     vars.use = 1:2)
 
-# Lower frequency groups can be expanded to use the entire y-axis by:
+# Lower frequency targets can be expanded to use the entire y-axis by:
 #  turning on 'max.normalize'-ation:
-freqPlot(df, "clustering",
-    group.by = "groups", sample.by = "sample", color.by = "subgroups",
+freqPlot(example_df, "clustering",
+    group.by = "category", sample.by = "sample", color.by = "subcategory",
     max.normalize = TRUE)
 #  or by setting y-scale limits to be set by the contents of facets:
-freqPlot(df, "clustering",
-    group.by = "groups", sample.by = "sample", color.by = "subgroups",
+freqPlot(example_df, "clustering",
+    group.by = "category", sample.by = "sample", color.by = "subcategory",
     split.adjust = list(scales = "free_y"))
 
 # Data representations can also be selected and reordered with the 'plots'
 #  input, and further adjusted with inputs applying to each representation.
-freqPlot(df,
-    var = "clustering", sample.by = "sample", group.by = "groups",
+freqPlot(example_df,
+    var = "clustering", sample.by = "sample", group.by = "category",
     plots = c("vlnplot", "boxplot", "jitter"),
     vlnplot.lineweight = 0.2,
     boxplot.fill = FALSE,
     boxplot.lineweight = 0.2)
 
 # Finally, 'sample.by' is not technically required. When not given, a
-#  single-datapoint of overall composition stats will be shown for each
+#  single data point of overall composition stats will be shown for each
 #  grouping.
 #  Just note, all data representation other than "jitter" will complain
 #  due to there only being the one datapoint per group unless you set
 #  plots to "jitter".
-freqPlot(df,
-    var = "clustering", group.by = "groups", color.by = "subgroups",
+freqPlot(example_df,
+    var = "clustering", group.by = "category", color.by = "subcategory",
     plots = "jitter")
-
-freqPlot(df,
-    var = "clustering", group.by = "groups", color.by = "subgroups",
-    plots = "jitter",
-    do.hover = TRUE)
 
 }
 \seealso{

@@ -80,8 +80,8 @@ Useful for quickly swapping around colors of the default set (when not using nam
 \item{split.adjust}{A named list which allows extra parameters to be pushed through to the faceting function call.
 List elements should be valid inputs to the faceting functions, e.g. `list(scales = "free")`.
 
-For options, when giving 1 metadata to \code{split.by}, see \code{\link[ggplot2]{facet_wrap}},
-OR when giving 2 metadatas to \code{split.by}, see \code{\link[ggplot2]{facet_grid}}.}
+For options, when giving 1 column to \code{split.by}, see \code{\link[ggplot2]{facet_wrap}},
+OR when giving 2 columns to \code{split.by}, see \code{\link[ggplot2]{facet_grid}}.}
 
 \item{y.breaks}{Numeric vector which sets the plot's tick marks / major gridlines. c(break1,break2,break3,etc.)}
 
@@ -163,38 +163,35 @@ Then, a vertical bar plot is generated (\code{ggplot2::geom_col()}) showing eith
 }
 
 \examples{
-library(dittoSeq)
-example(importDittoBulk, echo = FALSE)
-myRNA
-df <- as.data.frame(colData(myRNA))
+example("dittoExampleData", echo = FALSE)
 
-barPlot(df, "clustering", group.by = "groups")
-barPlot(df, "clustering", group.by = "groups",
+# There are two main inputs for this function, in addition to 'data_frame'.
+#  var = typically this will be observation-type annotations or clustering
+#    This is the set of observations for which we will calculate frequencies
+#    (per each unique value of this data) within each group
+#  group.by = how to group observations together
+barPlot(
+    data_frame = example_df,
+    var = "clustering",
+    group.by = "groups")
+
+# 'scale' then allows choice of scaling by 'percent' (default) or 'count'
+barPlot(example_df, "clustering", group.by = "groups",
     scale = "count")
 
-# Reordering the x-axis groupings to have "C" (#3) come first
-barPlot(df, "clustering", group.by = "groups",
-    x.reorder = c(3,1,2,4))
-
 ### Accessing underlying data:
-# as dataframe
-barPlot(df, "clustering", group.by = "groups",
+# as data.frame, with plot returned too
+barPlot(example_df, "clustering", group.by = "groups",
     data.out = TRUE)
+# as data.frame, no plot
+barPlot(example_df, "clustering", group.by = "groups",
+    data.out = TRUE,
+    data.only = TRUE)
 # through hovering the cursor over the relevant parts of the plot
 if (requireNamespace("plotly", quietly = TRUE)) {
-    barPlot(df, "clustering", group.by = "groups",
+    barPlot(example_df, "clustering", group.by = "groups",
         do.hover = TRUE)
     }
-
-### Remove or re-explain later
-df$groups_reverse_levels <- factor(
-    df$groups,
-    levels = c("D", "C", "B", "A"))
-# barPlot will now respect this level order by default.
-barPlot(df, "clustering", group.by = "groups_reverse_levels")
-# But that respect can be turned off...
-barPlot(df, "clustering", group.by = "groups_reverse_levels",
-    retain.factor.levels = FALSE)
 
 }
 \author{

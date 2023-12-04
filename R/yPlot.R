@@ -158,43 +158,34 @@
 #' \code{\link{ridgePlot}}, \code{\link{ridgeJitter}}, and \code{\link{boxPlot}} for shortcuts to a few 'plots' input shortcuts
 #'
 #' @examples
-#' library(dittoSeq)
-#' example(importDittoBulk, echo = FALSE)
-#' myRNA
-#'
-#' df <- as.data.frame(colData(myRNA))
-#' df$gene1 <- dittoSeq::gene("gene1", myRNA)
-#' df$gene2 <- dittoSeq::gene("gene2", myRNA)
-#' df$gene3 <- dittoSeq::gene("gene3", myRNA)
-#' df$pca1 <- dittoSeq:::.extract_Reduced_Dim("pca", 1, myRNA)$embeddings
-#' df$pca2 <- dittoSeq:::.extract_Reduced_Dim("pca", 2, myRNA)$embeddings
+#' example("dittoExampleData", echo = FALSE)
 #'
 #' # Basic yPlot, with jitter behind a vlnplot (looks better with more points)
-#' yPlot(data_frame = df, var = "gene1", group.by = "timepoint")
+#' yPlot(data_frame = example_df, var = "gene1", group.by = "timepoint")
 #'
 #' # Color distinctly from the grouping variable using 'color.by'
-#' yPlot(data_frame = df, var = "gene1", group.by = "timepoint",
+#' yPlot(data_frame = example_df, var = "gene1", group.by = "timepoint",
 #'     color.by = "conditions")
 #'
 #' # Update the 'plots' input to change / reorder the data representations
-#' yPlot(df, "gene1", "timepoint",
+#' yPlot(example_df, "gene1", "timepoint",
 #'     plots = c("vlnplot", "boxplot", "jitter"))
-#' yPlot(df, "gene1", "timepoint",
+#' yPlot(example_df, "gene1", "timepoint",
 #'     plots = c("ridgeplot", "jitter"))
 #'
 #' # Modify the look with intuitive inputs
-#' yPlot(df, "gene1", "timepoint",
+#' yPlot(example_df, "gene1", "timepoint",
 #'     plots = c("vlnplot", "boxplot", "jitter"),
 #'     boxplot.color = "white",
 #'     main = "CD3E",
 #'     legend.show = FALSE)
 #'
 #' # Data can also be split in other ways with 'shape.by' or 'split.by'
-#' yPlot(data_frame = df, var = "gene1", group.by = "timepoint",
+#' yPlot(data_frame = example_df, var = "gene1", group.by = "timepoint",
 #'     plots = c("vlnplot", "boxplot", "jitter"),
 #'     shape.by = "clustering",
 #'     split.by = "SNP") # single split.by element
-#' yPlot(data_frame = df, var = "gene1", group.by = "timepoint",
+#' yPlot(data_frame = example_df, var = "gene1", group.by = "timepoint",
 #'     plots = c("vlnplot", "boxplot", "jitter"),
 #'     split.by = c("groups","SNP")) # row and col split.by elements
 #'

@@ -123,8 +123,8 @@ Useful for quickly swapping around colors of the default set (when not using nam
 \item{split.adjust}{A named list which allows extra parameters to be pushed through to the faceting function call.
 List elements should be valid inputs to the faceting functions, e.g. `list(scales = "free")`.
 
-For options, when giving 1 metadata to \code{split.by}, see \code{\link[ggplot2]{facet_wrap}},
-OR when giving 2 metadatas to \code{split.by}, see \code{\link[ggplot2]{facet_grid}}.}
+For options, when giving 1 column to \code{split.by}, see \code{\link[ggplot2]{facet_wrap}},
+OR when giving 2 columns to \code{split.by}, see \code{\link[ggplot2]{facet_grid}}.}
 
 \item{shape.panel}{Vector of integers, corresponding to ggplot shapes, which sets what shapes to use in conjunction with \code{shape.by}.
 When nothing is supplied to \code{shape.by}, only the first value is used.
@@ -176,7 +176,7 @@ Defaults to "solid", but see \code{\link[ggplot2]{linetype}} for other options.}
 
 \item{do.letter}{Logical which sets whether letters should be added on top of the colored dots.
 For extended colorblindness compatibility.
-NOTE: \code{do.letter} is ignored if \code{do.hover = TRUE} or \code{shape.by} is provided a metadata because lettering is incompatible with plotly and with changing the dots' to be different shapes.}
+NOTE: \code{do.letter} is ignored if \code{do.hover = TRUE} or \code{shape.by} is used because lettering is incompatible with plotly and with changing the dots' to be different shapes.}
 
 \item{do.ellipse}{Logical. Whether \code{color.by} groups should be surrounded by median-centered ellipses.}
 
@@ -189,7 +189,7 @@ NOTE: \code{do.letter} is ignored if \code{do.hover = TRUE} or \code{shape.by} i
 \item{labels.repel}{Logical, that sets whether the labels' placements will be adjusted with \link{ggrepel} to avoid intersections between labels and plot bounds when \code{do.label = TRUE}.
 TRUE by default.}
 
-\item{labels.split.by}{String of one or two metadata names which controls the facet-split calculations for label placements.
+\item{labels.split.by}{String of one or two column names which controls the facet-split calculations for label placements.
 Defaults to \code{split.by}, so generally there is no need to adjust this except when if you plan to apply faceting externally.}
 
 \item{legend.show}{Logical. Whether any legend should be displayed. Default = \code{TRUE}.}
@@ -250,44 +250,25 @@ If \code{split.by} was used, the plot will be split into a matrix of panels base
 }
 
 \examples{
-library(dittoSeq)
-example(importDittoBulk, echo = FALSE)
-myRNA
-
-#  == the default way to extract
-myRNA$nCount_RNA <- runif(60,200,1000)
-myRNA$nFeature_RNA <- myRNA$nCount_RNA*runif(60,0.95,1.05)
-# and also percent.mito metadata
-myRNA$percent.mito <- sample(c(runif(50,0,0.05),runif(10,0.05,0.2)))
-
-df <- as.data.frame(colData(myRNA))
-df$gene1 <- dittoSeq::gene("gene1", myRNA)
-df$gene2 <- dittoSeq::gene("gene2", myRNA)
-df$gene3 <- dittoSeq::gene("gene3", myRNA)
-df$pca1 <- dittoSeq:::.extract_Reduced_Dim("pca", 1, myRNA)$embeddings
-df$pca2 <- dittoSeq:::.extract_Reduced_Dim("pca", 2, myRNA)$embeddings
+example("dittoExampleData", echo = FALSE)
 
 scatterPlot(
-    df, x.by = "nCount_RNA", y.by = "nFeature_RNA")
+    example_df, x.by = "PC1", y.by = "PC2")
 
 # Shapes or colors can be overlaid representing discrete metadata
 #   or (only colors) continuous metadata / expression data by providing
 #   metadata or gene names to 'color.by' and 'shape.by'
 scatterPlot(
-    df, x.by = "gene1", y.by = "gene2",
+    example_df, x.by = "PC1", y.by = "PC2",
     color.by = "groups",
     shape.by = "SNP",
     size = 3)
 
 # Data can be "split" or faceted by a discrete variable as well.
-scatterPlot(df, x.by = "gene1", y.by = "gene2",
+scatterPlot(example_df, x.by = "PC1", y.by = "PC2",
     split.by = "timepoint") # single split.by element
-scatterPlot(df, x.by = "gene1", y.by = "gene2",
+scatterPlot(example_df, x.by = "PC1", y.by = "PC2",
     split.by = c("groups","SNP")) # row and col split.by elements
-
-# Countours can also be added to help illumunate overlapping samples
-scatterPlot(df, x.by = "gene1", y.by = "gene2",
-    do.contour = TRUE)
 
 }
 \seealso{

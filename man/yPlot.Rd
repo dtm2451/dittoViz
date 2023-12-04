@@ -174,8 +174,8 @@ is to make the target data into a factor, and to put its levels in the desired o
 \item{split.adjust}{A named list which allows extra parameters to be pushed through to the faceting function call.
 List elements should be valid inputs to the faceting functions, e.g. `list(scales = "free")`.
 
-For options, when giving 1 metadata to \code{split.by}, see \code{\link[ggplot2]{facet_wrap}},
-OR when giving 2 metadatas to \code{split.by}, see \code{\link[ggplot2]{facet_grid}}.}
+For options, when giving 1 column to \code{split.by}, see \code{\link[ggplot2]{facet_wrap}},
+OR when giving 2 columns to \code{split.by}, see \code{\link[ggplot2]{facet_grid}}.}
 
 \item{do.raster}{Logical. When set to \code{TRUE}, rasterizes the jitter plot layer, changing it from individually encoded points to a flattened set of pixels.
 This can be useful for editing in external programs (e.g. Illustrator) when there are many thousands of data points.}
@@ -268,7 +268,7 @@ Alternatively when \code{do.hover = TRUE}, a plotly converted version of the ggp
 Plots continuous data per group on a y- (or x-) axis using customizable data representations
 }
 \details{
-The function plots the targetted \code{var} data of \code{data_frame} grouped by the metadata given to \code{group.by} and \code{color.by} using data representations given by \code{plots}.
+The function plots the targeted \code{var} data of \code{data_frame}, grouped by the columns of data given to \code{group.by} and \code{color.by}, using data representations given by \code{plots}.
 Data representations will also be colored (filled) based on \code{color.by}.
 If a subset of data points to use is indicated with the \code{rows.use} input, the data_frame is internally subset to include only those indicated rows before plotting.
 
@@ -322,43 +322,34 @@ This can be very useful for making manual additional alterations \emph{after} di
 }
 
 \examples{
-library(dittoSeq)
-example(importDittoBulk, echo = FALSE)
-myRNA
-
-df <- as.data.frame(colData(myRNA))
-df$gene1 <- dittoSeq::gene("gene1", myRNA)
-df$gene2 <- dittoSeq::gene("gene2", myRNA)
-df$gene3 <- dittoSeq::gene("gene3", myRNA)
-df$pca1 <- dittoSeq:::.extract_Reduced_Dim("pca", 1, myRNA)$embeddings
-df$pca2 <- dittoSeq:::.extract_Reduced_Dim("pca", 2, myRNA)$embeddings
+example("dittoExampleData", echo = FALSE)
 
 # Basic yPlot, with jitter behind a vlnplot (looks better with more points)
-yPlot(data_frame = df, var = "gene1", group.by = "timepoint")
+yPlot(data_frame = example_df, var = "gene1", group.by = "timepoint")
 
 # Color distinctly from the grouping variable using 'color.by'
-yPlot(data_frame = df, var = "gene1", group.by = "timepoint",
+yPlot(data_frame = example_df, var = "gene1", group.by = "timepoint",
     color.by = "conditions")
 
 # Update the 'plots' input to change / reorder the data representations
-yPlot(df, "gene1", "timepoint",
+yPlot(example_df, "gene1", "timepoint",
     plots = c("vlnplot", "boxplot", "jitter"))
-yPlot(df, "gene1", "timepoint",
+yPlot(example_df, "gene1", "timepoint",
     plots = c("ridgeplot", "jitter"))
 
 # Modify the look with intuitive inputs
-yPlot(df, "gene1", "timepoint",
+yPlot(example_df, "gene1", "timepoint",
     plots = c("vlnplot", "boxplot", "jitter"),
     boxplot.color = "white",
     main = "CD3E",
     legend.show = FALSE)
 
 # Data can also be split in other ways with 'shape.by' or 'split.by'
-yPlot(data_frame = df, var = "gene1", group.by = "timepoint",
+yPlot(data_frame = example_df, var = "gene1", group.by = "timepoint",
     plots = c("vlnplot", "boxplot", "jitter"),
     shape.by = "clustering",
     split.by = "SNP") # single split.by element
-yPlot(data_frame = df, var = "gene1", group.by = "timepoint",
+yPlot(data_frame = example_df, var = "gene1", group.by = "timepoint",
     plots = c("vlnplot", "boxplot", "jitter"),
     split.by = c("groups","SNP")) # row and col split.by elements
 
