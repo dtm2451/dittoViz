@@ -247,6 +247,22 @@ test_that("scatterPlot can be labeled or circled", {
             do.label = TRUE,
             labels.size = 3),
         "ggplot")
+
+    ### Manual Check
+    # labels to right side
+    expect_s3_class(
+        scatterPlot(
+            df, "PC1", "PC2", disc,
+            do.label = TRUE,
+            labels.repel.adjust = list(xlim=c(5,NA))),
+        "ggplot")
+    expect_s3_class(
+        scatterPlot(
+            df, "PC1", "PC2", disc,
+            do.label = TRUE,
+            labels.repel.adjust = list(xlim=c(5,NA)),
+            labels.highlight = FALSE),
+        "ggplot")
 })
 
 test_that("scatterPlot labeling is robust to NAs", {

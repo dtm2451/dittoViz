@@ -61,6 +61,8 @@
 #' TRUE by default.
 #' @param labels.split.by String of one or two column names which controls the facet-split calculations for label placements.
 #' Defaults to \code{split.by}, so generally there is no need to adjust this except when if you plan to apply faceting externally.
+#' @param labels.repel.adjust A named list which allows extra parameters to be pushed through to ggrepel function calls.
+#' List elements should be valid inputs to the \code{\link[ggrepel]{geom_label_repel}} by default, or \code{\link[ggrepel]{geom_text_repel}} when \code{labels.highlight = FALSE}.
 #' @param rename.color.groups String vector which sets new names for the identities of \code{color.by} groups.
 #' @param rename.shape.groups String vector which sets new names for the identities of \code{shape.by} groups.
 #' @param legend.show Logical. Whether any legend should be displayed. Default = \code{TRUE}.
@@ -262,6 +264,7 @@ scatterPlot <- function(
     labels.size = 5,
     labels.highlight = TRUE,
     labels.repel = TRUE,
+    labels.repel.adjust = list(),
     labels.split.by = split.by,
     legend.show = TRUE,
     legend.color.title = color.by,
@@ -347,6 +350,7 @@ scatterPlot <- function(
         p, Target_data, x.by, y.by, color.by,
         do.letter, do.ellipse, do.label,
         labels.highlight, labels.size, labels.repel, labels.split.by,
+        labels.repel.adjust,
         size, opacity, legend.color.title, legend.color.size)
 
     if (is.list(add.trajectory.by.groups)) {

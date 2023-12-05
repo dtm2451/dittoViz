@@ -34,6 +34,7 @@
     p, data, x.by, y.by, color.by,
     do.letter, do.ellipse, do.label,
     labels.highlight, labels.size, labels.repel, labels.split.by,
+    labels.repel.adjust,
     letter.size, letter.opacity, letter.legend.title, letter.legend.size) {
 
     if (!is.numeric(data[,color.by])) {
@@ -54,7 +55,8 @@
         if (do.label) {
             p <- .add_labels(
                 p, data, color.by, x.by, y.by,
-                labels.highlight, labels.size, labels.repel, labels.split.by)
+                labels.highlight, labels.size, labels.repel, labels.split.by,
+                labels.repel.adjust)
         }
 
     } else {
@@ -86,7 +88,9 @@
 
 .add_labels <- function(
     p, Target_data, labels.by, x.by, y.by,
-    labels.highlight, labels.size, labels.repel, split.by) {
+    labels.highlight, labels.size, labels.repel, split.by,
+    labels.repel.adjust
+    ) {
     # Add text labels at/near the median x and y values for each group
     # (Dim and Scatter plots)
 
@@ -149,20 +153,23 @@
         data = median.data,
         mapping = aes_string(x = "cent.x", y = "cent.y", label = "label"),
         size = labels.size)
-    geom.use <-
-        if (labels.highlight) {
-            if (labels.repel) {
-                ggrepel::geom_label_repel
-            } else {
-                geom_label
-            }
-        } else {
-            if (labels.repel) {
-                ggrepel::geom_text_repel
-            } else {
-                geom_text
-            }
+    if (labels.repel) {
+        if (is.list(labels.repel.adjust)) {
+            args <- c(args, labels.repel.adjust)
         }
+        geom.use <- if (labels.highlight) {
+            ggrepel::geom_label_repel
+        } else {
+            ggrepel::geom_text_repel
+        }
+    } else {
+        geom.use <- if (labels.highlight) {
+            geom_label
+        } else {
+            geom_text
+        }
+    }
+
     p + do.call(geom.use, args)
 }
 
