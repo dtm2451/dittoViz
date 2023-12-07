@@ -247,6 +247,22 @@ test_that("scatterPlot can be labeled or circled", {
             do.label = TRUE,
             labels.size = 3),
         "ggplot")
+
+    ### Manual Check
+    # labels to right side
+    expect_s3_class(
+        scatterPlot(
+            df, "PC1", "PC2", disc,
+            do.label = TRUE,
+            labels.repel.adjust = list(xlim=c(5,NA))),
+        "ggplot")
+    expect_s3_class(
+        scatterPlot(
+            df, "PC1", "PC2", disc,
+            do.label = TRUE,
+            labels.repel.adjust = list(xlim=c(5,NA)),
+            labels.highlight = FALSE),
+        "ggplot")
 })
 
 test_that("scatterPlot labeling is robust to NAs", {
@@ -442,7 +458,7 @@ test_that("scatterPlot can be faceted with split.by (1 or 2 vars)", {
         "ggplot")
 })
 
-test_that("scatterPlot faceting and cell.use and split.show.all.others work together", {
+test_that("scatterPlot faceting and rows.use and split.show.all.others work together", {
     expect_s3_class(
         scatterPlot(
             df, "PC1", "PC2", disc,
@@ -474,7 +490,7 @@ test_that("scatterPlot faceting and cell.use and split.show.all.others work toge
         "ggplot")
 })
 
-test_that("scatterPlot added features work with single-metadata faceting", {
+test_that("scatterPlot added features work with single-column faceting", {
     expect_error(
         print(scatterPlot(
             df, "PC1", "PC2", disc,
@@ -527,7 +543,7 @@ test_that("scatterPlot added features work with single-metadata faceting", {
         NA)
 })
 
-test_that("scatterPlot added features work with double-metadata faceting", {
+test_that("scatterPlot added features work with double-column faceting", {
     expect_error(
         print(scatterPlot(
             df, "PC1", "PC2", disc,

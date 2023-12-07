@@ -31,10 +31,11 @@
 #' Default = set based on the limits of the data, 0 to 1 for \code{scale = "percent"}, or 0 to maximum count for 0 to 1 for \code{scale = "count"}.
 #' @param main String, sets the plot title
 #' @param sub String, sets the plot subtitle
-#' @param var.labels.rename String vector for renaming the distinct identities of \code{var} values.
+#' @param var.labels.rename String vector for renaming the distinct identities of \code{var}-values.
+#' This vector must be the same length as the number of levels or unique values in the \code{var}-data.
 #'
-#' Hint: use \code{\link{metaLevels}} or \code{unique(<var-data>)} to assess current values.
-#' @param var.labels.reorder Integer vector. A sequence of numbers, from 1 to the number of distinct \code{var} value identities, for rearranging the order of labels' groupings within the plot.
+#' Hint: use \code{\link{colLevels}} or \code{unique(data_frame[,var])} to original values.
+#' @param var.labels.reorder Integer vector. A sequence of numbers, from 1 to the number of distinct \code{var}-value identities, for rearranging the order labels' groupings within the plot space.
 #'
 #' Method: Make a first plot without this input.
 #' Then, treating the top-most grouping as index 1, and the bottom-most as index n.
@@ -53,7 +54,8 @@
 #' Alternatively, if \code{do.hover = TRUE}, a plotly conversion of the ggplot output in which underlying data can be retrieved upon hovering the cursor over the plot.
 #' @details
 #' The function creates a dataframe containing counts and percent makeup of \code{var} identities for each x-axis grouping (determined by the \code{group.by} input).
-#' If a set of cells/samples to use is indicated with the \code{rows.use} input, only those cells/samples are used for counts and percent makeup calculations.
+#' If a subset of data points to use is indicated with the \code{rows.use} input, only those rows of the \code{data_frame} are used for counts and percent makeup calculations.
+#' In other words, the \code{row.use} input adjusts the universe that compositions are calculated within.
 #' Then, a vertical bar plot is generated (\code{ggplot2::geom_col()}) showing either percent makeup if
 #' \code{scale = "percent"}, which is the default, or raw counts if \code{scale = "count"}.
 #'
@@ -68,38 +70,42 @@
 #' }
 #'
 #' @examples
-#' library(dittoSeq)
-#' example(importDittoBulk, echo = FALSE)
-#' myRNA
-#' df <- as.data.frame(colData(myRNA))
+#' example("dittoExampleData", echo = FALSE)
 #'
-#' barPlot(df, "clustering", group.by = "groups")
-#' barPlot(df, "clustering", group.by = "groups",
+#' # There are two main inputs for this function, in addition to 'data_frame'.
+#' #  var = typically this will be observation-type annotations or clustering
+#' #    This is the set of observations for which we will calculate frequencies
+#' #    (per each unique value of this data) within each group
+#' #  group.by = how to group observations together
+#' barPlot(
+#'     data_frame = example_df,
+#'     var = "clustering",
+#'     group.by = "groups")
+#'
+#' # 'scale' then allows choice of scaling by 'percent' (default) or 'count'
+#' barPlot(example_df, "clustering", group.by = "groups",
 #'     scale = "count")
 #'
-#' # Reordering the x-axis groupings to have "C" (#3) come first
-#' barPlot(df, "clustering", group.by = "groups",
-#'     x.reorder = c(3,1,2,4))
+#' # Particular observations can be ignored from calculations and plotting using
+#' #   the 'rows.use' input.
+#' #   Here, we'll remove an entire "cluster" from consideration, but notice the
+#' #     fractions will still sum to 1.
+#' barPlot(example_df, "clustering", group.by = "groups",
+#'     rows.use = example_df$clustering!="1")
 #'
 #' ### Accessing underlying data:
-#' # as dataframe
-#' barPlot(df, "clustering", group.by = "groups",
+#' # as data.frame, with plot returned too
+#' barPlot(example_df, "clustering", group.by = "groups",
 #'     data.out = TRUE)
+#' # as data.frame, no plot
+#' barPlot(example_df, "clustering", group.by = "groups",
+#'     data.out = TRUE,
+#'     data.only = TRUE)
 #' # through hovering the cursor over the relevant parts of the plot
 #' if (requireNamespace("plotly", quietly = TRUE)) {
-#'     barPlot(df, "clustering", group.by = "groups",
+#'     barPlot(example_df, "clustering", group.by = "groups",
 #'         do.hover = TRUE)
 #'     }
-#'
-#' ### Remove or re-explain later
-#' df$groups_reverse_levels <- factor(
-#'     df$groups,
-#'     levels = c("D", "C", "B", "A"))
-#' # barPlot will now respect this level order by default.
-#' barPlot(df, "clustering", group.by = "groups_reverse_levels")
-#' # But that respect can be turned off...
-#' barPlot(df, "clustering", group.by = "groups_reverse_levels",
-#'     retain.factor.levels = FALSE)
 #'
 #' @author Daniel Bunis
 #' @export

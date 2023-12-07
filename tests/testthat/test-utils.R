@@ -1,9 +1,9 @@
 # Tests for visualization functions
 # library(dittoViz); library(testthat); source("tests/testthat/setup.R"); source("R/utils_colgetters.R"); source("R/utils_plot_mods.R"); source("R/utils.R"); source("tests/testthat/test-getters.R")
 
-test_that(".isCol tells if column exists", {
-    expect_false(.isCol("HELLO", df))
-    expect_true(.isCol("number", df))
+test_that(".is_col tells if column exists", {
+    expect_false(.is_col("HELLO", df))
+    expect_true(.is_col("number", df))
 })
 
 test_that("._col grabs columns and can run adjustments", {
@@ -36,49 +36,49 @@ test_that("._col adds rownames if wanted", {
     )
 })
 
-test_that(".colLevels gives unique values of a column, character or factor", {
+test_that("colLevels gives unique values of a column, character or factor", {
     expect_equal(
-        sort(.colLevels("groups", df)),
+        sort(colLevels("groups", df)),
         sort(unique(df[,"groups"]))
     )
 
     df$groups_fac <- factor(df$groups)
     expect_equal(
-        sort(.colLevels("groups_fac", df)),
+        sort(colLevels("groups_fac", df)),
         sort(levels(df[,"groups_fac"]))
     )
 })
 
-test_that(".colLevels' rows.use & used.only adjust levels returned as expected", {
-    expect_type(groups <- .colLevels("groups", df),
+test_that("colLevels' rows.use & used.only adjust levels returned as expected", {
+    expect_type(groups <- colLevels("groups", df),
                 "character")
     df$groups_fac <- factor(df$groups)
 
     # rows.use can remove a level for both chacrater and factors
     expect_gt(
         length(groups),
-        length(.colLevels("groups", df,
+        length(colLevels("groups", df,
                           rows.use = df$groups!=groups[1]))
     )
     expect_gt(
         length(groups),
-        length(.colLevels("groups_fac", df,
+        length(colLevels("groups_fac", df,
                           rows.use = df$groups_fac!=groups[1]))
     )
 
     # Unused levels retained for factor when used.only = FALSE
     expect_equal(
         length(groups),
-        length(.colLevels("groups_fac", df,
+        length(colLevels("groups_fac", df,
                           rows.use = df$groups_fac!=groups[1],
                           used.only = FALSE))
     )
 })
 
-test_that("._col and .colLevels give error when given a non-col", {
+test_that("._col and colLevels give error when given a non-col", {
     expect_error(._col("a", df),
                  "is not a column of 'data_frame'", fixed = TRUE)
-    expect_error(.colLevels("a", df),
+    expect_error(colLevels("a", df),
                  "is not a column of 'data_frame'", fixed = TRUE)
 })
 

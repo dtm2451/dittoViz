@@ -2,29 +2,26 @@
 #' @import ggplot2
 #'
 #' @param data_frame A data_frame where columns are features and rows are observations you wish to visualize.
-#' @param x.by,y.by Single strings denoting the name of a column of \code{data_frame} to use for the x- and y-axis of the scatterplot.
-#' Data Restriction: Must be continuous.
-#' @param color.by Single string denoting the name of a column of \code{data_frame} to use for setting the color plotted points.
-#' @param shape.by Single string denoting the name of a column of \code{data_frame} to use for setting the shape plotted points.
-#' Data Restriction: Must be continuous.
-#' @param split.by 1 or 2 strings naming denoting the name(s) of column(s) to use for faceting / separating data points into separate plots.
-#' Data Restriction: Must be continuous.
+#' @param x.by,y.by Single strings denoting the name of a column of \code{data_frame} containing numeric data to use for the x- and y-axis of the scatterplot.
+#' @param color.by Single string denoting the name of a column of \code{data_frame} to use for setting the color of plotted points.
+#' @param shape.by Single string denoting the name of a column of \code{data_frame} containing discrete data to use for setting the shape of plotted points.
+#' @param split.by 1 or 2 strings denoting the name(s) of column(s) of \code{data_frame} containing discrete data to use for faceting / separating data points into separate plots.
 #'
-#' When 2 columns are named, c(row,col), the first is used as rows and the second is used for columns of the resulting grid.
+#' When 2 columns are named, c(row,col), the first is used as rows and the second is used for columns of the resulting facet grid.
 #'
 #' When 1 column is named, shape control can be achieved with \code{split.nrow} and \code{split.ncol}
 #'
-#' @param split.nrow,split.ncol Integers which set the dimensions of faceting/splitting when a single column is given to \code{split.by}.
-#' @param split.show.all.others Logical which sets whether gray "others" cells of facets should include all cells of other facets (\code{TRUE}) versus just cells left out by \code{cell.use} (\code{FALSE}).
+#' @param split.nrow,split.ncol Integers which set the dimensions of faceting/splitting when a single column name is given to \code{split.by}.
+#' @param split.show.all.others Logical which sets whether gray "others" points of facets should include all points of other facets (\code{TRUE}) versus just points left out by \code{rows.use} which would exist in the current facet (\code{FALSE}).
 #' @param split.adjust A named list which allows extra parameters to be pushed through to the faceting function call.
 #' List elements should be valid inputs to the faceting functions, e.g. `list(scales = "free")`.
 #'
-#' For options, when giving 1 metadata to \code{split.by}, see \code{\link[ggplot2]{facet_wrap}},
-#' OR when giving 2 metadatas to \code{split.by}, see \code{\link[ggplot2]{facet_grid}}.
-#' @param rows.use String vector of rownames names OR an integer vector specifying the row-indices of data points which should be targetted.
+#' For options, when giving 1 column to \code{split.by}, see \code{\link[ggplot2]{facet_wrap}},
+#' OR when giving 2 columns to \code{split.by}, see \code{\link[ggplot2]{facet_grid}}.
+#' @param rows.use String vector of rownames of \code{data_frame} OR an integer vector specifying the row-indices of data points which should be plotted.
 #'
-#' Alternatively, a Logical vector, the same length as the number of cells in the object, which sets which cells to include.
-#' @param show.others Logical. FALSE by default, whether cells not targetted by \code{rows.use} should be shown in the background, in light gray.
+#' Alternatively, a Logical vector, the same length as the number of rows in \code{data_frame}, where \code{TRUE} values indicate which rows to plot.
+#' @param show.others Logical. TRUE by default, whether rows not targeted by \code{rows.use} should be shown in the background in light gray.
 #' @param size Number which sets the size of data points. Default = 1.
 #' @param color.panel String vector which sets the colors to draw from when \code{color.by} indicates discrete data.
 #' \code{dittoColors()} by default, see \code{\link{dittoColors}} for contents.
@@ -32,81 +29,96 @@
 #' A named vector can be used if names are matched to the distinct values of the \code{color.by} data.
 #' @param colors Integer vector, the indexes / order, of colors from \code{color.panel} to actually use.
 #'
-#' Useful for quickly swapping around colors of the default set.
+#' Useful for quickly swapping around colors of the default set (when not using names for color matching).
+#' @param color.adjustment A recognized string indicating whether numeric \code{color.by} data should be used directly (default) or should be adjusted to be
+#' \itemize{
+#' \item{"z-score": scaled with the scale() function to produce a relative-to-mean z-score representation}
+#' \item{"relative.to.max": divided by the maximum expression value to give percent of max values between [0,1]}
+#' }
+#'
+#' Ignored if the \code{color.by} data is not numeric as these known adjustments target numeric data only.
+#' @param color.adj.fxn If you wish to apply a function to edit the \code{color.by} data before use, in a way not possible with the \code{color.adjustment} input,
+#' this input can be given a function which takes in a vector of values as input and returns a vector of values of the same length as output.
+#'
+#' For example, \code{function(x) \{log2(x)\}} or \code{as.factor}.
+#'
+#' A new column, named "\code{color.by}-adj", with this function applied will be added to the data.frames used for plotting, and that data will be used rather than the original \code{color.by} column.
 #' @param do.hover Logical which controls whether the ggplot output will be converted to a plotly object so that data about individual points can be displayed when you hover your cursor over them.
-#' The \code{hover.data} argument is used to determine what data to use.
-#' @param hover.data String vector of column names of \code{data_frame} which denotes what data to show on hover when \code{do.hover} is set to \code{TRUE}.
-#' @param shape.panel Vector of integers, corresponding to ggplot shapes, which sets what shapes with \code{shape.by}.
+#' The \code{hover.data} argument is used to determine what data to show upon hover.
+#' @param hover.data String vector of column names of \code{data_frame} which denotes what data to show for each data point, upon hover, when \code{do.hover} is set to \code{TRUE}.
+#' @param shape.panel Vector of integers, corresponding to ggplot shapes, which sets what shapes to use in conjunction with \code{shape.by}.
 #' When nothing is supplied to \code{shape.by}, only the first value is used.
 #' Default is a set of 6, \code{c(16,15,17,23,25,8)}, the first being a simple, solid, circle.
 #' @param size Number which sets the size of data points. Default = 1.
 #' @param opacity Number between 0 and 1.
 #' 1 = opaque. 0 = invisible. Default = 1.
 #' (In terms of typical ggplot variables, = alpha)
-#' @param do.ellipse Logical. Whether the groups should be surrounded by median-centered ellipses.
-#' @param do.label  Logical. Whether to add text labels near the center (median) of clusters for grouping vars.
-#' @param labels.size Size of the the labels text
-#' @param labels.highlight Logical. Whether the labels should have a box behind them
-#' @param labels.repel Logical, that sets whether the labels' placements will be adjusted with \link{ggrepel} to avoid intersections between labels and plot bounds.
+#' @param do.ellipse Logical. Whether \code{color.by} groups should be surrounded by median-centered ellipses.
+#' @param do.label  Logical. Whether to add text labels near the center (median) of \code{color.by} groups.
+#' @param labels.size Number which sets the size of labels text when \code{do.label = TRUE}.
+#' @param labels.highlight Logical. Whether labels should have a box behind them when \code{do.label = TRUE}.
+#' @param labels.repel Logical, that sets whether the labels' placements will be adjusted with \link{ggrepel} to avoid intersections between labels and plot bounds when \code{do.label = TRUE}.
 #' TRUE by default.
-#' @param labels.split.by String of one or two metadata names which controls the facet-split calculations for label placements.
-#' Defaults to \code{split.by}, so generally there is no need to adjust this except when you are utilizing the \code{extra.vars} input to achieve manual faceting control.
-#' @param rename.color.groups String vector which sets new names for the identities of \code{var} groups.
+#' @param labels.split.by String of one or two column names which controls the facet-split calculations for label placements.
+#' Defaults to \code{split.by}, so generally there is no need to adjust this except when if you plan to apply faceting externally.
+#' @param labels.repel.adjust A named list which allows extra parameters to be pushed through to ggrepel function calls.
+#' List elements should be valid inputs to the \code{\link[ggrepel]{geom_label_repel}} by default, or \code{\link[ggrepel]{geom_text_repel}} when \code{labels.highlight = FALSE}.
+#' @param rename.color.groups String vector which sets new names for the identities of \code{color.by} groups.
 #' @param rename.shape.groups String vector which sets new names for the identities of \code{shape.by} groups.
 #' @param legend.show Logical. Whether any legend should be displayed. Default = \code{TRUE}.
 #' @param legend.color.title,legend.shape.title Strings which set the title for the color or shape legends.
-#' @param legend.color.size,legend.shape.size Numbers representing the size at which shapes should be plotted in the color and shape legends (for discrete variable plotting).
+#' @param legend.color.size,legend.shape.size Numbers representing the size of shapes in the color and shape legends (for discrete variable plotting).
 #' Default = 5. *Enlarging the icons in the colors legend is incredibly helpful for making colors more distinguishable by color blind individuals.
-#' @param min.color color for \code{min} value of \code{color.by} data. Default = yellow
-#' @param max.color color for \code{max} value of \code{color.by} data. Default = blue
+#' @param min.color color for \code{min} value of numeric \code{color.by}-data. Default = yellow
+#' @param max.color color for \code{max} value of numeric \code{color.by}-data. Default = blue
 #' @param min.value,max.value Number which sets the \code{color.by}-data value associated with the minimum or maximum colors.
-#' @param legend.color.breaks Numeric vector which sets the discrete values to label in the color-scale legend for continuous data.
-#' @param legend.color.breaks.labels String vector, with same length as \code{legend.breaks}, which sets the labels for the tick marks of the color-scale.
+#' @param legend.color.breaks Numeric vector which sets the discrete values to label in the color-scale legend for \code{color.by}-data.
+#' @param legend.color.breaks.labels String vector, with same length as \code{legend.color.breaks}, which sets the labels for the tick marks of the color-scale.
 #' @param main String, sets the plot title.
 #' A default title is automatically generated based on \code{color.by} and \code{shape.by} when either are provided.
 #' To remove, set to \code{NULL}.
 #' @param sub String, sets the plot subtitle.
 #' @param xlab,ylab Strings which set the labels for the axes. To remove, set to \code{NULL}.
-#' @param do.letter Logical which sets whether letters should be added on top of the colored dots. For extended colorblindness compatibility.
-#' NOTE: \code{do.letter} is ignored if \code{do.hover = TRUE} or \code{shape.by} is provided a metadata because
-#' lettering is incompatible with plotly and with changing the dots' to be different shapes.
+#' @param do.letter Logical which sets whether letters should be added on top of the colored dots.
+#' For extended colorblindness compatibility.
+#' NOTE: \code{do.letter} is ignored if \code{do.hover = TRUE} or \code{shape.by} is used because lettering is incompatible with plotly and with changing the dots' to be different shapes.
 #' @param do.contour Logical. Whether density-based contours should be displayed.
-#' @param contour.color String that sets the color(s) of the \code{do.contour} contours.
+#' @param contour.color String that sets the color of the \code{do.contour} contours.
 #' @param contour.linetype String or numeric which sets the type of line used for \code{do.contour} contours.
 #' Defaults to "solid", but see \code{\link[ggplot2]{linetype}} for other options.
 #' @param add.trajectory.by.groups List of vectors representing trajectory paths, each from start-group to end-group, where vector contents are the group-names indicated by the \code{trajectory.group.by} column of \code{data_frame}.
 #' @param trajectory.group.by String denoting the name of a column of \code{data_frame} to use for generating trajectories from data point groups.
 #' @param trajectory.arrow.size Number representing the size of trajectory arrows, in inches.  Default = 0.15.
 #' @param add.trajectory.curves List of matrices, each representing coordinates for a trajectory path, from start to end, where matrix columns represent x and y coordinates of the paths.
-#' @param theme A ggplot theme which will be applied before dittoSeq adjustments.
+#' @param theme A ggplot theme which will be applied before internal adjustments.
 #' Default = \code{theme_bw()}.
 #' See \url{https://ggplot2.tidyverse.org/reference/ggtheme.html} for other options and ideas.
-#' @param plot.order String. If the data should be plotted based on the order of the color data, sets whether to plot in "increasing" or "decreasing" order.
-#' @param show.grid.lines Logical which sets whether gridlines of the plot should be shown.
+#' @param plot.order String. If the data should be plotted based on the order of the color data, sets whether to plot in "increasing", "decreasing", or "randomize"d order.
+#' @param show.grid.lines Logical which sets whether grid lines should be shown within the plot space.
 #' @param do.raster Logical. When set to \code{TRUE}, rasterizes the internal plot layer, changing it from individually encoded points to a flattened set of pixels.
 #' This can be useful for editing in external programs (e.g. Illustrator) when there are many thousands of data points.
 #' @param raster.dpi Number indicating dots/pixels per inch (dpi) to use for rasterization. Default = 300.
 #' @param data.out Logical. When set to \code{TRUE}, changes the output, from the plot alone, to a list containing the plot ("p"),
-#' a data.frame containing the underlying data for target cells ("Target_data"),
-#' and a data.frame containing the underlying data for non-target cells ("Others_data").
+#' a data.frame containing the underlying data for target rows ("Target_data"),
+#' and a data.frame containing the underlying data for non-target rows ("Others_data").
 #'
-#' @return a ggplot scatterplot where colored dots and/or shapes represent individual cells/samples. X and Y axes can be gene expression, numeric metadata, or manually supplied values.
+#' @return a ggplot scatterplot where colored dots and/or shapes represent individual rows of the given \code{data_frame}.
 #'
-#' Alternatively, if \code{data.out=TRUE}, a list containing three slots is output: the plot (named 'p'), a data.table containing the underlying data for target cells (named 'Target_data'), and a data.table containing the underlying data for non-target cells (named 'Others_data').
+#' Alternatively, if \code{data.out=TRUE}, a list containing three slots is output: the plot (named 'p'), a data.frame containing the underlying data for target rows (named 'Target_data'), and a data.frame containing the underlying data for non-target rows (named 'Others_data').
 #'
 #' Alternatively, if \code{do.hover} is set to \code{TRUE}, the plot is coverted from ggplot to plotly &
-#' cell/sample information, determined by the \code{hover.data} input, is retrieved, added to the dataframe, and displayed upon hovering the cursor over the plot.
+#' additional information about each data point, determined by the \code{hover.data} input, is displayed upon hovering the cursor over the plot.
 #'
 #' @details
-#' This function creates a dataframe with X, Y, color, shape, and faceting data determined by \code{x.by}, \code{y.by}, \code{color.by}, \code{shape.var}, and \code{split.by}.
-#' Any extra gene or metadata requested with \code{extra.var} is added as well.
-#' For expression/counts data, \code{assay}, \code{slot}, and \code{adjustment} inputs (\code{.x}, \code{.y}, and \code{.color}) can be used to change which data is used, and if it should be adjusted in some way.
+#' This function first makes any requested adjustments to data in the given \code{data_frame}, internally only, such as scaling the \code{color.by}-column if \code{color.adjustment} was given \code{"z-score"}.
 #'
-#' Next, if a set of cells or samples to use is indicated with the \code{cells.use} input, then the dataframe is split into \code{Target_data} and \code{Others_data} based on subsetting by the target cells/samples.
+#' Next, if a set of rows to target was indicated with the \code{rows.use} input, then the data_frame is split into \code{Target_data} and \code{Others_data}.
 #'
-#' Finally, a scatter plot is created using these dataframes.
-#' Non-target cells are colored in gray if \code{show.others=TRUE},
-#' and target cell data is displayed on top, colored and shaped based on the \code{color.by}- and \code{shape.by}-associated data.
+#' Then, rows are reordered to match with the requested \code{plot.order} behavior.
+#'
+#' Finally, a scatter plot is created from the resultant data.frames.
+#' Non-target data points are colored in gray if \code{show.others=TRUE},
+#' and target data points are displayed on top, colored and shaped based on the \code{color.by}- and \code{shape.by}-associated data.
 #' If \code{split.by} was used, the plot will be split into a matrix of panels based on the associated groupings.
 #'
 #' @section Many characteristics of the plot can be adjusted using discrete inputs:
@@ -125,47 +137,85 @@
 #' @author Daniel Bunis
 #' @export
 #' @examples
-#' library(dittoSeq)
-#' example(importDittoBulk, echo = FALSE)
-#' myRNA
+#' example("dittoExampleData", echo = FALSE)
 #'
-#' #  == the default way to extract
-#' myRNA$nCount_RNA <- runif(60,200,1000)
-#' myRNA$nFeature_RNA <- myRNA$nCount_RNA*runif(60,0.95,1.05)
-#' # and also percent.mito metadata
-#' myRNA$percent.mito <- sample(c(runif(50,0,0.05),runif(10,0.05,0.2)))
-#'
-#' df <- as.data.frame(colData(myRNA))
-#' df$gene1 <- dittoSeq::gene("gene1", myRNA)
-#' df$gene2 <- dittoSeq::gene("gene2", myRNA)
-#' df$gene3 <- dittoSeq::gene("gene3", myRNA)
-#' df$pca1 <- dittoSeq:::.extract_Reduced_Dim("pca", 1, myRNA)$embeddings
-#' df$pca2 <- dittoSeq:::.extract_Reduced_Dim("pca", 2, myRNA)$embeddings
-#'
+#' # The minimal inputs for scatterPlot are the 'data_frame', and 2 column names,
+#' #   given to 'x.by' and 'y.by', indicating which data to use for the x and y
+#' #   axes, respectively.
 #' scatterPlot(
-#'     df, x.by = "nCount_RNA", y.by = "nFeature_RNA")
+#'     example_df, x.by = "PC1", y.by = "PC2")
 #'
-#' # Shapes or colors can be overlaid representing discrete metadata
-#' #   or (only colors) continuous metadata / expression data by providing
-#' #   metadata or gene names to 'color.by' and 'shape.by'
+#' # 'color.by' and/or 'shape.by' can also be given column names in order to
+#' #   show represent that columns data in the color or shape of the data points.
+#' #   'shape.by' must be pointed to discrete data, but 'color.by' can be given
+#' #   discrete or numeric data.
 #' scatterPlot(
-#'     df, x.by = "gene1", y.by = "gene2",
+#'     example_df, x.by = "PC1", y.by = "PC2",
 #'     color.by = "groups",
 #'     shape.by = "SNP",
 #'     size = 3)
+#' scatterPlot(
+#'     example_df, x.by = "PC1", y.by = "PC2",
+#'     color.by = "gene1",
+#'     size = 3)
 #'
 #' # Data can be "split" or faceted by a discrete variable as well.
-#' scatterPlot(df, x.by = "gene1", y.by = "gene2",
+#' scatterPlot(example_df, x.by = "PC1", y.by = "PC2", color.by = "gene1",
 #'     split.by = "timepoint") # single split.by element
-#' scatterPlot(df, x.by = "gene1", y.by = "gene2",
+#' scatterPlot(example_df, x.by = "PC1", y.by = "PC2", color.by = "gene1",
 #'     split.by = c("groups","SNP")) # row and col split.by elements
-#' # OR with 'extra.vars' plus manually faceting for added control
-#' scatterPlot(df, x.by = "gene1", y.by = "gene2") +
-#'     facet_wrap("SNP", ncol = 1, strip.position = "left")
 #'
-#' # Countours can also be added to help illumunate overlapping samples
-#' scatterPlot(df, x.by = "gene1", y.by = "gene2",
-#'     do.contour = TRUE)
+#' # Modify the look with intuitive inputs
+#' scatterPlot(example_df, x.by = "PC1", y.by = "PC2", color.by = "groups",
+#'     size = 5,
+#'     opacity = 0.3,
+#'     show.grid.lines = FALSE,
+#'     ylab = NULL, xlab = "PC2 by PC1",
+#'     main = "Plot Title",
+#'     sub = "subtitle",
+#'     legend.color.title = "Legend\nRetitle")
+#'
+#' # You can restrict to only certain data points using the 'rows.use' input.
+#' #   The input can be given rownames, indexes, or a logical vector
+#' #   All "other" points will now only be shown as a gray background, or will not
+#' #   be shown add all if you also add 'show.others = FALSE'
+#' scatterPlot(example_df, x.by = "PC1", y.by = "PC2", color.by = "groups",
+#'     sub = "show only first 40 observations, by index",
+#'     rows.use = 1:40)
+#' scatterPlot(example_df, x.by = "PC1", y.by = "PC2", color.by = "groups",
+#'     sub = "show only 3 observations, by name",
+#'     rows.use = c("obs1", "obs2", "obs25"))
+#' scatterPlot(example_df, x.by = "PC1", y.by = "PC2", color.by = "groups",
+#'     sub = "show groups A,B,D only, by logical, without others as background",
+#'     rows.use = example_df$groups!="C",
+#'     show.others = FALSE)
+#'
+#' # Many extra features are easy to add as well:
+#' #   Each is started via an input starting with 'do.FEATURE*' or 'add.FEATURE*'
+#' #   And when tweaks for that feature are possible, those inputs will start be
+#' #   named starting with 'FEATURE*'. For example, color.by groups can be labeled
+#' #   with 'do.label = TRUE' and the tweaks for this feature are given with inputs
+#' #   'labels.size', 'labels.highlight', and 'labels.repel':
+#' scatterPlot(example_df, x.by = "PC1", y.by = "PC2", color.by = "groups",
+#'     sub = "default labeling",
+#'     do.label = TRUE)          # Turns on the labeling feature
+#' scatterPlot(example_df, x.by = "PC1", y.by = "PC2", color.by = "groups",
+#'     sub = "tweaked labeling",
+#'     do.label = TRUE,          # Turns on the labeling feature
+#'     labels.size = 8,          # Adjust the text size of labels
+#'     labels.highlight = FALSE, # Removes white background behind labels
+#'     labels.repel = FALSE)     # Turns off anti-overlap location adjustments
+#'
+#' # Sometimes, it can be useful for external editing or troubleshooting purposed
+#' #   to see the underlying data that was directly used for plotting.
+#' # 'data.out = TRUE' can be provided in order to obtain not just plot ("plot"),
+#' #   but also the "Target_data" and "Others_data" data.frames returned as a list.
+#' out <- scatterPlot(example_df, x.by = "PC1", y.by = "PC2", color.by = "groups",
+#'     rows.use = 1:40,
+#'     data.out = TRUE)
+#' out$plot
+#' summary(out$Target_data)
+#' summary(out$Others_data)
 #'
 scatterPlot <- function(
     data_frame,
@@ -214,6 +264,7 @@ scatterPlot <- function(
     labels.size = 5,
     labels.highlight = TRUE,
     labels.repel = TRUE,
+    labels.repel.adjust = list(),
     labels.split.by = split.by,
     legend.show = TRUE,
     legend.color.title = color.by,
@@ -299,6 +350,7 @@ scatterPlot <- function(
         p, Target_data, x.by, y.by, color.by,
         do.letter, do.ellipse, do.label,
         labels.highlight, labels.size, labels.repel, labels.split.by,
+        labels.repel.adjust,
         size, opacity, legend.color.title, legend.color.size)
 
     if (is.list(add.trajectory.by.groups)) {

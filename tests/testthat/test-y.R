@@ -435,7 +435,7 @@ test_that("yPlot can be facted with split.by (1 or 2 vars)", {
             df, cont1, grp, grp,
             split.by = c(grp,clr)),
         "ggplot")
-    # Works with rows.use (should have grey cells)
+    # Works with rows.use (should have grey points)
     expect_s3_class(
         yPlot(
             df, cont1, grp, grp,

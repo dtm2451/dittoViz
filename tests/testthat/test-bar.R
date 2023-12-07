@@ -228,10 +228,10 @@ test_that("'split.by' can be given extra features", {
 test_that("barPlot, 'retain.factor.level' can be used to respect factor levels", {
     df$var_factor <- factor(
         df[,grp2],
-        levels = rev(.colLevels(grp2, df)))
+        levels = rev(colLevels(grp2, df)))
     df$grp_factor <- factor(
         df[,grp3],
-        levels = rev(.colLevels(grp3, df)))
+        levels = rev(colLevels(grp3, df)))
 
     # Manual Check:
     # 1. var and group.by ordering should be reverse of alpha-numeric
