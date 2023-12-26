@@ -88,6 +88,7 @@
 #' @param vlnplot.scaling String which sets how the widths of the of violin plots are set in relation to each other.
 #' Options are "area", "count", and "width". If the default is not right for your data, I recommend trying "width".
 #' For an explanation of each, see \code{\link{geom_violin}}.
+#' @param vlnplot.quantiles Single number or numeric vector of values in [0,1] naming quantiles at which to draw a horizontal line within each violin plot. Example: \code{c(0.1, 0.5, 0.9)}
 #' @param ridgeplot.lineweight Scalar which sets the thickness of the ridgeplot outline.
 #' @param ridgeplot.scale Scalar which sets the distance/overlap between ridgeplots.
 #' A value of 1 means the tallest density curve just touches the baseline of the next higher one.
@@ -246,6 +247,7 @@ yPlot <- function(
     vlnplot.lineweight = 1,
     vlnplot.width = 1,
     vlnplot.scaling = "area",
+    vlnplot.quantiles = NULL,
     ridgeplot.lineweight = 1,
     ridgeplot.scale = 1.25,
     ridgeplot.ymax.expansion = NA,
@@ -308,7 +310,7 @@ yPlot <- function(
             boxplot.width, boxplot.color, boxplot.show.outliers, boxplot.fill,
             boxplot.position.dodge, boxplot.lineweight,
             vlnplot.lineweight, vlnplot.width, vlnplot.scaling,
-            add.line, line.linetype, line.color,
+            vlnplot.quantiles, add.line, line.linetype, line.color,
             x.labels.rotate, do.hover, y.breaks, min, max, data_frame)
     } else {
         p <- .yPlot_add_data_x_direction(
@@ -350,8 +352,8 @@ yPlot <- function(
     jitter.shape.legend.size, jitter.shape.legend.show, jitter.position.dodge,
     do.raster, raster.dpi,
     boxplot.width, boxplot.color, boxplot.show.outliers, boxplot.fill,
-    boxplot.position.dodge, boxplot.lineweight,
-    vlnplot.lineweight, vlnplot.width, vlnplot.scaling, add.line,
+    boxplot.position.dodge, boxplot.lineweight, vlnplot.lineweight,
+    vlnplot.width, vlnplot.scaling, vlnplot.quantiles, add.line,
     line.linetype, line.color, x.labels.rotate, do.hover, y.breaks, min, max,
     data_frame) {
     # This function takes in a partial yPlot ggplot data_frame without any data
@@ -375,6 +377,7 @@ yPlot <- function(
                 size = vlnplot.lineweight,
                 width = vlnplot.width,
                 scale = vlnplot.scaling,
+                draw_quantiles = vlnplot.quantiles,
                 na.rm = TRUE)
         }
 
