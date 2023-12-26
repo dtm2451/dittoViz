@@ -8,7 +8,7 @@
 #' # Generate some random data
 #' nobs <- 120
 #'
-#' # "Dimensionality Reductions"
+#' # Fake "PCA" that we'll based some other attributes on
 #' example_pca <- matrix(rnorm(nobs*2), nobs)
 #'
 #' example_df <- data.frame(

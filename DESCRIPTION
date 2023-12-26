@@ -18,7 +18,6 @@ Description: A comprehensive visualization toolkit built with coders of any
     selected dittoColors.
 License: MIT + file LICENSE
 Encoding: UTF-8
-LazyData: true
 Depends: ggplot2
 Imports: cowplot,
     ggrepel,
