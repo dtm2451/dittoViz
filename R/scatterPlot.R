@@ -4,14 +4,19 @@
 #' @param data_frame A data_frame where columns are features and rows are observations you wish to visualize.
 #' @param x.by,y.by Single strings denoting the name of a column of \code{data_frame} containing numeric data to use for the x- and y-axis of the scatterplot.
 #' @param color.by Single string denoting the name of a column of \code{data_frame} to use for setting the color of plotted points.
+#' Alternatively, a string vector naming multiple such columns of data to plot at once.
 #' @param shape.by Single string denoting the name of a column of \code{data_frame} containing discrete data to use for setting the shape of plotted points.
+#' @param multivar.split.dir "row" or "col", sets the direction of faceting used for 'var' values when: \itemize{
+#' \item \code{var} is given multiple column names
+#' \item AND \code{split.by} is used to provide an additional feature to facet by
+#' }
 #' @param split.by 1 or 2 strings denoting the name(s) of column(s) of \code{data_frame} containing discrete data to use for faceting / separating data points into separate plots.
 #'
 #' When 2 columns are named, c(row,col), the first is used as rows and the second is used for columns of the resulting facet grid.
 #'
 #' When 1 column is named, shape control can be achieved with \code{split.nrow} and \code{split.ncol}
 #'
-#' @param split.nrow,split.ncol Integers which set the dimensions of faceting/splitting when a single column name is given to \code{split.by}.
+#' @param split.nrow,split.ncol Integers which set the dimensions of faceting/splitting when faceting by a single feature.
 #' @param split.show.all.others Logical which sets whether gray "others" points of facets should include all points of other facets (\code{TRUE}) versus just points left out by \code{rows.use} which would exist in the current facet (\code{FALSE}).
 #' @param split.adjust A named list which allows extra parameters to be pushed through to the faceting function call.
 #' List elements should be valid inputs to the faceting functions, e.g. `list(scales = "free")`.
@@ -30,19 +35,19 @@
 #' @param colors Integer vector, the indexes / order, of colors from \code{color.panel} to actually use.
 #'
 #' Useful for quickly swapping around colors of the default set (when not using names for color matching).
-#' @param color.adjustment A recognized string indicating whether numeric \code{color.by} data should be used directly (default) or should be adjusted to be
+#' @param x.adjustment,y.adjustment,color.adjustment A recognized string indicating whether numeric \code{x.by}, \code{y.by}, and \code{color.by} data should be used directly (default) or should be adjusted to be
 #' \itemize{
 #' \item{"z-score": scaled with the scale() function to produce a relative-to-mean z-score representation}
-#' \item{"relative.to.max": divided by the maximum expression value to give percent of max values between [0,1]}
+#' \item{"relative.to.max": divided by the maximum value to give percent of max values between [0,1]}
 #' }
 #'
-#' Ignored if the \code{color.by} data is not numeric as these known adjustments target numeric data only.
-#' @param color.adj.fxn If you wish to apply a function to edit the \code{color.by} data before use, in a way not possible with the \code{color.adjustment} input,
+#' Ignored if the target data is not numeric as these known adjustments target numeric data only.
+#' @param x.adj.fxn,y.adj.fxn,color.adj.fxn If you wish to apply a function to edit the \code{x.by}, \code{y.by}, or \code{color.by} data before use, in a way not possible with the \code{color.adjustment} input,
 #' this input can be given a function which takes in a vector of values as input and returns a vector of values of the same length as output.
 #'
 #' For example, \code{function(x) \{log2(x)\}} or \code{as.factor}.
 #'
-#' A new column, named "\code{color.by}-adj", with this function applied will be added to the data.frames used for plotting, and that data will be used rather than the original \code{color.by} column.
+#' A new column, named "\code{x.by}-adj", "\code{y.by}-adj", or "\code{color.by}-adj", with this function applied will be added to the data.frame used for plotting, and that data will be used rather than the original column.
 #' @param do.hover Logical which controls whether the ggplot output will be converted to a plotly object so that data about individual points can be displayed when you hover your cursor over them.
 #' The \code{hover.data} argument is used to determine what data to show upon hover.
 #' @param hover.data String vector of column names of \code{data_frame} which denotes what data to show for each data point, upon hover, when \code{do.hover} is set to \code{TRUE}.
@@ -100,11 +105,16 @@
 #' @param raster.dpi Number indicating dots/pixels per inch (dpi) to use for rasterization. Default = 300.
 #' @param data.out Logical. When set to \code{TRUE}, changes the output, from the plot alone, to a list containing the plot ("p"),
 #' a data.frame containing the underlying data for target rows ("Target_data"),
-#' and a data.frame containing the underlying data for non-target rows ("Others_data").
+#' a data.frame containing the underlying data for non-target rows ("Others_data"),
+#' and the ultimately used mapping of columns to given aesthetic sets ("cols_used"), because modification of newly made columns is required for many features.
 #'
 #' @return a ggplot scatterplot where colored dots and/or shapes represent individual rows of the given \code{data_frame}.
 #'
-#' Alternatively, if \code{data.out=TRUE}, a list containing three slots is output: the plot (named 'p'), a data.frame containing the underlying data for target rows (named 'Target_data'), and a data.frame containing the underlying data for non-target rows (named 'Others_data').
+#' Alternatively, if \code{data.out=TRUE}, a list containing four slots is output:
+#' the plot (named 'p'),
+#' a data.frame containing the underlying data for target rows (named 'Target_data'),
+#' a data.frame containing the underlying data for non-target rows (named 'Others_data'),
+#' and a list providing mappings of final column names in 'Target_data' to given plot aesthetics (named 'cols_used') because modification of newly made columns is required for many features.
 #'
 #' Alternatively, if \code{do.hover} is set to \code{TRUE}, the plot is coverted from ggplot to plotly &
 #' additional information about each data point, determined by the \code{hover.data} input, is displayed upon hovering the cursor over the plot.
@@ -206,7 +216,21 @@
 #'     labels.highlight = FALSE, # Removes white background behind labels
 #'     labels.repel = FALSE)     # Turns off anti-overlap location adjustments
 #'
-#' # Sometimes, it can be useful for external editing or troubleshooting purposed
+#' # Faceting can also be used to show multiple continuous variables side-by-side
+#' #   by giving a vector of column names to 'color.by'.
+#' #   This can also be combined with 1 'split.by' variable, with direction then
+#' #   controlled via 'multivar.split.dir':
+#' scatterPlot(example_df, x.by = "PC1", y.by = "PC2",
+#'     color.by = c("gene1", "gene2"))
+#' scatterPlot(example_df, x.by = "PC1", y.by = "PC2",
+#'     color.by = c("gene1", "gene2"),
+#'     split.by = "groups")
+#' scatterPlot(example_df, x.by = "PC1", y.by = "PC2",
+#'     color.by = c("gene1", "gene2"),
+#'     split.by = "groups",
+#'     multivar.split.dir = "row")
+#'
+#' # Sometimes, it can be useful for external editing or troubleshooting purposes
 #' #   to see the underlying data that was directly used for plotting.
 #' # 'data.out = TRUE' can be provided in order to obtain not just plot ("plot"),
 #' #   but also the "Target_data" and "Others_data" data.frames returned as a list.
@@ -227,7 +251,11 @@ scatterPlot <- function(
     size = 1,
     rows.use = NULL,
     show.others = TRUE,
+    x.adjustment = NULL,
+    y.adjustment = NULL,
     color.adjustment = NULL,
+    x.adj.fxn = NULL,
+    y.adj.fxn = NULL,
     color.adj.fxn = NULL,
     split.show.all.others = TRUE,
     opacity = 1,
@@ -236,6 +264,7 @@ scatterPlot <- function(
     split.nrow = NULL,
     split.ncol = NULL,
     split.adjust = list(),
+    multivar.split.dir = c("col", "row"),
     shape.panel = c(16,15,17,23,25,8),
     rename.color.groups = NULL,
     rename.shape.groups = NULL,
@@ -267,7 +296,7 @@ scatterPlot <- function(
     labels.repel.adjust = list(),
     labels.split.by = split.by,
     legend.show = TRUE,
-    legend.color.title = color.by,
+    legend.color.title = "make",
     legend.color.size = 5,
     legend.color.breaks = waiver(),
     legend.color.breaks.labels = waiver(),
@@ -279,75 +308,60 @@ scatterPlot <- function(
     data.out = FALSE) {
 
     plot.order <- match.arg(plot.order)
+    multivar.split.dir <- match.arg(multivar.split.dir)
 
     # Standardize rows vectors.
     rows.use <- .which_rows(rows.use, data_frame)
     all.rows <- .all_rows(data_frame)
 
-    ### Make dataframe edits
-    # Adjustments
-    if (!is.null(color.adjustment) || !is.null(color.adj.fxn)) {
-        new.color.by <- paste0(color.by, "-adj")
-        data_frame[,new.color.by] <-
-            ._col(color.by, data_frame, color.adjustment, color.adj.fxn)
-        color.by <- new.color.by
-    }
-    # Relabels/reorders
-    if (!is.null(color.by)) {
-        data_frame[,color.by] <- .rename_and_or_reorder(
-            data_frame[,color.by], reorder = NULL, relabels = rename.color.groups)
-    }
-    if (!is.null(shape.by)) {
-        data_frame[,shape.by] <- .rename_and_or_reorder(
-            data_frame[,shape.by], reorder = NULL, relabels = rename.shape.groups)
-    }
-    # Hover prep
-    if (do.hover) {
-        data_frame$hover.string <- .make_hover_strings_from_df(
-            data_frame[,hover.data,drop=FALSE])
-    }
+    # Set titles if "make"
+    main <- .leave_default_or_null(
+        main, paste0(unique(c(color.by, shape.by)), collapse = " and "))
+    legend.color.title <- .leave_default_or_null(
+        legend.color.title, color.by, null.if = length(color.by)>1)
 
-    # Trim by rows.use, then order if wanted
-    Target_data <- data_frame[rows.use,]
-    Others_data <- data_frame[!(all.rows %in% rows.use),]
+    ### Make dataframe edits
+    edit_outs <- .data_adjust_scatter(
+        data_frame, x.by, y.by, color.by, shape.by, split.by,
+        x.adjustment, y.adjustment, color.adjustment,
+        x.adj.fxn, y.adj.fxn, color.adj.fxn,
+        rename.color.groups, rename.shape.groups,
+        multivar.split.dir, rows.use, do.hover, hover.data
+    )
+    Target_data <- edit_outs$data_use
+    Others_data <- edit_outs$data_other
+    cols_use <- edit_outs$cols_use
 
     if (plot.order %in% c("increasing", "decreasing")) {
-        decreasing <- switch(plot.order,
-                             "decreasing" = TRUE,
-                             "increasing" = FALSE)
-        Target_data <- Target_data[order(Target_data[,color.by], decreasing = decreasing),]
+        Target_data <- Target_data[order(Target_data[,cols_use$color.by], decreasing = plot.order=="decreasing"),]
     } else if (plot.order == "randomize") {
         Target_data <- Target_data[sample(nrow(Target_data)),]
     }
 
-    # Set title if "make"
-    main <- .leave_default_or_null(
-        main, paste0(c(color.by, shape.by), collapse = " and "))
-
     # Make the plot
     p <- .scatter_plot(
-        Target_data, Others_data, x.by, y.by,
-        color.by, shape.by, show.others, size, opacity,
+        Target_data, Others_data, cols_use$x.by, cols_use$y.by,
+        cols_use$color.by, cols_use$shape.by, show.others, size, opacity,
         color.panel, colors, do.hover, shape.panel,
         min.color, max.color, min.value, max.value,
         xlab, ylab, main, sub, theme,
         legend.show, legend.color.title, legend.color.size,
         legend.color.breaks, legend.color.breaks.labels, legend.shape.title,
         legend.shape.size, do.raster, raster.dpi,
-        split.by, split.show.all.others, show.grid.lines)
+        cols_use$split.by, split.show.all.others, show.grid.lines)
 
     ### Add extra features
-    if (!is.null(split.by)) {
+    if (!is.null(cols_use$split.by)) {
         p <- .add_splitting(
-            p, split.by, split.nrow, split.ncol, split.adjust)
+            p, cols_use$split.by, split.nrow, split.ncol, split.adjust)
     }
 
     if (do.contour) {
-        p <- .add_contours(p, Target_data, x.by, y.by, contour.color, contour.linetype)
+        p <- .add_contours(p, Target_data, cols_use$x.by, cols_use$y.by, contour.color, contour.linetype)
     }
 
     p <- .add_letters_ellipses_labels_if_discrete(
-        p, Target_data, x.by, y.by, color.by,
+        p, Target_data, cols_use$x.by, cols_use$y.by, cols_use$color.by,
         do.letter, do.ellipse, do.label,
         labels.highlight, labels.size, labels.repel, labels.split.by,
         labels.repel.adjust,
@@ -355,7 +369,7 @@ scatterPlot <- function(
 
     if (is.list(add.trajectory.by.groups)) {
         p <- .add_trajectories_by_groups(
-            p, data_frame, x.by, y.by, add.trajectory.by.groups,
+            p, data_frame, cols_use$x.by, cols_use$y.by, add.trajectory.by.groups,
             trajectory.group.by, trajectory.arrow.size)
     }
 
@@ -374,7 +388,8 @@ scatterPlot <- function(
         list(
             plot = p,
             Target_data = Target_data,
-            Others_data = Others_data)
+            Others_data = Others_data,
+            cols_used = cols_use)
     } else{
         p
     }
@@ -461,7 +476,7 @@ scatterPlot <- function(
 
         p <- p +
             scale_shape_manual(
-                values = shape.panel[seq_along(levels(Target_data[,shape.by]))],
+                values = shape.panel[seq_along(levels(as.factor(Target_data[,shape.by])))],
                 name = legend.shape.title) +
             guides(shape = guide_legend(override.aes = list(size=legend.shape.size)))
 

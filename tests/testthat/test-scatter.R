@@ -1,5 +1,5 @@
 # Tests for scatterPlot function
-# library(dittoViz); library(testthat); source("tests/testthat/setup.R"); source("tests/testthat/test-scatter.R")
+# library(dittoViz); library(testthat); source("tests/testthat/setup.R"); for (i in list.files("R", pattern="^utils", full.names = TRUE)) source(i); source("tests/testthat/test-scatter.R")
 
 df$number <- as.numeric(seq_len(nrow(df)))
 cont <- "number"
@@ -188,6 +188,43 @@ test_that("scatterPlots titles and theme can be adjusted", {
             df, "PC1", "PC2", cont,
             theme = theme_classic()),
         "ggplot")
+})
+
+test_that("scatterPlot allows plotting of multiple vars, via faceting", {
+    expect_s3_class(
+        scatterPlot(
+            data_frame=df, x.by=cont, y.by=cont2, c(cont, cont2)),
+        "ggplot")
+
+    # These should have transposed facet grids
+    expect_s3_class(
+        print(scatterPlot(
+            data_frame=df, x.by=cont, y.by=cont2, c(cont, cont2),
+            split.by = disc2)),
+        "ggplot")
+    expect_s3_class(
+        print(scatterPlot(
+            data_frame=df, x.by=cont, y.by=cont2, c(cont, cont2),
+            split.by = disc2, multivar.split.dir = "row")),
+        "ggplot")
+
+    # Works with rows.use
+    expect_s3_class(
+        scatterPlot(
+            data_frame=df, x.by=cont, y.by=cont2, c(cont, cont2),
+            rows.use = rows.logical),
+        "ggplot")
+
+    expect_error(
+        scatterPlot(
+            data_frame=df, x.by=cont, y.by=cont2, c(disc, cont, cont2)),
+        "Only numeric", fixed = TRUE)
+
+    expect_warning(
+        scatterPlot(
+            data_frame=df, x.by=cont, y.by=cont2, c(cont, cont2),
+            split.by = c(disc2,disc)),
+        "will be ignored", fixed = TRUE)
 })
 
 test_that("scatterPlots discrete labels can be adjusted", {
@@ -587,4 +624,29 @@ test_that("scatterPlot added features work with double-column faceting", {
                     c(5:10,9:5,6:10))),
             split.show.all.others = FALSE)),
         NA)
+})
+
+# adjustments
+test_that("scatterPlot data adjustments applied", {
+    expect_s3_class(
+        (p <- scatterPlot(
+            cont, data_frame = df, x.by=cont, y.by=cont, data.out = TRUE,
+            x.adj.fxn=function(x) as.vector(scale(x)),
+            y.adj.fxn=function(x) {round(as.vector(scale(x)), 0)},
+            color.adjustment = "z-score"))$plot, "ggplot")
+    expect_equal(
+        p$Target_data[[p$cols_used$y.by]],
+        round(p$Target_data[[p$cols_used$x.by]],0))
+    expect_equal(
+        round(mean(p$Target_data[[p$cols_used$x.by]]),0),
+        0)
+    expect_equal(
+        p$Target_data[[p$cols_used$color.by]],
+        p$Target_data[[p$cols_used$x.by]])
+    expect_s3_class(
+        (p <- scatterPlot(
+            cont, data_frame = df, x.by=cont, y.by=cont, data.out = TRUE,
+            y.adjustment= "relative.to.max"))$plot, "ggplot")
+    expect_equal(
+        max(p$Target_data[[p$cols_used$y.by]]), 1)
 })

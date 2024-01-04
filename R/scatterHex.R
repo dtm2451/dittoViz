@@ -10,19 +10,6 @@
 #'
 #' \strong{Discrete}: A string signifying whether the color should (default) be simply based on the "max" grouping of the bin,
 #' or based on the "max.prop"ortion of observations belonging to any grouping.
-#' @param x.adjustment,y.adjustment,color.adjustment A recognized string indicating whether numeric \code{x.by}, \code{y.by}, and \code{color.by} data should be used directly (default) or should be adjusted to be
-#' \itemize{
-#' \item{"z-score": scaled with the scale() function to produce a relative-to-mean z-score representation}
-#' \item{"relative.to.max": divided by the maximum expression value to give percent of max values between [0,1]}
-#' }
-#'
-#' Ignored if the target data is not numeric as these known adjustments target numeric data only.
-#' @param x.adj.fxn,y.adj.fxn,color.adj.fxn If you wish to apply a function to edit the \code{x.by}, \code{y.by}, or \code{color.by} data before use, in a way not possible with the \code{color.adjustment} input,
-#' this input can be given a function which takes in a vector of values as input and returns a vector of values of the same length as output.
-#'
-#' For example, \code{function(x) \{log2(x)\}} or \code{as.factor}.
-#'
-#' A new column, named "\code{x.by}-adj", "\code{y.by}-adj", or "\code{color.by}-adj", with this function applied will be added to the data.frame used for plotting, and that data will be used rather than the original column.
 #' @param legend.density.title,legend.color.title Strings which set the title for the legends.
 #' @param legend.density.breaks,legend.color.breaks Numeric vector which sets the discrete values to label in the density and color.by legends.
 #' @param legend.density.breaks.labels,legend.color.breaks.labels String vector, with same length as \code{legend.*.breaks}, which sets the labels for the tick marks or hex icons of the associated legend.
@@ -34,7 +21,8 @@
 #' @param main String, sets the plot title. The default title is either "Density", \code{color.by}, or NULL, depending on the identity of \code{color.by}.
 #' To remove, set to \code{NULL}.
 #' @param data.out Logical. When set to \code{TRUE}, changes the output from the plot alone to a list containing the plot ("plot"),
-#' and data.frame of the underlying data for target observations ("data").
+#' and data.frame of the underlying data for target observations ("data"),
+#' and the ultimately used mapping of columns to given aesthetic sets, because modification of newly made columns is required for many features ("cols_used").
 #'
 #' @details
 #' This function first makes any requested adjustments to data in the given \code{data_frame}, internally only, such as scaling the \code{color.by}-column if \code{color.adjustment} was given \code{"z-score"}.
@@ -50,7 +38,10 @@
 #'
 #' @return A ggplot object where colored hexagonal bins are used to summarize observations in a scatter plot.
 #'
-#' Alternatively, if \code{data.out=TRUE}, a list containing two slots is output: the plot (named 'plot'), and a data.table containing the updated underlying data for target rows (named 'data').
+#' Alternatively, if \code{data.out=TRUE}, a list containing three slots is output:
+#' the plot (named 'plot'),
+#' a data.table containing the updated underlying data for target rows (named 'data'),
+#' and a list providing mappings of final column names in 'data' to given plot aesthetics (named 'cols_used'), because modification of newly made columns is required for many features.
 #'
 #' @section Many characteristics of the plot can be adjusted using discrete inputs:
 #' \itemize{
@@ -154,7 +145,21 @@
 #'     labels.highlight = FALSE, # Removes white background behind labels
 #'     labels.repel = FALSE)     # Turns off anti-overlap location adjustments
 #'
-#' # Sometimes, it can be useful for external editing or troubleshooting purposed
+#' # Faceting can also be used to show multiple continuous variables side-by-side
+#' #   by giving a vector of column names to 'color.by'.
+#' #   This can also be combined with 1 'split.by' variable, with direction then
+#' #   controlled via 'multivar.split.dir':
+#' scatterHex(example_df, x.by = "PC1", y.by = "PC2", bins = 10,
+#'     color.by = c("gene1", "gene2"))
+#' scatterHex(example_df, x.by = "PC1", y.by = "PC2", bins = 10,
+#'     color.by = c("gene1", "gene2"),
+#'     split.by = "groups")
+#' scatterHex(example_df, x.by = "PC1", y.by = "PC2", bins = 10,
+#'     color.by = c("gene1", "gene2"),
+#'     split.by = "groups",
+#'     multivar.split.dir = "row")
+#'
+#' # Sometimes, it can be useful for external editing or troubleshooting purposes
 #' #   to see the underlying data that was directly used for plotting.
 #' # 'data.out = TRUE' can be provided in order to obtain not just plot ("plot"),
 #' #   but also the "data" returned as a list.
@@ -182,7 +187,7 @@ scatterHex <- function(
         x.adj.fxn = NULL,
         y.adj.fxn = NULL,
         color.adj.fxn = NULL,
-        # multivar.split.dir = c("col", "row"),
+        multivar.split.dir = c("col", "row"),
         split.nrow = NULL,
         split.ncol = NULL,
         split.adjust = list(),
@@ -226,44 +231,28 @@ scatterHex <- function(
 
     # Standardize rows.use vector
     rows.use <- .which_rows(rows.use, data_frame)
-    # multivar.split.dir <- match.arg(multivar.split.dir)
+    multivar.split.dir <- match.arg(multivar.split.dir)
 
     ### Make dataframe edits
-    # Adjustments
-    if (!is.null(x.adjustment) || !is.null(x.adj.fxn)) {
-        new.x.by <- paste0(x.by, ".x.adj")
-        data_frame[,new.x.by] <-
-            ._col(x.by, data_frame, x.adjustment, x.adj.fxn)
-        x.by <- new.x.by
-    }
-    if (!is.null(y.adjustment) || !is.null(y.adj.fxn)) {
-        new.y.by <- paste0(y.by, ".y.adj")
-        data_frame[,new.y.by] <-
-            ._col(y.by, data_frame, y.adjustment, y.adj.fxn)
-        y.by <- new.y.by
-    }
-    if (!is.null(color.adjustment) || !is.null(color.adj.fxn)) {
-        new.color.by <- paste0(color.by, ".color.adj")
-        data_frame[,new.color.by] <-
-            ._col(color.by, data_frame, color.adjustment, color.adj.fxn)
-        color.by <- new.color.by
-    }
-    # Relabels/reorders
-    if (!is.null(color.by)) {
-        data_frame[,color.by] <- .rename_and_or_reorder(
-            data_frame[,color.by], reorder = NULL, relabels = rename.color.groups)
-    }
-    data <- data_frame[rows.use, ]
+    edit_outs <- .data_adjust_scatter(
+        data_frame, x.by, y.by, color.by, NA, split.by,
+        x.adjustment, y.adjustment, color.adjustment,
+        x.adj.fxn, y.adj.fxn, color.adj.fxn,
+        rename.color.groups, NULL,
+        multivar.split.dir, rows.use, FALSE, NULL
+    )
+    data <- edit_outs$data_use
+    cols_use <- edit_outs$cols_use
 
     # Parse coloring methods
     color_by_var <- FALSE
     discrete_disp <- FALSE
     discrete_data <- FALSE
 
-    if (!is.null(color.by)) {
+    if (!is.null(cols_use$color.by)) {
         color_by_var <- TRUE
 
-        if (!is.numeric(data[,color.by])) {
+        if (!is.numeric(data[,cols_use$color.by])) {
             discrete_data <- TRUE
 
             if (!("max.prop" %in% color.method)) {
@@ -301,7 +290,7 @@ scatterHex <- function(
 
     # Make the plot
     p <- .scatter_hex(
-        data, x.by, y.by, color.by,
+        data, cols_use$x.by, cols_use$y.by, cols_use$color.by,
         bins, color_by_var, discrete_disp, color.method, color.panel, colors,
         min.density, max.density, min.color, max.color,
         min.opacity, max.opacity, min, max,
@@ -311,24 +300,24 @@ scatterHex <- function(
         show.grid.lines)
 
     ### Add extra features
-    if (!is.null(split.by)) {
+    if (!is.null(cols_use$split.by)) {
         p <- .add_splitting(
-            p, split.by, split.nrow, split.ncol, split.adjust)
+            p, cols_use$split.by, split.nrow, split.ncol, split.adjust)
     }
 
     if (do.contour) {
-        p <- .add_contours(p, data, x.by, y.by, contour.color,  contour.linetype)
+        p <- .add_contours(p, data, cols_use$x.by, cols_use$y.by, contour.color,  contour.linetype)
     }
 
     p <- .add_letters_ellipses_labels_if_discrete(
-        p, data, x.by, y.by, color.by,
+        p, data, cols_use$x.by, cols_use$y.by, cols_use$color.by,
         FALSE, do.ellipse, do.label,
         labels.highlight, labels.size, labels.repel, labels.split.by,
         labels.repel.adjust)
 
     if (is.list(add.trajectory.by.groups)) {
         p <- .add_trajectories_by_groups(
-            p, data_frame, x.by, y.by, add.trajectory.by.groups,
+            p, data_frame, cols_use$x.by, cols_use$y.by, add.trajectory.by.groups,
             trajectory.group.by, trajectory.arrow.size)
     }
 
@@ -339,9 +328,9 @@ scatterHex <- function(
 
     ### RETURN the PLOT ###
     if (data.out) {
-        return(list(plot = p, data = data))
+        list(plot = p, data = data, cols_used = edit_outs$cols_use)
     } else{
-        return(p)
+        p
     }
 }
 

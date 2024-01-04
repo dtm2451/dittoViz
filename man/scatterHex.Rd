@@ -21,6 +21,7 @@ scatterHex(
   x.adj.fxn = NULL,
   y.adj.fxn = NULL,
   color.adj.fxn = NULL,
+  multivar.split.dir = c("col", "row"),
   split.nrow = NULL,
   split.ncol = NULL,
   split.adjust = list(),
@@ -68,7 +69,8 @@ scatterHex(
 
 \item{x.by, y.by}{Single strings denoting the name of a column of \code{data_frame} containing numeric data to use for the x- and y-axis of the scatterplot.}
 
-\item{color.by}{Single string denoting the name of a column of \code{data_frame} to use for setting the color of plotted points.}
+\item{color.by}{Single string denoting the name of a column of \code{data_frame} to use for setting the color of plotted points.
+Alternatively, a string vector naming multiple such columns of data to plot at once.}
 
 \item{bins}{Numeric or numeric vector giving the number of hexagonal bins in the x and y directions. Set to 30 by default.}
 
@@ -103,7 +105,7 @@ Useful for quickly swapping around colors of the default set (when not using nam
 \item{x.adjustment, y.adjustment, color.adjustment}{A recognized string indicating whether numeric \code{x.by}, \code{y.by}, and \code{color.by} data should be used directly (default) or should be adjusted to be
 \itemize{
 \item{"z-score": scaled with the scale() function to produce a relative-to-mean z-score representation}
-\item{"relative.to.max": divided by the maximum expression value to give percent of max values between [0,1]}
+\item{"relative.to.max": divided by the maximum value to give percent of max values between [0,1]}
 }
 
 Ignored if the target data is not numeric as these known adjustments target numeric data only.}
@@ -115,7 +117,12 @@ For example, \code{function(x) \{log2(x)\}} or \code{as.factor}.
 
 A new column, named "\code{x.by}-adj", "\code{y.by}-adj", or "\code{color.by}-adj", with this function applied will be added to the data.frame used for plotting, and that data will be used rather than the original column.}
 
-\item{split.nrow, split.ncol}{Integers which set the dimensions of faceting/splitting when a single column name is given to \code{split.by}.}
+\item{multivar.split.dir}{"row" or "col", sets the direction of faceting used for 'var' values when: \itemize{
+\item \code{var} is given multiple column names
+\item AND \code{split.by} is used to provide an additional feature to facet by
+}}
+
+\item{split.nrow, split.ncol}{Integers which set the dimensions of faceting/splitting when faceting by a single feature.}
 
 \item{split.adjust}{A named list which allows extra parameters to be pushed through to the faceting function call.
 List elements should be valid inputs to the faceting functions, e.g. `list(scales = "free")`.
@@ -188,12 +195,16 @@ List elements should be valid inputs to the \code{\link[ggrepel]{geom_label_repe
 \item{show.grid.lines}{Logical which sets whether grid lines should be shown within the plot space.}
 
 \item{data.out}{Logical. When set to \code{TRUE}, changes the output from the plot alone to a list containing the plot ("plot"),
-and data.frame of the underlying data for target observations ("data").}
+and data.frame of the underlying data for target observations ("data"),
+and the ultimately used mapping of columns to given aesthetic sets, because modification of newly made columns is required for many features ("cols_used").}
 }
 \value{
 A ggplot object where colored hexagonal bins are used to summarize observations in a scatter plot.
 
-Alternatively, if \code{data.out=TRUE}, a list containing two slots is output: the plot (named 'plot'), and a data.table containing the updated underlying data for target rows (named 'data').
+Alternatively, if \code{data.out=TRUE}, a list containing three slots is output:
+the plot (named 'plot'),
+a data.table containing the updated underlying data for target rows (named 'data'),
+and a list providing mappings of final column names in 'data' to given plot aesthetics (named 'cols_used'), because modification of newly made columns is required for many features.
 }
 \description{
 scatter plot where observations are grouped into hexagonal bins and then summarized
@@ -311,7 +322,21 @@ scatterHex(example_df, x.by = "PC1", y.by = "PC2", color.by = "groups",
     labels.highlight = FALSE, # Removes white background behind labels
     labels.repel = FALSE)     # Turns off anti-overlap location adjustments
 
-# Sometimes, it can be useful for external editing or troubleshooting purposed
+# Faceting can also be used to show multiple continuous variables side-by-side
+#   by giving a vector of column names to 'color.by'.
+#   This can also be combined with 1 'split.by' variable, with direction then
+#   controlled via 'multivar.split.dir':
+scatterHex(example_df, x.by = "PC1", y.by = "PC2", bins = 10,
+    color.by = c("gene1", "gene2"))
+scatterHex(example_df, x.by = "PC1", y.by = "PC2", bins = 10,
+    color.by = c("gene1", "gene2"),
+    split.by = "groups")
+scatterHex(example_df, x.by = "PC1", y.by = "PC2", bins = 10,
+    color.by = c("gene1", "gene2"),
+    split.by = "groups",
+    multivar.split.dir = "row")
+
+# Sometimes, it can be useful for external editing or troubleshooting purposes
 #   to see the underlying data that was directly used for plotting.
 # 'data.out = TRUE' can be provided in order to obtain not just plot ("plot"),
 #   but also the "data" returned as a list.

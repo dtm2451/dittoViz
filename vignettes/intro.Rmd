@@ -4,7 +4,7 @@ author:
 - name: Daniel Bunis
   affiliation: Data Science CoLab, University of California, San Francisco
   email: daniel.bunis@ucsf.edu
-date: "Dec 26th, 2023"
+date: "Jan 3rd, 2024"
 output:
   BiocStyle::html_document:
     toc_float: true
@@ -36,8 +36,8 @@ The intention is for dittoViz to be a generalized version of the popular yet
 scRNAseq focused dittoSeq package. Although we have started with simply pulling
 the plotting features out of all dittoSeq's visualizations, the goal is to
 include many more plot types and to grow dittoViz into a comprehensive,
-data-type aganostic visualization suite. If there is a plot type missing that
-you would like to suggest we add, please do so by
+data-type agnostic visualization suite. If there is a plot type missing that
+you would like to suggest be added, please do so by
 [creating an issue](https://github.com/dtm2451/dittoViz/issues/new) on the
 github!
 
@@ -80,13 +80,13 @@ remotes::install_github("dtm2451/dittoViz")
 
 ## Input Data
 
-All dittoViz functions have a `data_frame` input which takes in data.frame-like
+All dittoViz functions have a `data_frame` input which takes a data.frame-like
 object with observations / individual data points in rows, and features of those
 observations in columns.
 
-Here, we'll make use of the documentation point `?dittoExampleData` which was
-created entirely in order to allow single-line, fast, generation of an example
-`data_frame` input:
+To get started here, we'll make use of the `?dittoExampleData` documentation
+point which was created entirely in order to allow single-line, fast, generation
+<!-- of an example `data_frame` input: -->
 
 ```{r}
 library(dittoViz)
@@ -268,6 +268,91 @@ freqPlot(
     var = "clustering",
     sample.by = "sample",
     group.by = "category")
+```
+
+## scatterHex
+
+An alternative to scatterPlot where instead of plotting each data point
+individually, observations are first binned into hexagonal regions, and then a
+summary from all observations of each bin is plotted.
+
+The plot type is most handy for very densely packed data, and allows plotting 1)
+observation density alone via color, or 2) observation density via opacity in
+addition to some other feature via color.
+
+```{r, results = "hold"}
+# Simplest Form, Density by color
+scatterHex(
+    data_frame = example_df,
+    x.by = "PC1", y.by = "PC2"
+)
+```
+
+```{r}
+# Colored instead via a discrete or numeric feature 
+scatterHex(
+    data_frame = example_df,
+    x.by = "PC1", y.by = "PC2",
+    color.by = "clustering")
+scatterHex(
+    data_frame = example_df,
+    x.by = "PC1", y.by = "PC2",
+    color.by = "gene1")
+```
+
+### Summary methods
+
+One key point of control lies how the `color.by` data are summarized. This is
+controlled with the `color.method` input. As we saw above, this input defaults
+to the "max" or most common value for discrete `color.by`-data, and to the
+median value for numeric `color.by` data.
+
+For discrete `color.by` data, we also offer `color.method = "max.prop"` for
+highlighting diversity among regions of the plot.
+
+For continuous `color.by` data, any named function which inputs a vector of
+numbers and outputs a single numberic value can be used.  E.g. mean, min, max,
+sum, or sd (standard deviation) might all be useful in a given context.
+
+```{r}
+scatterHex(
+    data_frame = example_df,
+    x.by = "PC1", y.by = "PC2",
+    color.by = "gene1",
+    color.method = "sum")
+```
+
+### Additional features
+
+All additional features of scatterPlot, that don't rely on plotting of all
+individual data points, are available here as well:
+
+- `do.label`
+- `do.ellipse`
+- `do.contour`
+- `do.hover`
+- `add.trajectory.by.groups`
+- `add.trajectory.curves`
+
+A few examples:
+
+```{r}
+# A bit noisy looking because we're adding a LOT of the extras here...
+scatterHex(
+    example_df, x.by = "PC1", y.by = "PC2", color.by = "clustering",
+    
+    do.label = TRUE,
+    labels.repel = FALSE,
+    
+    do.ellipse = TRUE,
+    
+    do.contour = TRUE,
+    contour.color = "gray90",
+    
+    add.trajectory.by.groups = list(
+        c(1,2),
+        c(1,4,3)),
+    trajectory.group.by = "clustering")
 ```
 
 # Customization via Simple Inputs 

@@ -10,19 +10,15 @@ disc2 <- "island"
 rows.names <- rownames(df)[1:40]
 rows.logical <- c(rep(TRUE, 40), rep(FALSE,nrow(df)-40))
 
-test_that("scatterHex can plot density as color or opacity", {
+test_that("scatterHex can plot density only, and continuous or discrete color.by data", {
     expect_s3_class(scatterHex(data_frame=df, x.by=cont1, y.by=cont2), "ggplot")
-    expect_s3_class(scatterHex(cont2, data_frame=df, x.by=cont1, y.by=cont2), "ggplot")
-})
-
-test_that("scatterHex - bins input adjusts number of bins", {
-    ### Manual check: Large bins
-    expect_s3_class(scatterHex(df, x.by=cont1, y.by=cont2, bins = 5), "ggplot")
-})
-
-test_that("scatterHex can plot continuous or discrete color.by data", {
     expect_s3_class(scatterHex(data_frame=df, x.by=cont1, y.by=cont2, disc), "ggplot")
     expect_s3_class(scatterHex(data_frame=df, x.by=cont1, y.by=cont2, cont2), "ggplot")
+})
+
+test_that("scatterHex - bins adjusts number of bins", {
+    ### Manual check: Large bins
+    expect_s3_class(scatterHex(df, x.by=cont1, y.by=cont2, bins = 5), "ggplot")
 })
 
 test_that("scatterHex - color.method options work for discrete data, and defaults to 'max'", {
@@ -124,18 +120,18 @@ test_that("scatterHex color scales can be adjusted for density (color)", {
 
     ### Manual check: Legend range adjusted and black to orange
     expect_s3_class(scatterHex(data_frame=df, x.by=cont1, y.by=cont2,
-                                min.density = -2, max.density = 2, min.color = "black", max.color = "orange"),
+                               min.density = -2, max.density = 2, min.color = "black", max.color = "orange"),
                     "ggplot")
 
     ### Manual check: Legend from 1:3
     expect_s3_class(scatterHex(data_frame=df, x.by=cont1, y.by=cont2,
-                                legend.density.breaks = seq(1:3)),
+                               legend.density.breaks = seq(1:3)),
                     "ggplot")
 
     ### Manual check: Plot looks similar to above except from "WOW", 2, to "HEY"
     expect_s3_class(scatterHex(data_frame=df, x.by=cont1, y.by=cont2,
-                                legend.density.breaks = seq(1:3),
-                                legend.density.breaks.labels = c("WOW",2,"HEY!")),
+                               legend.density.breaks = seq(1:3),
+                               legend.density.breaks.labels = c("WOW",2,"HEY!")),
                     "ggplot")
 })
 
@@ -143,18 +139,18 @@ test_that("scatterHex color scales can be adjusted for density (opacity)", {
 
     ### Manual check: Opacity legend range adjusted -2 to 2 & barely any different
     expect_s3_class(scatterHex(data_frame=df, x.by=cont1, y.by=cont2, cont2,
-                                min.density = -2, max.density = 2, min.opacity = 0.5, max.opacity = 0.6),
+                               min.density = -2, max.density = 2, min.opacity = 0.5, max.opacity = 0.6),
                     "ggplot")
 
     ### Manual check: Opacity legend breaks only at 1 and 3
     expect_s3_class(scatterHex(data_frame=df, x.by=cont1, y.by=cont2, cont2,
-                                legend.density.breaks = c(1,3)),
+                               legend.density.breaks = c(1,3)),
                     "ggplot")
 
     ### Manual check: Opaacity legend from "WOW", 2, to "HEY"
     expect_s3_class(scatterHex(data_frame=df, x.by=cont1, y.by=cont2, cont2,
-                                legend.density.breaks = seq(1:3),
-                                legend.density.breaks.labels = c("WOW",2,"HEY!")),
+                               legend.density.breaks = seq(1:3),
+                               legend.density.breaks.labels = c("WOW",2,"HEY!")),
                     "ggplot")
 })
 
@@ -226,6 +222,43 @@ test_that("scatterHex can be faceted with split.by (1 or 2 vars)", {
             split.by = c(disc2,disc),
             rows.use = rows.logical),
         "ggplot")
+})
+
+test_that("scatterHex allows plotting of multiple vars, via faceting", {
+    expect_s3_class(
+        scatterHex(
+            data_frame=df, x.by=cont1, y.by=cont2, c(cont1, cont2)),
+        "ggplot")
+
+    # Works with rows.use
+    expect_s3_class(
+        scatterHex(
+            data_frame=df, x.by=cont1, y.by=cont2, c(cont1, cont2),
+            rows.use = rows.logical),
+        "ggplot")
+
+    # These should have transposed facet grids
+    expect_s3_class(
+        print(scatterHex(
+            data_frame=df, x.by=cont1, y.by=cont2, c(cont1, cont2),
+            split.by = disc2)),
+        "ggplot")
+    expect_s3_class(
+        print(scatterHex(
+            data_frame=df, x.by=cont1, y.by=cont2, c(cont1, cont2),
+            split.by = disc2, multivar.split.dir = "row")),
+        "ggplot")
+
+    expect_error(
+        scatterHex(
+            data_frame=df, x.by=cont1, y.by=cont2, c(disc, cont1, cont2)),
+        "Only numeric", fixed = TRUE)
+
+    expect_warning(
+        scatterHex(
+            data_frame=df, x.by=cont1, y.by=cont2, c(cont1, cont2),
+            split.by = c(disc2,disc)),
+        "will be ignored", fixed = TRUE)
 })
 
 ##########
@@ -306,58 +339,27 @@ test_that("scatterHex ignores do.label/do.ellipse for continuous data", {
                    NA)
 })
 
-# test_that("scatterHex allows plotting of multiple vars, via faceting", {
-#     expect_s3_class(
-#         scatterHex(
-#             df, x.by=cont1, y.by=cont2, c("gene1","gene2","number")),
-#         "ggplot")
-#
-#     # These should have transposed facet grids
-#     expect_s3_class(
-#         print(scatterHex(
-#             df, x.by=cont1, y.by=cont2, c("gene1","gene2","number"),
-#             split.by = disc2)),
-#         "ggplot")
-#     expect_s3_class(
-#         print(scatterHex(
-#             df, x.by=cont1, y.by=cont2, c("gene1","gene2","number"),
-#             split.by = disc2, multivar.split.dir = "row")),
-#         "ggplot")
-#
-#     expect_error(
-#         scatterHex(
-#             df, x.by=cont1, y.by=cont2, c(disc,"gene2","number")),
-#         "Only numeric data")
-#
-#     expect_warning(
-#         scatterHex(
-#             df, x.by=cont1, y.by=cont2, c("gene1","gene2","number"),
-#             split.by = c(disc2,disc)),
-#         "second 'split.by' element will be ignored")
-# })
-
-
-##########
-# Additional checks for Scatter
-##########
-
-# assay/adjustment Scatter
-test_that("scatterHex gene display can utilize different data.types (excluding for hover)", {
-    expect_s3_class((p <- scatterHex(cont1, data_frame = df, x.by=cont1, y.by=cont1, data.out = TRUE,
-        x.adj.fxn=function(x) as.vector(scale(x)),
-        y.adj.fxn=function(x) {round(as.vector(scale(x)), 0)},
-        color.adjustment = "z-score"))$plot, "ggplot")
+# adjustments
+test_that("scatterPlot data adjustments applied", {
+    expect_s3_class(
+        (p <- scatterHex(
+            cont1, data_frame = df, x.by=cont1, y.by=cont1, data.out = TRUE,
+            x.adj.fxn=function(x) as.vector(scale(x)),
+            y.adj.fxn=function(x) {round(as.vector(scale(x)), 0)},
+            color.adjustment = "z-score"))$plot, "ggplot")
     expect_equal(
-        p$data[[paste0(cont1,".y.adj")]],
-        round(p$data[[paste0(cont1,".x.adj")]],0))
+        p$data[[p$cols_used$y.by]],
+        round(p$data[[p$cols_used$x.by]],0))
     expect_equal(
-        round(mean(p$data[[paste0(cont1,".x.adj")]]),0),
+        round(mean(p$data[[p$cols_used$x.by]]),0),
         0)
     expect_equal(
-        p$data[[paste0(cont1,".color.adj")]],
-        p$data[[paste0(cont1,".x.adj")]])
-    expect_s3_class((p <- scatterHex(cont1, data_frame = df, x.by=cont1, y.by=cont1, data.out = TRUE,
-        y.adjustment= "relative.to.max"))$plot, "ggplot")
+        p$data[[p$cols_used$color.by]],
+        p$data[[p$cols_used$x.by]])
+    expect_s3_class(
+        (p <- scatterHex(
+            cont1, data_frame = df, x.by=cont1, y.by=cont1, data.out = TRUE,
+            y.adjustment= "relative.to.max"))$plot, "ggplot")
     expect_equal(
-        max(p$data[[paste0(cont1,".y.adj")]]), 1)
+        max(p$data[[p$cols_used$y.by]]), 1)
 })

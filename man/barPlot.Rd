@@ -75,7 +75,7 @@ A named vector can be used if names are matched to the distinct values of the \c
 
 Useful for quickly swapping around colors of the default set (when not using names for color matching).}
 
-\item{split.nrow, split.ncol}{Integers which set the dimensions of faceting/splitting when a single column name is given to \code{split.by}.}
+\item{split.nrow, split.ncol}{Integers which set the dimensions of faceting/splitting when faceting by a single feature.}
 
 \item{split.adjust}{A named list which allows extra parameters to be pushed through to the faceting function call.
 List elements should be valid inputs to the faceting functions, e.g. `list(scales = "free")`.
