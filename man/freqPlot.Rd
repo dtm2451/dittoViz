@@ -66,7 +66,7 @@ freqPlot(
 )
 }
 \arguments{
-\item{data_frame}{A data_frame where columns are features and rows are observations you wish to visualize.}
+\item{data_frame}{A data_frame where columns are features and rows are observations you might wish to visualize.}
 
 \item{var}{Single string representing the name of a column of \code{data_frame} that contains the discrete data you wish to quantify as frequencies.}
 
@@ -112,7 +112,7 @@ See \code{\link[ggplot2]{facet_wrap}} for options.}
 
 Alternatively, a Logical vector, the same length as the number of rows in \code{data_frame}, where \code{TRUE} values indicate which rows to plot.}
 
-\item{data.out}{Logical. When set to \code{TRUE}, changes the output, from the plot alone, to a list containing the plot (\code{p}) and data (\code{data}).}
+\item{data.out}{Logical. When set to \code{TRUE}, changes the output, from the plot alone, to a list containing the plot (\code{p}), its underlying data (\code{data}).}
 
 \item{data.only}{Logical. When set to \code{TRUE}, the underlying data will be returned, but not the plot itself.}
 

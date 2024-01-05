@@ -38,7 +38,7 @@ barPlot(
 )
 }
 \arguments{
-\item{data_frame}{A data_frame where columns are features and rows are observations you wish to visualize.}
+\item{data_frame}{A data_frame where columns are features and rows are observations you might wish to visualize.}
 
 \item{var}{Single string representing the name of a column of \code{data_frame} to quantify within x-axis groups.}
 
@@ -75,7 +75,7 @@ A named vector can be used if names are matched to the distinct values of the \c
 
 Useful for quickly swapping around colors of the default set (when not using names for color matching).}
 
-\item{split.nrow, split.ncol}{Integers which set the dimensions of faceting/splitting when a single column name is given to \code{split.by}.}
+\item{split.nrow, split.ncol}{Integers which set the dimensions of faceting/splitting when faceting by a single feature.}
 
 \item{split.adjust}{A named list which allows extra parameters to be pushed through to the faceting function call.
 List elements should be valid inputs to the faceting functions, e.g. `list(scales = "free")`.

@@ -16,10 +16,13 @@ yPlot(
   split.by = NULL,
   rows.use = NULL,
   plots = c("vlnplot", "boxplot", "jitter"),
+  multivar.aes = c("split", "group", "color"),
+  multivar.split.dir = c("col", "row"),
   var.adjustment = NULL,
   var.adj.fxn = NULL,
   do.hover = FALSE,
-  hover.data = unique(c(var, paste0(var, "-adj"), group.by, shape.by)),
+  hover.data = unique(c(var, paste0(var, ".adj"), paste0(var, ".multi"), paste0(var,
+    ".which"), group.by, shape.by, split.by)),
   color.panel = dittoColors(),
   colors = seq_along(color.panel),
   shape.panel = c(16, 15, 17, 23, 25, 8),
@@ -30,7 +33,7 @@ yPlot(
   y.breaks = NULL,
   min = NA,
   max = NA,
-  xlab = group.by,
+  xlab = "make",
   x.labels = NULL,
   x.labels.rotate = NA,
   x.reorder = NULL,
@@ -76,9 +79,11 @@ ridgeJitter(..., plots = c("ridgeplot", "jitter"))
 boxPlot(..., plots = c("boxplot", "jitter"))
 }
 \arguments{
-\item{data_frame}{A data_frame where columns are features and rows are observations you wish to visualize.}
+\item{data_frame}{A data_frame where columns are features and rows are observations you might wish to visualize.}
 
-\item{var}{Single string representing the name of a column of \code{data_frame} to be used as the primary, y-axis, data.}
+\item{var}{Single string representing the name of a column of \code{data_frame} to be used as the primary, y-axis, data.
+Alternatively, a string vector naming multiple such columns of data to plot at once.
+See the input \code{multivar.aes} to understand or tweak how multiple var-data will be shown.}
 
 \item{group.by}{Single string representing the name of a column of \code{data_frame} containing discrete data to use for separating the data points into groups.}
 
@@ -104,20 +109,31 @@ Order matters: c("vlnplot", "boxplot", "jitter") will put a violin plot in the b
 
 See details section for more info.}
 
+\item{multivar.aes}{"split", "group", or "color", the plot feature to utilize for displaying 'var' value when \code{var} is given multiple column names.
+When set to "split" (the default), note that displaying the \code{var}-identity of the data will be prioritized so the \code{split.by} input becomes limited to receiving a single usable element.}
+
+\item{multivar.split.dir}{"row" or "col", sets the direction of faceting used for 'var' values when: \itemize{
+\item \code{var} is given multiple column names
+\item \code{multivar.aes = "split"} (default)
+\item AND \code{split.by} is used to provide an additional feature to facet by
+}}
+
 \item{var.adjustment}{A recognized string indicating whether numeric \code{var} data should be used directly (default) or should be adjusted to be
 \itemize{
 \item{"z-score": scaled with the scale() function to produce a relative-to-mean z-score representation}
 \item{"relative.to.max": divided by the maximum expression value to give percent of max values between [0,1]}
 }
 
-Ignored if the \code{var} data is not numeric as these known adjustments target numeric data only.}
+Ignored if the \code{var} data is not numeric as these known adjustments target numeric data only.
+
+In order to leave the unedited data available for use in other features, the adjusted data are put in a new column and that new column is used for plotting.}
 
 \item{var.adj.fxn}{If you wish to apply a function to edit the \code{var} data before use, in a way not possible with the \code{var.adjustment} input,
 this input can be given a function which takes in a vector of values as input and returns a vector of values of the same length as output.
 
 For example, \code{function(x) \{log2(x)\}} or \code{as.factor}.
 
-A new column, named "\code{var}-adj", with this function applied will be added to the data.frames used for plotting, and that data will be used rather than the original \code{var} column.}
+In order to leave the unedited data available for use in other features, the adjusted data are put in a new column and that new column is used for plotting.}
 
 \item{do.hover}{Logical which controls whether the ggplot output will be converted to a plotly object so that data about individual points can be displayed when you hover your cursor over them.
 The \code{hover.data} argument is used to determine what data to show upon hover.}
@@ -170,7 +186,7 @@ Values of x.reorder should be these indices, but in the order that you would lik
 Recommendation for advanced users: If you find yourself coming back to this input too many times, an alternative solution that can be easier long-term
 is to make the target data into a factor, and to put its levels in the desired order: \code{factor(data, levels = c("level1", "level2", ...))}.}
 
-\item{split.nrow, split.ncol}{Integers which set the dimensions of faceting/splitting when a single column name is given to \code{split.by}.}
+\item{split.nrow, split.ncol}{Integers which set the dimensions of faceting/splitting when faceting by a single feature.}
 
 \item{split.adjust}{A named list which allows extra parameters to be pushed through to the faceting function call.
 List elements should be valid inputs to the faceting functions, e.g. `list(scales = "free")`.
@@ -255,7 +271,8 @@ Defaults to "dashed", but any ggplot linetype will work.}
 
 \item{legend.title}{String or \code{NULL}, sets the title for the main legend which includes colors and data representations.}
 
-\item{data.out}{Logical. When set to \code{TRUE}, changes the output, from the plot alone, to a list containing the plot (\code{p}) and data (\code{data}).}
+\item{data.out}{Logical. When set to \code{TRUE}, changes the output, from the plot alone, to a list containing the plot (\code{p}), its underlying data (\code{data}),
+and the ultimately used mapping of columns to given aesthetic sets, because modification of newly made columns is required for many features ("cols_used").}
 
 \item{...}{arguments passed to yPlot by ridgePlot, ridgeJitter, and boxPlot wrappers.
 Options are all the ones above.}
@@ -263,7 +280,10 @@ Options are all the ones above.}
 \value{
 a ggplot where continuous data, grouped by sample, age, cluster, etc., shown on either the y-axis by a violin plot, boxplot, and/or jittered points, or on the x-axis by a ridgeplot with or without jittered points.
 
-Alternatively when \code{data.out=TRUE}, a list containing the plot ("p") and the underlying data as a dataframe ("data").
+Alternatively when \code{data.out=TRUE}, a list containing
+the plot ("p")
+the underlying data as a dataframe ("data"),
+and the ultimately used mapping of columns to given aesthetic sets ("cols_used"), because modification of newly made columns is required for many features.
 
 Alternatively when \code{do.hover = TRUE}, a plotly converted version of the ggplot where additional data will be displayed when the cursor is hovered over jitter points.
 }
@@ -329,6 +349,7 @@ example("dittoExampleData", echo = FALSE)
 
 # Basic yPlot, with jitter behind a vlnplot (looks better with more points)
 yPlot(data_frame = example_df, var = "gene1", group.by = "timepoint")
+yPlot(data_frame = example_df, var = c("gene1", "gene2"), group.by = "timepoint")
 
 # Color distinctly from the grouping variable using 'color.by'
 yPlot(data_frame = example_df, var = "gene1", group.by = "timepoint",
@@ -362,6 +383,19 @@ yPlot(data_frame = example_df, var = "gene1", group.by = "timepoint",
 yPlot(data_frame = example_df, var = "gene1", group.by = "timepoint",
     plots = c("vlnplot", "boxplot", "jitter"),
     split.by = c("groups","SNP")) # row and col split.by elements
+
+# Multiple features can also be plotted at once by giving them as a vector to
+#   the 'var' input. One aesthetic of the plot will then be used to display the
+#   'var'-info, and you can control which (faceting / "split", x-axis grouping
+#   / "group", or color / "color") with 'multivar.aes':
+yPlot(data_frame = example_df, group.by = "timepoint",
+    var = c("gene1", "gene2"))
+yPlot(data_frame = example_df, group.by = "timepoint",
+    var = c("gene1", "gene2"),
+    multivar.aes = "group")
+yPlot(data_frame = example_df, group.by = "timepoint",
+    var = c("gene1", "gene2"),
+    multivar.aes = "color")
 
 }
 \seealso{

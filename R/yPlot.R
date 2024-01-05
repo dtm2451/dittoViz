@@ -4,11 +4,20 @@
 #' @inheritParams scatterPlot
 #'
 #' @param var Single string representing the name of a column of \code{data_frame} to be used as the primary, y-axis, data.
+#' Alternatively, a string vector naming multiple such columns of data to plot at once.
+#' See the input \code{multivar.aes} to understand or tweak how multiple var-data will be shown.
 #' @param group.by Single string representing the name of a column of \code{data_frame} containing discrete data to use for separating the data points into groups.
 #' @param color.by Single string representing the name of a column of \code{data_frame} containing discrete data to use for setting data representation color fills.
 #' This data does not need to be the same as \code{group.by}, which is great for highlighting supersets or subgroups when wanted, but it defaults to \code{group.by} so the input can often be skipped.
 #' @param shape.by Single string representing the name of a column of \code{data_frame} containing discrete data to use for setting shapes of the jitter points.
 #' When not provided, all jitter points will be dots.
+#' @param multivar.aes "split", "group", or "color", the plot feature to utilize for displaying 'var' value when \code{var} is given multiple column names.
+#' When set to "split" (the default), note that displaying the \code{var}-identity of the data will be prioritized so the \code{split.by} input becomes limited to receiving a single usable element.
+#' @param multivar.split.dir "row" or "col", sets the direction of faceting used for 'var' values when: \itemize{
+#' \item \code{var} is given multiple column names
+#' \item \code{multivar.aes = "split"} (default)
+#' \item AND \code{split.by} is used to provide an additional feature to facet by
+#' }
 #' @param plots String vector which sets the types of plots to include: possibilities = "jitter", "boxplot", "vlnplot", "ridgeplot".
 #'
 #' Order matters: c("vlnplot", "boxplot", "jitter") will put a violin plot in the back, boxplot in the middle, and then individual dots in the front.
@@ -29,12 +38,14 @@
 #' }
 #'
 #' Ignored if the \code{var} data is not numeric as these known adjustments target numeric data only.
+#'
+#' In order to leave the unedited data available for use in other features, the adjusted data are put in a new column and that new column is used for plotting.
 #' @param var.adj.fxn If you wish to apply a function to edit the \code{var} data before use, in a way not possible with the \code{var.adjustment} input,
 #' this input can be given a function which takes in a vector of values as input and returns a vector of values of the same length as output.
 #'
 #' For example, \code{function(x) \{log2(x)\}} or \code{as.factor}.
 #'
-#' A new column, named "\code{var}-adj", with this function applied will be added to the data.frames used for plotting, and that data will be used rather than the original \code{var} column.
+#' In order to leave the unedited data available for use in other features, the adjusted data are put in a new column and that new column is used for plotting.
 #' @param main String, sets the plot title. Default = "make" and if left as make, a title will be automatically generated.  To remove, set to \code{NULL}.
 #' @param theme A ggplot theme which will be applied before internal adjustments.
 #' Default = \code{theme_classic()}.
@@ -104,13 +115,17 @@
 #' Takes precedence over \code{ridgeplot.bins} when provided.
 #' @param legend.show Logical. Whether the legend should be displayed. Default = \code{TRUE}.
 #' @param legend.title String or \code{NULL}, sets the title for the main legend which includes colors and data representations.
-#' @param data.out Logical. When set to \code{TRUE}, changes the output, from the plot alone, to a list containing the plot (\code{p}) and data (\code{data}).
+#' @param data.out Logical. When set to \code{TRUE}, changes the output, from the plot alone, to a list containing the plot (\code{p}), its underlying data (\code{data}),
+#' and the ultimately used mapping of columns to given aesthetic sets, because modification of newly made columns is required for many features ("cols_used").
 #' @param ... arguments passed to yPlot by ridgePlot, ridgeJitter, and boxPlot wrappers.
 #' Options are all the ones above.
 #'
 #' @return a ggplot where continuous data, grouped by sample, age, cluster, etc., shown on either the y-axis by a violin plot, boxplot, and/or jittered points, or on the x-axis by a ridgeplot with or without jittered points.
 #'
-#' Alternatively when \code{data.out=TRUE}, a list containing the plot ("p") and the underlying data as a dataframe ("data").
+#' Alternatively when \code{data.out=TRUE}, a list containing
+#' the plot ("p")
+#' the underlying data as a dataframe ("data"),
+#' and the ultimately used mapping of columns to given aesthetic sets ("cols_used"), because modification of newly made columns is required for many features.
 #'
 #' Alternatively when \code{do.hover = TRUE}, a plotly converted version of the ggplot where additional data will be displayed when the cursor is hovered over jitter points.
 #' @details
@@ -163,6 +178,7 @@
 #'
 #' # Basic yPlot, with jitter behind a vlnplot (looks better with more points)
 #' yPlot(data_frame = example_df, var = "gene1", group.by = "timepoint")
+#' yPlot(data_frame = example_df, var = c("gene1", "gene2"), group.by = "timepoint")
 #'
 #' # Color distinctly from the grouping variable using 'color.by'
 #' yPlot(data_frame = example_df, var = "gene1", group.by = "timepoint",
@@ -197,6 +213,19 @@
 #'     plots = c("vlnplot", "boxplot", "jitter"),
 #'     split.by = c("groups","SNP")) # row and col split.by elements
 #'
+#' # Multiple features can also be plotted at once by giving them as a vector to
+#' #   the 'var' input. One aesthetic of the plot will then be used to display the
+#' #   'var'-info, and you can control which (faceting / "split", x-axis grouping
+#' #   / "group", or color / "color") with 'multivar.aes':
+#' yPlot(data_frame = example_df, group.by = "timepoint",
+#'     var = c("gene1", "gene2"))
+#' yPlot(data_frame = example_df, group.by = "timepoint",
+#'     var = c("gene1", "gene2"),
+#'     multivar.aes = "group")
+#' yPlot(data_frame = example_df, group.by = "timepoint",
+#'     var = c("gene1", "gene2"),
+#'     multivar.aes = "color")
+#'
 #' @author Daniel Bunis
 #' @export
 
@@ -209,10 +238,12 @@ yPlot <- function(
     split.by = NULL,
     rows.use = NULL,
     plots = c("vlnplot","boxplot","jitter"),
+    multivar.aes = c("split", "group", "color"),
+    multivar.split.dir = c("col", "row"),
     var.adjustment = NULL,
     var.adj.fxn = NULL,
     do.hover = FALSE,
-    hover.data = unique(c(var, paste0(var,"-adj"), group.by, shape.by)),
+    hover.data = unique(c(var, paste0(var,".adj"), paste0(var,".multi"), paste0(var,".which"), group.by, shape.by, split.by)),
     color.panel = dittoColors(),
     colors = seq_along(color.panel),
     shape.panel = c(16,15,17,23,25,8),
@@ -223,7 +254,7 @@ yPlot <- function(
     y.breaks = NULL,
     min = NA,
     max = NA,
-    xlab = group.by,
+    xlab = "make",
     x.labels = NULL,
     x.labels.rotate = NA,
     x.reorder = NULL,
@@ -262,6 +293,8 @@ yPlot <- function(
     data.out = FALSE) {
 
     ridgeplot.shape <- match.arg(ridgeplot.shape)
+    multivar.aes <- match.arg(multivar.aes)
+    multivar.split.dir <- match.arg(multivar.split.dir)
 
     #Populate rows.use with a list of names if it was given anything else.
     rows.use <- .which_rows(rows.use, data_frame)
@@ -269,40 +302,68 @@ yPlot <- function(
 
     #Parse Title Defaults
     main <- .leave_default_or_null(
-        main, default = var)
+        main, default = paste0(unique(c(var, shape.by)), collapse = " and "))
+    xlab <- .leave_default_or_null(
+        xlab, default = group.by,
+        null.if = multivar.aes=="group" && length(var)>1)
     ylab <- .leave_default_or_null(
-        ylab, default = var, null.if = identical(main,"var"))
+        ylab, default = var, null.if = identical(main,"var") || length(var)>1)
     legend.title <- .leave_default_or_null(
         legend.title, var, null.if = is.null(shape.by))
 
-    ### Make data_frame edits
-    # Adjustments
-    if (!is.null(var.adjustment) || !is.null(var.adj.fxn)) {
-        new.var <- paste0(var, "-adj")
-        data_frame[,new.var] <-
-            ._col(var, data_frame, var.adjustment, var.adj.fxn)
-        var <- new.var
-    }
-    # Relabels/reorders
+    ### Make data_frame and aesthetic target edits
+    cols_use <- list(
+        var = var,
+        group.by = group.by,
+        color.by = color.by,
+        shape.by = shape.by,
+        split.by = split.by
+    )
+    # Relabel/reorder for groups
     data_frame[,group.by] <-
         .rename_and_or_reorder(data_frame[,group.by], x.reorder, x.labels)
+    if (length(var) > 1) {
+        # (Only numeric data supported, handles color adjustment and rows.use subsetting)
+        multi_out <- .multi_var_restructure(
+            data_frame, var, "var.multi", "var.which",
+            var.adjustment, var.adj.fxn, rows.use,
+            multivar.split.dir, split.by, multivar.aes
+        )
+        Target_data <- multi_out$data_use
+        cols_use$var <- "var.multi"
+        cols_use$split.by <- multi_out$split.by
+        if (multivar.aes == "group") {
+            cols_use$group.by <- "var.which"
+        }
+        if (multivar.aes == "color") {
+            cols_use$color.by <- "var.which"
+        }
+    } else {
+        # color adjustments
+        if (!is.null(var.adjustment) || !is.null(var.adj.fxn)) {
+            cols_use$var <- paste0(var, ".adj")
+            data_frame[,cols_use$var] <-
+                ._col(var, data_frame, var.adjustment, var.adj.fxn)
+        }
+        # rows.use subsetting
+        Target_data <- data_frame[rows.use,]
+    }
     # Hover prep
     if (do.hover) {
-        hover_exists <- hover.data[hover.data %in% colnames(data_frame)]
-        data_frame$hover.string <- .make_hover_strings_from_df(
-            data_frame[,hover_exists,drop=FALSE])
+        hover_exists <- hover.data[hover.data %in% colnames(Target_data)]
+        Target_data$hover.string <- .make_hover_strings_from_df(
+            Target_data[,hover_exists,drop=FALSE])
+        cols_use$hover.text <- "hover.string"
     }
 
-    Target_data <- data_frame[all.rows %in% rows.use,]
-
     # Make the plot
-    p <- ggplot(Target_data, aes_string(fill=color.by)) +
+    p <- ggplot(Target_data, aes_string(fill=cols_use$color.by)) +
         theme +
         scale_fill_manual(name = legend.title, values=color.panel[colors]) +
         ggtitle(main, sub)
     if(!("ridgeplot" %in% plots)) {
         p <- .yPlot_add_data_y_direction(
-            p, Target_data, var, group.by, shape.by,
+            p, Target_data, cols_use$var, cols_use$group.by, cols_use$shape.by,
             plots, xlab, ylab, jitter.size,
             jitter.width, jitter.color, shape.panel, jitter.shape.legend.size,
             jitter.shape.legend.show, jitter.position.dodge,
@@ -314,7 +375,7 @@ yPlot <- function(
             x.labels.rotate, do.hover, y.breaks, min, max, data_frame)
     } else {
         p <- .yPlot_add_data_x_direction(
-            p, Target_data, var, group.by,
+            p, Target_data, cols_use$var, cols_use$group.by,
             plots, xlab, ylab, jitter.size, jitter.color,
             jitter.shape.legend.size, jitter.shape.legend.show,
             ridgeplot.lineweight, ridgeplot.scale, ridgeplot.ymax.expansion,
@@ -323,9 +384,9 @@ yPlot <- function(
             colors, y.breaks, min, max)
     }
     # Extra tweaks
-    if (!is.null(split.by)) {
+    if (!is.null(cols_use$split.by)) {
         p <- .add_splitting(
-            p, split.by, split.nrow, split.ncol, split.adjust)
+            p, cols_use$split.by, split.nrow, split.ncol, split.adjust)
     }
     if (!legend.show) {
         p <- .remove_legend(p)
@@ -339,7 +400,8 @@ yPlot <- function(
     if (data.out) {
         list(
             p = p,
-            data = Target_data)
+            data = Target_data,
+            cols_used = cols_use)
     } else {
         p
     }

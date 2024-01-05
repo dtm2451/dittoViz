@@ -1,11 +1,12 @@
 # Tests for yPlot function
-# library(dittoViz); library(testthat); source("tests/testthat/setup.R"); source("tests/testthat/test-y.R")
+# library(dittoViz); library(testthat); source("tests/testthat/setup.R"); for (i in list.files("R", pattern="^utils", full.names = TRUE)) source(i); source("tests/testthat/test-y.R")
 
 df$all <- "A"
 grp <- "species"
 clr <- "island"
 clr2 <- "groups"
 cont1 <- "number"
+cont2 <- "bill_length_mm"
 
 test_that("yPlot can plot continuous data with all plot types", {
     expect_s3_class(
@@ -477,5 +478,64 @@ test_that("yPlot with and without jitter rasterization produces identical plots"
             do.raster = TRUE,
             raster.dpi = 10,
             plots = c("vlnplot", "jitter")),
+        "ggplot")
+})
+
+test_that("yPlot allows plotting of multiple vars, via faceting (deault)", {
+    expect_s3_class(
+        yPlot(
+            df, c(cont1, cont2), grp),
+        "ggplot")
+
+    # Works with rows.use
+    expect_s3_class(
+        yPlot(
+            df, c(cont1, cont2), grp,
+            rows.use = rows.logical),
+        "ggplot")
+
+    # These should have transposed facet grids
+    expect_s3_class(
+        print(yPlot(
+            df, c(cont1, cont2), grp,
+            split.by = clr)),
+        "ggplot")
+    expect_s3_class(
+        print(yPlot(
+            df, c(cont1, cont2), grp,
+            split.by = clr, multivar.split.dir = "row")),
+        "ggplot")
+
+    expect_warning(
+        yPlot(
+            df, c(cont1, cont2), grp,
+            split.by = c(clr,disc)),
+        "will be ignored", fixed = TRUE)
+})
+
+test_that("yPlot allows plotting of multiple vars, via group or color", {
+    expect_s3_class(
+        print(yPlot(
+            df, c(cont1, cont2), grp,
+            multivar.aes = "group")),
+        "ggplot")
+    expect_s3_class(
+        print(yPlot(
+            df, c(cont1, cont2), grp,
+            multivar.aes = "color")),
+        "ggplot")
+
+    # Works with rows.use
+    expect_s3_class(
+        yPlot(
+            df, c(cont1, cont2), grp,
+            multivar.aes = "group",
+            rows.use = rows.logical),
+        "ggplot")
+    expect_s3_class(
+        yPlot(
+            df, c(cont1, cont2), grp,
+            multivar.aes = "color",
+            rows.use = rows.logical),
         "ggplot")
 })
