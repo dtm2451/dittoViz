@@ -38,10 +38,14 @@
 #' }
 #'
 #' Ignored if the \code{var} data is not numeric as these known adjustments target numeric data only.
+#'
+#' In order to leave the unedited data available for use in other features, the adjusted data are put in a new column and that new column is used for plotting.
 #' @param var.adj.fxn If you wish to apply a function to edit the \code{var} data before use, in a way not possible with the \code{var.adjustment} input,
 #' this input can be given a function which takes in a vector of values as input and returns a vector of values of the same length as output.
 #'
 #' For example, \code{function(x) \{log2(x)\}} or \code{as.factor}.
+#'
+#' In order to leave the unedited data available for use in other features, the adjusted data are put in a new column and that new column is used for plotting.
 #' @param main String, sets the plot title. Default = "make" and if left as make, a title will be automatically generated.  To remove, set to \code{NULL}.
 #' @param theme A ggplot theme which will be applied before internal adjustments.
 #' Default = \code{theme_classic()}.

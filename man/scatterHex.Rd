@@ -65,20 +65,23 @@ scatterHex(
 )
 }
 \arguments{
-\item{data_frame}{A data_frame where columns are features and rows are observations you wish to visualize.}
+\item{data_frame}{A data_frame where columns are features and rows are observations you might wish to visualize.}
 
 \item{x.by, y.by}{Single strings denoting the name of a column of \code{data_frame} containing numeric data to use for the x- and y-axis of the scatterplot.}
 
-\item{color.by}{Single string denoting the name of a column of \code{data_frame} to use for setting the color of plotted points.
+\item{color.by}{Single string denoting the name of a column of \code{data_frame} to use, instead of point density, for setting the color of plotted hexagons.
 Alternatively, a string vector naming multiple such columns of data to plot at once.}
 
 \item{bins}{Numeric or numeric vector giving the number of hexagonal bins in the x and y directions. Set to 30 by default.}
 
-\item{color.method}{Works differently depending on whether the color.by is continuous versus discrete:
+\item{color.method}{Single string that specifies how \code{color.by} data should be summarized per each hexagonal bin.
+Options, and the default, depend on whether the \code{color.by}-data is continuous versus discrete:
 
-\strong{Continuous}: String signifying a function for how target data should be summarized for each bin.
-Can be any function that summarizes a numeric vector input with a single numeric output value.
-Default is \code{median}. Other useful options are \code{sum}, \code{mean}, \code{sd}, or \code{mad}.
+\strong{Continuous}: String naming a function for how target data should be summarized for each bin.
+Can be any function that inputs (summarizes) a numeric vector and outputs a single numeric value.
+Default is \code{median}.
+Other useful options are \code{sum}, \code{mean}, \code{sd}, or \code{max}.
+You can also use a custom function as long as you give it a name; e.g. first run \code{logsum <- function(x) \{ log(sum(x)) \}} externally, then give \code{color.method = "logsum"}
 
 \strong{Discrete}: A string signifying whether the color should (default) be simply based on the "max" grouping of the bin,
 or based on the "max.prop"ortion of observations belonging to any grouping.}
@@ -108,14 +111,16 @@ Useful for quickly swapping around colors of the default set (when not using nam
 \item{"relative.to.max": divided by the maximum value to give percent of max values between [0,1]}
 }
 
-Ignored if the target data is not numeric as these known adjustments target numeric data only.}
+Ignored if the target data is not numeric as these known adjustments target numeric data only.
+
+In order to leave the unedited data available for use in other features, the adjusted data are put in a new column and that new column is used for plotting.}
 
 \item{x.adj.fxn, y.adj.fxn, color.adj.fxn}{If you wish to apply a function to edit the \code{x.by}, \code{y.by}, or \code{color.by} data before use, in a way not possible with the \code{color.adjustment} input,
 this input can be given a function which takes in a vector of values as input and returns a vector of values of the same length as output.
 
 For example, \code{function(x) \{log2(x)\}} or \code{as.factor}.
 
-A new column, named "\code{x.by}-adj", "\code{y.by}-adj", or "\code{color.by}-adj", with this function applied will be added to the data.frame used for plotting, and that data will be used rather than the original column.}
+In order to leave the unedited data available for use in other features, the adjusted data are put in a new column and that new column is used for plotting.}
 
 \item{multivar.split.dir}{"row" or "col", sets the direction of faceting used for 'var' values when: \itemize{
 \item \code{var} is given multiple column names
@@ -339,12 +344,13 @@ scatterHex(example_df, x.by = "PC1", y.by = "PC2", bins = 10,
 # Sometimes, it can be useful for external editing or troubleshooting purposes
 #   to see the underlying data that was directly used for plotting.
 # 'data.out = TRUE' can be provided in order to obtain not just plot ("plot"),
-#   but also the "data" returned as a list.
+#   but also the "data" and "cols_used" returned as a list.
 out <- scatterHex(example_df, x.by = "PC1", y.by = "PC2", color.by = "groups",
     rows.use = 1:40,
     data.out = TRUE)
 out$plot
 summary(out$data)
+out$cols_use
 
 }
 \seealso{

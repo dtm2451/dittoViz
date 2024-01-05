@@ -72,7 +72,7 @@ scatterPlot(
 )
 }
 \arguments{
-\item{data_frame}{A data_frame where columns are features and rows are observations you wish to visualize.}
+\item{data_frame}{A data_frame where columns are features and rows are observations you might wish to visualize.}
 
 \item{x.by, y.by}{Single strings denoting the name of a column of \code{data_frame} containing numeric data to use for the x- and y-axis of the scatterplot.}
 
@@ -101,14 +101,16 @@ Alternatively, a Logical vector, the same length as the number of rows in \code{
 \item{"relative.to.max": divided by the maximum value to give percent of max values between [0,1]}
 }
 
-Ignored if the target data is not numeric as these known adjustments target numeric data only.}
+Ignored if the target data is not numeric as these known adjustments target numeric data only.
+
+In order to leave the unedited data available for use in other features, the adjusted data are put in a new column and that new column is used for plotting.}
 
 \item{x.adj.fxn, y.adj.fxn, color.adj.fxn}{If you wish to apply a function to edit the \code{x.by}, \code{y.by}, or \code{color.by} data before use, in a way not possible with the \code{color.adjustment} input,
 this input can be given a function which takes in a vector of values as input and returns a vector of values of the same length as output.
 
 For example, \code{function(x) \{log2(x)\}} or \code{as.factor}.
 
-A new column, named "\code{x.by}-adj", "\code{y.by}-adj", or "\code{color.by}-adj", with this function applied will be added to the data.frame used for plotting, and that data will be used rather than the original column.}
+In order to leave the unedited data available for use in other features, the adjusted data are put in a new column and that new column is used for plotting.}
 
 \item{split.show.all.others}{Logical which sets whether gray "others" points of facets should include all points of other facets (\code{TRUE}) versus just points left out by \code{rows.use} which would exist in the current facet (\code{FALSE}).}
 
@@ -356,13 +358,15 @@ scatterPlot(example_df, x.by = "PC1", y.by = "PC2",
 # Sometimes, it can be useful for external editing or troubleshooting purposes
 #   to see the underlying data that was directly used for plotting.
 # 'data.out = TRUE' can be provided in order to obtain not just plot ("plot"),
-#   but also the "Target_data" and "Others_data" data.frames returned as a list.
+#   but also the "Target_data" and "Others_data" data.frames and "cols_used"
+#   returned as a list.
 out <- scatterPlot(example_df, x.by = "PC1", y.by = "PC2", color.by = "groups",
     rows.use = 1:40,
     data.out = TRUE)
 out$plot
 summary(out$Target_data)
 summary(out$Others_data)
+out$cols_used
 
 }
 \seealso{

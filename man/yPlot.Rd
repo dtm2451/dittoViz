@@ -79,7 +79,7 @@ ridgeJitter(..., plots = c("ridgeplot", "jitter"))
 boxPlot(..., plots = c("boxplot", "jitter"))
 }
 \arguments{
-\item{data_frame}{A data_frame where columns are features and rows are observations you wish to visualize.}
+\item{data_frame}{A data_frame where columns are features and rows are observations you might wish to visualize.}
 
 \item{var}{Single string representing the name of a column of \code{data_frame} to be used as the primary, y-axis, data.
 Alternatively, a string vector naming multiple such columns of data to plot at once.
@@ -124,12 +124,16 @@ When set to "split" (the default), note that displaying the \code{var}-identity 
 \item{"relative.to.max": divided by the maximum expression value to give percent of max values between [0,1]}
 }
 
-Ignored if the \code{var} data is not numeric as these known adjustments target numeric data only.}
+Ignored if the \code{var} data is not numeric as these known adjustments target numeric data only.
+
+In order to leave the unedited data available for use in other features, the adjusted data are put in a new column and that new column is used for plotting.}
 
 \item{var.adj.fxn}{If you wish to apply a function to edit the \code{var} data before use, in a way not possible with the \code{var.adjustment} input,
 this input can be given a function which takes in a vector of values as input and returns a vector of values of the same length as output.
 
-For example, \code{function(x) \{log2(x)\}} or \code{as.factor}.}
+For example, \code{function(x) \{log2(x)\}} or \code{as.factor}.
+
+In order to leave the unedited data available for use in other features, the adjusted data are put in a new column and that new column is used for plotting.}
 
 \item{do.hover}{Logical which controls whether the ggplot output will be converted to a plotly object so that data about individual points can be displayed when you hover your cursor over them.
 The \code{hover.data} argument is used to determine what data to show upon hover.}

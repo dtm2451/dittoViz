@@ -2,11 +2,16 @@
 #'
 #' @inheritParams scatterPlot
 #' @param bins Numeric or numeric vector giving the number of hexagonal bins in the x and y directions. Set to 30 by default.
-#' @param color.method Works differently depending on whether the color.by is continuous versus discrete:
+#' @param color.by Single string denoting the name of a column of \code{data_frame} to use, instead of point density, for setting the color of plotted hexagons.
+#' Alternatively, a string vector naming multiple such columns of data to plot at once.
+#' @param color.method Single string that specifies how \code{color.by} data should be summarized per each hexagonal bin.
+#' Options, and the default, depend on whether the \code{color.by}-data is continuous versus discrete:
 #'
-#' \strong{Continuous}: String signifying a function for how target data should be summarized for each bin.
-#' Can be any function that summarizes a numeric vector input with a single numeric output value.
-#' Default is \code{median}. Other useful options are \code{sum}, \code{mean}, \code{sd}, or \code{mad}.
+#' \strong{Continuous}: String naming a function for how target data should be summarized for each bin.
+#' Can be any function that inputs (summarizes) a numeric vector and outputs a single numeric value.
+#' Default is \code{median}.
+#' Other useful options are \code{sum}, \code{mean}, \code{sd}, or \code{max}.
+#' You can also use a custom function as long as you give it a name; e.g. first run \code{logsum <- function(x) \{ log(sum(x)) \}} externally, then give \code{color.method = "logsum"}
 #'
 #' \strong{Discrete}: A string signifying whether the color should (default) be simply based on the "max" grouping of the bin,
 #' or based on the "max.prop"ortion of observations belonging to any grouping.
@@ -162,12 +167,13 @@
 #' # Sometimes, it can be useful for external editing or troubleshooting purposes
 #' #   to see the underlying data that was directly used for plotting.
 #' # 'data.out = TRUE' can be provided in order to obtain not just plot ("plot"),
-#' #   but also the "data" returned as a list.
+#' #   but also the "data" and "cols_used" returned as a list.
 #' out <- scatterHex(example_df, x.by = "PC1", y.by = "PC2", color.by = "groups",
 #'     rows.use = 1:40,
 #'     data.out = TRUE)
 #' out$plot
 #' summary(out$data)
+#' out$cols_use
 #'
 #' @export
 scatterHex <- function(

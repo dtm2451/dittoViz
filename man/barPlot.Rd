@@ -38,7 +38,7 @@ barPlot(
 )
 }
 \arguments{
-\item{data_frame}{A data_frame where columns are features and rows are observations you wish to visualize.}
+\item{data_frame}{A data_frame where columns are features and rows are observations you might wish to visualize.}
 
 \item{var}{Single string representing the name of a column of \code{data_frame} to quantify within x-axis groups.}
 
