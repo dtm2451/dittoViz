@@ -3,19 +3,18 @@ Type: Package
 Title: User Friendly Visualization
 Version: 0.1.0
 Authors@R: c(person("Daniel", "Bunis", email = "daniel.bunis@ucsf.edu", role=c("aut", "cre")))
-Description: A comprehensive visualization toolkit built with coders of any
-    level and color-blind audiences in mind that allows highly customizable
-    creation of color blindness friendly, publication-quality figures. Spawned
-    out of the scRNAseq-focused dittoSeq-package, this package contains all of
-    it's visualization machinery with none of the added (sc)RNAseq-related
+Description: A comprehensive visualization toolkit built with coders of all
+    skill levels and color-vision impaired audiences in mind. It allows creation
+    of finely-tuned, publication-quality figures from single function calls.
+    Spawned out of the scRNAseq-focused dittoSeq-package, dittoViz contains most
+    of it's visualization machinery with none of the added (sc)RNAseq-related
     dependency requirements. Visualizations include scatterplots, compositional
     bar plots, violin, box, and ridge plots, and more. Customizations range from
-    size and title adjustments to automatic generation of annotations for
-    heatmaps, hidden data overlay upon cursor hovering via ggplotly conversion,
-    and many more. All with simple, discrete inputs. Color blindness
-    friendliness is powered by legend adjustments (enlarged keys), and by
-    allowing the use of shapes or letter-overlay in addition to the carefully
-    selected dittoColors.
+    size and title adjustments to discrete-group circling and labeling, hidden
+    data overlay upon cursor hovering via ggplotly conversion, and many more.
+    All with simple, discrete inputs. Color blindness friendliness is powered by
+    legend adjustments (enlarged keys), and by allowing the use of shapes or
+    letter-overlay in addition to the carefully selected dittoColors.
 License: MIT + file LICENSE
 Encoding: UTF-8
 Depends: ggplot2
