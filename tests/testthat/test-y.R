@@ -319,7 +319,6 @@ test_that("yPlot jitter adjustments work", {
 test_that("yPlot boxplot adjustments work", {
     ### Manual Check:
     # Blue boxplots that touch eachother, with jitter visible behind.
-    # Not actually checked here manually: whether outliers are shown cuz there are none.
     expect_s3_class(
         yPlot(
             df, cont1, group.by = grp, plots = c("jitter", "boxplot"),
@@ -334,6 +333,22 @@ test_that("yPlot boxplot adjustments work", {
             color.by = clr,
             boxplot.width = 0.4, boxplot.position.dodge = 0.2,
             boxplot.lineweight = 2),
+        "ggplot")
+    df$with_outlier <- df$number
+    df$with_outlier[50] <- 400
+    ### Manual Check:
+    # no outlier
+    expect_s3_class(
+        yPlot(
+            df, "with_outlier", group.by = grp, plots = c("boxplot"),
+            boxplot.show.outliers = FALSE),
+        "ggplot")
+    ### Manual Check:
+    # giant outlier
+    expect_s3_class(
+        yPlot(
+            df, "with_outlier", group.by = grp, plots = c("boxplot"),
+            boxplot.show.outliers = TRUE, boxplot.outlier.size = 20),
         "ggplot")
 })
 
@@ -509,7 +524,7 @@ test_that("yPlot allows plotting of multiple vars, via faceting (deault)", {
     expect_warning(
         yPlot(
             df, c(cont1, cont2), grp,
-            split.by = c(clr,disc)),
+            split.by = c(clr,clr2)),
         "will be ignored", fixed = TRUE)
 })
 
