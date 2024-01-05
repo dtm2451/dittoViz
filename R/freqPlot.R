@@ -228,7 +228,7 @@ freqPlot <- function(
     legend.show = TRUE,
     legend.title = color.by) {
 
-    scale = match.arg(scale)
+    scale <- match.arg(scale)
     ridgeplot.shape <- match.arg(ridgeplot.shape)
 
     # Check that sample definitions are 1:1 with groupings/colorings
@@ -262,7 +262,7 @@ freqPlot <- function(
     # Adjust BarPlot-ready data for dittoPlot plotter expectation
     if (max.normalize) {
         scale <- paste0(scale, ".norm")
-        y.breaks = NULL
+        y.breaks <- NULL
         ylab <- paste("Normalized", ylab)
     }
 

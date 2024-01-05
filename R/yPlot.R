@@ -470,10 +470,10 @@ yPlot <- function(
             # Create geom_jitter() arguments
             jitter.args <- list(
                 position = position_jitterdodge(
-                      jitter.width = jitter.width,
-                      jitter.height = 0,
-                      dodge.width = jitter.position.dodge,
-                      seed = NA
+                    jitter.width = jitter.width,
+                    jitter.height = 0,
+                    dodge.width = jitter.position.dodge,
+                    seed = NA
                 ),
                 size=jitter.size,
                 color = jitter.color)

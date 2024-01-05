@@ -3,6 +3,9 @@
 \name{dittoExampleData}
 \alias{dittoExampleData}
 \title{Example Data Generation}
+\value{
+Running \code{example("dittoExampleData")} creates a data.frame called example_df.
+}
 \description{
 Example Data Generation
 }

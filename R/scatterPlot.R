@@ -456,7 +456,7 @@ scatterPlot <- function(
 
     if (!is.null(color.by)) {
 
-        aes.args$color = color.by
+        aes.args$color <- color.by
 
         if (is.numeric(Target_data[,color.by])) {
             p <- p +
@@ -476,7 +476,7 @@ scatterPlot <- function(
 
     if (!is.null(shape.by)) {
 
-        aes.args$shape = shape.by
+        aes.args$shape <- shape.by
 
         p <- p +
             scale_shape_manual(
@@ -511,7 +511,7 @@ scatterPlot <- function(
     }
     # Target_data
     if (do.hover) {
-        aes.args$text = "hover.string"
+        aes.args$text <- "hover.string"
         geom.args$mapping <- do.call(aes_string, aes.args)
         p <- p + suppressWarnings(do.call(geom_point, geom.args))
     } else {

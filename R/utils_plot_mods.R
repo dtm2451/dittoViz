@@ -62,7 +62,7 @@
     } else {
 
         # Data is incompatible, so message instead of adding.
-        ignored.targs = paste(
+        ignored.targs <- paste(
             c("do.letter", "do.ellipse", "do.label")[c(do.letter,do.ellipse,do.label)],
             collapse = ", ")
         .msg_if(

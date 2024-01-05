@@ -3,6 +3,7 @@
 #' @details This documentation point exists only to be a set source of example data for other dittoViz documentation.
 #' Running the examples section code creates a data.frame called 'example_df' containing data of various types.
 #' These data are randomly generated each time and simulate what a user might use as the 'data_frame' input of dittoViz visualization functions.
+#' @return Running \code{example("dittoExampleData")} creates a data.frame called example_df.
 #' @author Daniel Bunis
 #' @examples
 #' # Generate some random data

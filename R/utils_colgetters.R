@@ -40,9 +40,11 @@
 #'
 #' Lastly, the values are named as the rownames of data_frame, then output.
 #' @author Daniel Bunis
-._col <- function(col, data_frame,
-                 adjustment = NULL, adj.fxn = NULL,
-                 add.names = TRUE) {
+._col <- function(
+    col, data_frame,
+    adjustment = NULL, adj.fxn = NULL,
+    add.names = TRUE
+) {
 
     if (!.is_col(col, data_frame)) {
         stop(dQuote(col)," is not a column of 'data_frame'")

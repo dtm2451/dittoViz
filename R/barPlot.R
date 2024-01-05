@@ -142,7 +142,7 @@ barPlot <- function(
     legend.show = TRUE,
     legend.title = NULL) {
 
-    scale = match.arg(scale)
+    scale <- match.arg(scale)
 
     # Gather data
     data <- .make_composition_summary_df(
