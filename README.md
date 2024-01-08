@@ -17,6 +17,10 @@ Color blindness friendliness is powered by legend adjustments (enlarged keys),
 and by allowing the use of shapes or letter-overlay in addition to the carefully
 selected dittoColors.
 
+## Getting Started
+
+A vignette detailing installation and use is available [here!](vignettes/intro.md)
+
 ## Long-Term plans for dittoViz
 
 1. Carry over as much functionality from dittoSeq as makes sense for targeting data stored in a data.frame-type object (rather than in Seurat/SingleCellExperiemnt/SummarizedExperiment objects).
