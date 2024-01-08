@@ -6,20 +6,15 @@ author:
   email: daniel.bunis@ucsf.edu
 date: "Jan 3rd, 2024"
 output:
-  BiocStyle::html_document:
-    toc_float: true
-package: dittoViz
+  md_document:
+    toc: true
 bibliography: ref.bib
-vignette: >
-  %\VignetteIndexEntry{Jump-starting visualization with dittoViz}
-  %\VignetteEngine{knitr::rmarkdown}
-  %\VignetteEncoding{UTF-8}    
 ---
 
 ```{r, echo=FALSE, results="hide", message=FALSE}
 knitr::opts_chunk$set(error=FALSE, message=FALSE, warning=FALSE,
-    dev="jpeg", dpi = 72, fig.width = 4.5, fig.height = 3.5)
-library(BiocStyle)
+    fig.path = "images/",
+    dev="png", dpi = 150, fig.width = 4.5, fig.height = 3.5)
 ```
 
 # Introduction

@@ -82,55 +82,61 @@
 #' scatterHex(
 #'     example_df, x.by = "PC1", y.by = "PC2")
 #'
-#' # 'color.by' and/or 'shape.by' can also be given column names in order to
-#' #   show represent that columns data in the color or shape of the data points.
-#' #   'shape.by' must be pointed to discrete data, but 'color.by' can be given
-#' #   discrete or numeric data.
-#' scatterHex(
-#'     example_df, x.by = "PC1", y.by = "PC2",
-#'     color.by = "groups")
-#' scatterHex(
-#'     example_df, x.by = "PC1", y.by = "PC2",
-#'     color.by = "gene1")
+#' # 'color.by' can also be given a column name in order to represent that
+#' #   column's data in the color of the hexes.
+#' # Note: This capability requires the suggested package 'ggplot.multistats'.
+#' if (requireNamespace("ggplot.multistats", quietly = TRUE)) {
+#'     scatterHex(
+#'         example_df, x.by = "PC1", y.by = "PC2",
+#'         color.by = "groups")
+#' }
+#' if (requireNamespace("ggplot.multistats", quietly = TRUE)) {
+#'     scatterHex(
+#'         example_df, x.by = "PC1", y.by = "PC2",
+#'         color.by = "gene1")
+#' }
 #'
 #' # Data can be "split" or faceted by a discrete variable as well.
-#' scatterHex(example_df, x.by = "PC1", y.by = "PC2", color.by = "gene1",
+#' scatterHex(example_df, x.by = "PC1", y.by = "PC2",
 #'     split.by = "timepoint") # single split.by element
-#' scatterHex(example_df, x.by = "PC1", y.by = "PC2", color.by = "gene1",
+#' scatterHex(example_df, x.by = "PC1", y.by = "PC2",
 #'     split.by = c("groups","SNP")) # row and col split.by elements
 #'
 #' # Modify the look with intuitive inputs
-#' scatterHex(example_df, x.by = "PC1", y.by = "PC2", color.by = "groups",
+#' scatterHex(example_df, x.by = "PC1", y.by = "PC2",
 #'     show.grid.lines = FALSE,
 #'     ylab = NULL, xlab = "PC2 by PC1",
 #'     main = "Plot Title",
 #'     sub = "subtitle",
-#'     legend.density.title = "Items",
-#'     legend.color.title = "Legend\nRetitle")
+#'     legend.density.title = "Items")
 #' # 'max.density' is one of these intuitively named inputs that can be
 #' #   extremely useful for saying "I only can for opacity to be decreased
 #' #   in regions with exceptionally low observation numbers."
 #' # (A good value for this in "real" data might be 10 or 50 or higher, but for
 #' #   our sparse example data, we need to do a lot to show this off at all!)
-#' scatterHex(
-#'     example_df, x.by = "PC1", y.by = "PC2",
-#'     color.by = "gene1", bins = 10,
-#'     sub = "Default density scale")
-#' scatterHex(
-#'     example_df, x.by = "PC1", y.by = "PC2",
-#'     color.by = "gene1", bins = 10,
-#'     sub = "Density capped low for case where we just want to ignore sparse regions",
-#'     max.density = 2)
+#' if (requireNamespace("ggplot.multistats", quietly = TRUE)) {
+#'     scatterHex(
+#'         example_df, x.by = "PC1", y.by = "PC2",
+#'         color.by = "gene1", bins = 10,
+#'         sub = "Default density scale")
+#' }
+#' if (requireNamespace("ggplot.multistats", quietly = TRUE)) {
+#'     scatterHex(
+#'         example_df, x.by = "PC1", y.by = "PC2",
+#'         color.by = "gene1", bins = 10,
+#'         sub = "Density capped low for ignoring sparse regions",
+#'         max.density = 2)
+#' }
 #'
 #' # You can restrict to only certain data points using the 'rows.use' input.
 #' #   The input can be given rownames, indexes, or a logical vector
-#' scatterHex(example_df, x.by = "PC1", y.by = "PC2", color.by = "groups",
+#' scatterHex(example_df, x.by = "PC1", y.by = "PC2",
 #'     sub = "show only first 40 observations, by index",
 #'     rows.use = 1:40)
-#' scatterHex(example_df, x.by = "PC1", y.by = "PC2", color.by = "groups",
-#'     sub = "show only 3 obs, by name (ggplot.multistats is buggy for few vals)",
+#' scatterHex(example_df, x.by = "PC1", y.by = "PC2",
+#'     sub = "show only 3 obs, by name (plotting gets a bit wonky for few points)",
 #'     rows.use = c("obs1", "obs2", "obs25"))
-#' scatterHex(example_df, x.by = "PC1", y.by = "PC2", color.by = "groups",
+#' scatterHex(example_df, x.by = "PC1", y.by = "PC2",
 #'     sub = "show groups A,B,D only, by logical",
 #'     rows.use = example_df$groups!="C")
 #'
@@ -140,35 +146,45 @@
 #' #   named starting with 'FEATURE*'. For example, color.by groups can be labeled
 #' #   with 'do.label = TRUE' and the tweaks for this feature are given with inputs
 #' #   'labels.size', 'labels.highlight', and 'labels.repel':
-#' scatterHex(example_df, x.by = "PC1", y.by = "PC2", color.by = "groups",
-#'     sub = "default labeling",
-#'     do.label = TRUE)          # Turns on the labeling feature
-#' scatterHex(example_df, x.by = "PC1", y.by = "PC2", color.by = "groups",
-#'     sub = "tweaked labeling",
-#'     do.label = TRUE,          # Turns on the labeling feature
-#'     labels.size = 8,          # Adjust the text size of labels
-#'     labels.highlight = FALSE, # Removes white background behind labels
-#'     labels.repel = FALSE)     # Turns off anti-overlap location adjustments
+#' if (requireNamespace("ggplot.multistats", quietly = TRUE)) {
+#'     scatterHex(example_df, x.by = "PC1", y.by = "PC2", color.by = "groups",
+#'         sub = "default labeling",
+#'         do.label = TRUE)          # Turns on the labeling feature
+#' }
+#' if (requireNamespace("ggplot.multistats", quietly = TRUE)) {
+#'     scatterHex(example_df, x.by = "PC1", y.by = "PC2", color.by = "groups",
+#'         sub = "tweaked labeling",
+#'         do.label = TRUE,          # Turns on the labeling feature
+#'         labels.size = 8,          # Adjust the text size of labels
+#'         labels.highlight = FALSE, # Removes white background behind labels
+#'         labels.repel = FALSE)     # Turns off anti-overlap location adjustments
+#' }
 #'
 #' # Faceting can also be used to show multiple continuous variables side-by-side
 #' #   by giving a vector of column names to 'color.by'.
 #' #   This can also be combined with 1 'split.by' variable, with direction then
 #' #   controlled via 'multivar.split.dir':
-#' scatterHex(example_df, x.by = "PC1", y.by = "PC2", bins = 10,
-#'     color.by = c("gene1", "gene2"))
-#' scatterHex(example_df, x.by = "PC1", y.by = "PC2", bins = 10,
-#'     color.by = c("gene1", "gene2"),
-#'     split.by = "groups")
-#' scatterHex(example_df, x.by = "PC1", y.by = "PC2", bins = 10,
-#'     color.by = c("gene1", "gene2"),
-#'     split.by = "groups",
-#'     multivar.split.dir = "row")
+#' if (requireNamespace("ggplot.multistats", quietly = TRUE)) {
+#'     scatterHex(example_df, x.by = "PC1", y.by = "PC2", bins = 10,
+#'         color.by = c("gene1", "gene2"))
+#' }
+#' if (requireNamespace("ggplot.multistats", quietly = TRUE)) {
+#'     scatterHex(example_df, x.by = "PC1", y.by = "PC2", bins = 10,
+#'         color.by = c("gene1", "gene2"),
+#'         split.by = "groups")
+#' }
+#' if (requireNamespace("ggplot.multistats", quietly = TRUE)) {
+#'     scatterHex(example_df, x.by = "PC1", y.by = "PC2", bins = 10,
+#'         color.by = c("gene1", "gene2"),
+#'         split.by = "groups",
+#'         multivar.split.dir = "row")
+#' }
 #'
 #' # Sometimes, it can be useful for external editing or troubleshooting purposes
 #' #   to see the underlying data that was directly used for plotting.
 #' # 'data.out = TRUE' can be provided in order to obtain not just plot ("plot"),
 #' #   but also the "data" and "cols_used" returned as a list.
-#' out <- scatterHex(example_df, x.by = "PC1", y.by = "PC2", color.by = "groups",
+#' out <- scatterHex(example_df, x.by = "PC1", y.by = "PC2",
 #'     rows.use = 1:40,
 #'     data.out = TRUE)
 #' out$plot
