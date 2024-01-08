@@ -73,8 +73,8 @@ Additionally:
 
 # Installation
 
-dittoViz will eventually be available through Bioconductor. This section
-will be updated once that is the case.
+dittoViz will eventually be available through CRAN. This section will be
+updated once that is the case.
 
 For now, install from the GitHub:
 
