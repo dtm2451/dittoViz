@@ -1,8 +1,6 @@
-# dittoViz 0.99.0
+# dittoViz 1.0.0
 
-* Submitted the package to Bioconductor
-* Added URL and BugReports fields to the DESCRIPTION
-* Minor changes after running BiocCheck
+* Submitted to CRAN
 
 # dittoViz 0.1.0
 
