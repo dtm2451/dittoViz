@@ -316,6 +316,16 @@ test_that("yPlot jitter adjustments work", {
         "ggplot")
 })
 
+test_that("yPlot jitter downsampling", {
+    # Manual Check:
+    # Very few data points shown.
+    expect_s3_class(
+        yPlot(
+            df, cont1, group.by = grp, plots = "jitter",
+            do.downsample = TRUE, downsample.num = 5),
+        "ggplot")
+})
+
 test_that("yPlot boxplot adjustments work", {
     ### Manual Check:
     # Blue boxplots that touch eachother, with jitter visible behind.

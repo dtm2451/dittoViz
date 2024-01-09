@@ -271,6 +271,7 @@ freqPlot <- function(
         data, scale, group.by = "grouping", color.by = color.by,
         shape.by = NULL, split.by = "label", plots = plots,
         var.adjustment = NULL, var.adj.fxn = NULL,
+        do.downsample = FALSE, downsample.num = 100000,
         do.hover = do.hover, color.panel = color.panel, colors = colors,
         theme = theme, main = main, sub = sub, ylab = ylab, y.breaks = y.breaks,
         min = min, max = max, xlab = xlab, x.labels = x.labels,

@@ -46,6 +46,8 @@
 #' For example, \code{function(x) \{log2(x)\}} or \code{as.factor}.
 #'
 #' In order to leave the unedited data available for use in other features, the adjusted data are put in a new column and that new column is used for plotting.
+#' @param do.downsample Logical which sets whether to limit the number of data points plotted, in jitter data representations only, based on \code{downsample.num}.
+#' When \code{TRUE}, the 'Target_data' targeted with \code{rows.use} and the 'Others_data' not targeted with \code{rows.use} will each be trimmed, if larger than \code{downsample.num} points, to a randomly selected set of \code{downsample.num} points.
 #' @param main String, sets the plot title. Default = "make" and if left as make, a title will be automatically generated.  To remove, set to \code{NULL}.
 #' @param theme A ggplot theme which will be applied before internal adjustments.
 #' Default = \code{theme_classic()}.
@@ -243,6 +245,8 @@ yPlot <- function(
     multivar.split.dir = c("col", "row"),
     var.adjustment = NULL,
     var.adj.fxn = NULL,
+    do.downsample = TRUE,
+    downsample.num = 100000 * min(length(var),
     do.hover = FALSE,
     hover.data = unique(c(var, paste0(var,".adj"), paste0(var,".multi"), paste0(var,".which"), group.by, shape.by, split.by)),
     color.panel = dittoColors(),
@@ -369,6 +373,7 @@ yPlot <- function(
             plots, xlab, ylab, jitter.size,
             jitter.width, jitter.color, shape.panel, jitter.shape.legend.size,
             jitter.shape.legend.show, jitter.position.dodge,
+            do.downsample, downsample.num,
             do.raster, raster.dpi,
             boxplot.width, boxplot.color, boxplot.show.outliers,
             boxplot.outlier.size, boxplot.fill,
@@ -415,6 +420,7 @@ yPlot <- function(
     plots, xlab, ylab,
     jitter.size, jitter.width, jitter.color,shape.panel,
     jitter.shape.legend.size, jitter.shape.legend.show, jitter.position.dodge,
+    do.downsample, downsample.num,
     do.raster, raster.dpi,
     boxplot.width, boxplot.color, boxplot.show.outliers, boxplot.outlier.size,
     boxplot.fill, boxplot.position.dodge, boxplot.lineweight,
@@ -477,6 +483,11 @@ yPlot <- function(
                 ),
                 size=jitter.size,
                 color = jitter.color)
+
+            # Downsampling
+            if (do.downsample && nrow(data_frame) > downsample.num) {
+                jitter.args$data <- data_frame[sample(seq_len(nrow(data_frame)), downsample.num),]
+            }
 
             geom_for_jitter <- geom_jitter
             if (do.raster) {

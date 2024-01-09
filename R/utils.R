@@ -186,8 +186,13 @@ NULL
         rows.use,
         multivar.split.dir,
         split.by,
-        multivar.aes = "split"
+        multivar.aes = "split",
+        rows.other = NULL
 ) {
+
+    if (identical(rows.other, NULL)) {
+        rows.other <- rownames(data_frame)[!rownames(data_frame) %in% rows.use]
+    }
 
     each_data <- lapply(
         vars, function(this_col) {
@@ -196,7 +201,7 @@ NULL
             this.out[, multivar.col.vars] <- this_col
             list(
                 data_use = this.out[rows.use,],
-                data_other = this.out[!(rownames(this.out) %in% rows.use),]
+                data_other = this.out[rows.other,]
             )
         }
     )
@@ -220,7 +225,8 @@ NULL
     x.adjustment, y.adjustment, color.adjustment,
     x.adj.fxn, y.adj.fxn, color.adj.fxn,
     color.renames, shape.renames,
-    multivar.split.dir, rows.use, do.hover, hover.data
+    multivar.split.dir, rows.use, do.hover, hover.data,
+    do.downsample = FALSE, downsample.num = 100000
 ) {
     ### Make dataframe edits while collecting col names to actually use
     cols_use <- list(
@@ -231,6 +237,18 @@ NULL
     if (identical(shape.by, NA)) {
         cols_use$shape.by <- NULL
     }
+
+    ### Prep downsampling via rows.use / rows.other
+    rows.other <- rownames(data_frame)[!rownames(data_frame) %in% rows.use]
+    if (do.downsample && nrow(data_frame) > downsample.num) {
+        if (length(rows.use) > downsample.num) {
+            rows.use <- sample(rows.use, downsample.num)
+        }
+        if (length(rows.other) > downsample.num) {
+            rows.other <- sample(rows.other, downsample.num)
+        }
+    }
+
     # X/Y adjustments
     if (!is.null(x.adjustment) || !is.null(x.adj.fxn)) {
         cols_use$x.by <- paste0(x.by, ".x.adj")
@@ -254,13 +272,13 @@ NULL
                 data_frame[,cols_use$color.by],
                 reorder = NULL, relabels = color.renames)
             data_use <- data_frame[rows.use,]
-            data_other <- data_frame[!(rownames(data_frame) %in% rows.use),]
+            data_other <- data_frame[rows.other,]
         } else {
             # (Only numeric data supported)
             multi_out <- .multi_var_restructure(
                 data_frame, color.by, "color.multi", "color.which",
                 color.adjustment, color.adj.fxn, rows.use,
-                multivar.split.dir, split.by, "split"
+                multivar.split.dir, split.by, "split", rows.other
             )
             data_use <- multi_out$data_use
             data_other <- multi_out$data_other
@@ -269,7 +287,7 @@ NULL
         }
     } else {
         data_use <- data_frame[rows.use,]
-        data_other <- data_frame[!(rownames(data_frame) %in% rows.use),]
+        data_other <- data_frame[rows.other,]
     }
     # Hover Prep
     if (do.hover) {
@@ -281,5 +299,6 @@ NULL
     list(
         data_use = data_use,
         data_other = data_other,
-        cols_use = cols_use)
+        cols_use = cols_use,
+        rows.use = rows.use)
 }

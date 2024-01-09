@@ -41,6 +41,8 @@ scatterPlot(
   main = "make",
   sub = NULL,
   theme = theme_bw(),
+  do.downsample = TRUE,
+  downsample.num = 1e+05,
   do.hover = FALSE,
   hover.data = unique(c(color.by, paste0(color.by, "-adj"), shape.by, x.by, y.by)),
   do.contour = FALSE,
@@ -167,6 +169,11 @@ To remove, set to \code{NULL}.}
 \item{theme}{A ggplot theme which will be applied before internal adjustments.
 Default = \code{theme_bw()}.
 See \url{https://ggplot2.tidyverse.org/reference/ggtheme.html} for other options and ideas.}
+
+\item{do.downsample}{Logical which sets whether to limit the number of data points plotted based on \code{downsample.num}.
+When \code{TRUE}, the 'Target_data' targeted with \code{rows.use} and the 'Others_data' not targeted with \code{rows.use} will each be trimmed, if larger than \code{downsample.num} points, to a randomly selected set of \code{downsample.num} points.}
+
+\item{downsample.num}{Integer number which controls the number of data points to downsample to when \code{do.downsample = TRUE}}
 
 \item{do.hover}{Logical which controls whether the ggplot output will be converted to a plotly object so that data about individual points can be displayed when you hover your cursor over them.
 The \code{hover.data} argument is used to determine what data to show upon hover.}

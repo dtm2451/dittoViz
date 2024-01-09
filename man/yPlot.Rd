@@ -20,6 +20,8 @@ yPlot(
   multivar.split.dir = c("col", "row"),
   var.adjustment = NULL,
   var.adj.fxn = NULL,
+  do.downsample = TRUE,
+  downsample.num = 1e+05,
   do.hover = FALSE,
   hover.data = unique(c(var, paste0(var, ".adj"), paste0(var, ".multi"), paste0(var,
     ".which"), group.by, shape.by, split.by)),
@@ -135,6 +137,11 @@ this input can be given a function which takes in a vector of values as input an
 For example, \code{function(x) \{log2(x)\}} or \code{as.factor}.
 
 In order to leave the unedited data available for use in other features, the adjusted data are put in a new column and that new column is used for plotting.}
+
+\item{do.downsample}{Logical which sets whether to limit the number of data points plotted, in jitter data representations only, based on \code{downsample.num}.
+When \code{TRUE}, the 'Target_data' targeted with \code{rows.use} and the 'Others_data' not targeted with \code{rows.use} will each be trimmed, if larger than \code{downsample.num} points, to a randomly selected set of \code{downsample.num} points.}
+
+\item{downsample.num}{Integer number which controls the number of data points to downsample to when \code{do.downsample = TRUE}}
 
 \item{do.hover}{Logical which controls whether the ggplot output will be converted to a plotly object so that data about individual points can be displayed when you hover your cursor over them.
 The \code{hover.data} argument is used to determine what data to show upon hover.}

@@ -100,6 +100,9 @@
 #' @param theme A ggplot theme which will be applied before internal adjustments.
 #' Default = \code{theme_bw()}.
 #' See \url{https://ggplot2.tidyverse.org/reference/ggtheme.html} for other options and ideas.
+#' @param do.downsample Logical which sets whether to limit the number of data points plotted based on \code{downsample.num}.
+#' When \code{TRUE}, the 'Target_data' targeted with \code{rows.use} and the 'Others_data' not targeted with \code{rows.use} will each be trimmed, if larger than \code{downsample.num} points, to a randomly selected set of \code{downsample.num} points.
+#' @param downsample.num Integer number which controls the number of data points to downsample to when \code{do.downsample = TRUE}
 #' @param plot.order String. If the data should be plotted based on the order of the color data, sets whether to plot in "increasing", "decreasing", or "randomize"d order.
 #' @param show.grid.lines Logical which sets whether grid lines should be shown within the plot space.
 #' @param do.raster Logical. When set to \code{TRUE}, rasterizes the internal plot layer, changing it from individually encoded points to a flattened set of pixels.
@@ -282,6 +285,8 @@ scatterPlot <- function(
     main = "make",
     sub = NULL,
     theme = theme_bw(),
+    do.downsample = TRUE,
+    downsample.num = 100000,
     do.hover = FALSE,
     hover.data = unique(c(color.by, paste0(color.by,"-adj"), shape.by, x.by, y.by)),
     do.contour = FALSE,
@@ -330,7 +335,8 @@ scatterPlot <- function(
         x.adjustment, y.adjustment, color.adjustment,
         x.adj.fxn, y.adj.fxn, color.adj.fxn,
         rename.color.groups, rename.shape.groups,
-        multivar.split.dir, rows.use, do.hover, hover.data
+        multivar.split.dir, rows.use, do.hover, hover.data,
+        do.downsample, downsample.num
     )
     Target_data <- edit_outs$data_use
     Others_data <- edit_outs$data_other

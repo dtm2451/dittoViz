@@ -650,3 +650,28 @@ test_that("scatterPlot data adjustments applied", {
     expect_equal(
         max(p$Target_data[[p$cols_used$y.by]]), 1)
 })
+
+test_that("scatterPlot downsamples", {
+    expect_s3_class(
+        (p <- scatterPlot(
+            cont, data_frame = df, x.by=cont, y.by=cont, data.out = TRUE,
+            do.downsample = FALSE))$plot, "ggplot")
+
+    expect_s3_class(
+        (pdown <- scatterPlot(
+            cont, data_frame = df, x.by=cont, y.by=cont, data.out = TRUE,
+            do.downsample = TRUE,
+            downsample.num = 10))$plot, "ggplot")
+    expect_true(nrow(p$Target_data) > nrow(pdown$Target_data))
+    expect_equal(nrow(pdown$Target_data), 10)
+    expect_equal(nrow(pdown$Others_data), 0)
+
+    expect_s3_class(
+        (pdown_ru <- scatterPlot(
+            cont, data_frame = df, x.by=cont, y.by=cont, data.out = TRUE,
+            do.downsample = TRUE,
+            downsample.num = 15,
+            rows.use = 1:20))$plot, "ggplot")
+    expect_equal(nrow(pdown_ru$Target_data), 15)
+    expect_equal(nrow(pdown_ru$Others_data), 15)
+})
