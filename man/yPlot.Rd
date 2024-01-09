@@ -21,7 +21,7 @@ yPlot(
   var.adjustment = NULL,
   var.adj.fxn = NULL,
   do.downsample = TRUE,
-  downsample.num = 1e+05,
+  downsample.num = 1e+05 * length(var),
   do.hover = FALSE,
   hover.data = unique(c(var, paste0(var, ".adj"), paste0(var, ".multi"), paste0(var,
     ".which"), group.by, shape.by, split.by)),

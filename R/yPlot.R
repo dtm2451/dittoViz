@@ -246,7 +246,7 @@ yPlot <- function(
     var.adjustment = NULL,
     var.adj.fxn = NULL,
     do.downsample = TRUE,
-    downsample.num = 100000 * min(length(var),
+    downsample.num = 100000 * length(var),
     do.hover = FALSE,
     hover.data = unique(c(var, paste0(var,".adj"), paste0(var,".multi"), paste0(var,".which"), group.by, shape.by, split.by)),
     color.panel = dittoColors(),
