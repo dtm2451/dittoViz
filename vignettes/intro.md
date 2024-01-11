@@ -1,8 +1,7 @@
 -   [Introduction](#introduction)
     -   [Color-blindness friendliness:](#color-blindness-friendliness)
 -   [Installation](#installation)
--   [Getting started](#getting-started)
-    -   [Input Data](#input-data)
+-   [Quick Input Data](#quick-input-data)
 -   [Visualizations](#visualizations)
     -   [scatterPlot](#scatterplot)
         -   [Additional features](#additional-features)
@@ -73,10 +72,11 @@ Additionally:
 
 # Installation
 
-dittoViz will eventually be available through CRAN. This section will be
-updated once that is the case.
+dittoViz is available through CRAN.
 
-For now, install from the GitHub:
+    install.packages("dittoViz")
+
+Alternatively, you can install from GitHub:
 
     # Install remotes if needed
     if (!requireNamespace("remotes", quietly = TRUE))
@@ -85,9 +85,7 @@ For now, install from the GitHub:
     # Install dittoViz
     remotes::install_github("dtm2451/dittoViz")
 
-# Getting started
-
-## Input Data
+# Quick Input Data
 
 All dittoViz functions have a `data_frame` input which takes a
 data.frame-like object with observations / individual data points in
@@ -95,7 +93,7 @@ rows, and features of those observations in columns.
 
 To get started here, we’ll make use of the `?dittoExampleData`
 documentation point which was created entirely in order to allow
-single-line, fast, generation <!-- of an example `data_frame` input: -->
+single-line, fast, generation of an example `data_frame` input:
 
     library(dittoViz)
     example("dittoExampleData", echo = FALSE)
@@ -103,27 +101,27 @@ single-line, fast, generation <!-- of an example `data_frame` input: -->
     head(example_df, 10)
 
     ##       conditions timepoint   SNP groups score    gene1    gene2    gene3
-    ## obs1  condition1        d0  TRUE      A   0.5 3.000000 5.087463 2.321928
-    ## obs2  condition1        d0  TRUE      D   1.0 2.807355 5.129283 1.584963
-    ## obs3  condition1        d0  TRUE      A   1.5 2.321928 5.000000 2.000000
-    ## obs4  condition1        d0  TRUE      D   2.0 2.000000 4.754888 2.807355
-    ## obs5  condition1        d0  TRUE      A   2.5 2.584963 5.209453 2.807355
-    ## obs6  condition1        d0  TRUE      C   3.0 2.321928 4.700440 2.807355
-    ## obs7  condition1        d0  TRUE      B   3.5 3.321928 5.129283 2.584963
-    ## obs8  condition1        d0 FALSE      C   4.0 2.807355 4.754888 3.169925
-    ## obs9  condition1        d0 FALSE      A   4.5 2.584963 4.754888 2.321928
-    ## obs10 condition1        d0 FALSE      B   5.0 3.000000 4.954196 2.807355
-    ##          gene4    gene5         PC1         PC2 clustering sample category
-    ## obs1  1.584963 4.000000 -0.20901087  1.26800983          2      1        A
-    ## obs2  1.584963 4.087463  0.56330392 -0.98186673          3      1        A
-    ## obs3  1.000000 4.523562 -1.17908089  0.02387495          2      1        A
-    ## obs4  1.000000 4.000000  0.61785709 -0.51212766          3      1        A
-    ## obs5  1.000000 4.321928 -0.68003457  0.48504937          2      1        A
-    ## obs6  1.584963 3.807355 -0.17048243  0.55090637          2      1        A
-    ## obs7  1.584963 4.247928 -0.11260561 -0.57608244          4      1        A
-    ## obs8  1.000000 4.392317 -0.70172224  0.27195073          2      1        A
-    ## obs9  1.584963 4.459432  0.09408513  0.60456118          1      1        A
-    ## obs10 0.000000 4.000000  3.09990080  0.03297917          1      1        A
+    ## obs1  condition1        d0  TRUE      D   0.5 2.000000 5.000000 2.584963
+    ## obs2  condition1        d0  TRUE      B   1.0 2.000000 4.754888 0.000000
+    ## obs3  condition1        d0  TRUE      A   1.5 2.584963 4.857981 2.321928
+    ## obs4  condition1        d0  TRUE      D   2.0 3.000000 4.754888 2.807355
+    ## obs5  condition1        d0  TRUE      B   2.5 2.584963 4.807355 2.584963
+    ## obs6  condition1        d0  TRUE      A   3.0 2.000000 5.523562 2.000000
+    ## obs7  condition1        d0  TRUE      C   3.5 3.321928 4.754888 1.000000
+    ## obs8  condition1        d0 FALSE      C   4.0 3.459432 5.491853 2.584963
+    ## obs9  condition1        d0 FALSE      B   4.5 1.584963 5.169925 2.807355
+    ## obs10 condition1        d0 FALSE      A   5.0 1.584963 4.700440 1.584963
+    ##          gene4    gene5        PC1        PC2 clustering sample category
+    ## obs1  1.000000 3.584963 -0.3507501 -0.8289334          4      1        A
+    ## obs2  0.000000 4.392317 -0.6020143  0.6392979          2      1        A
+    ## obs3  1.000000 4.087463  0.5290334 -0.4395358          3      1        A
+    ## obs4  1.584963 3.906891 -0.2842554 -0.3427118          4      1        A
+    ## obs5  0.000000 3.000000 -0.9282349  0.3398934          2      1        A
+    ## obs6  1.000000 4.392317  1.1998347  0.1273304          1      1        A
+    ## obs7  1.000000 4.459432  2.3852965  1.3523117          1      1        A
+    ## obs8  1.000000 4.247928  0.2386108  1.8155724          1      1        A
+    ## obs9  1.000000 4.169925  1.5209987 -0.0205300          3      1        A
+    ## obs10 2.000000 3.807355 -1.5091400 -0.1225641          4      1        A
     ##       subcategory
     ## obs1            1
     ## obs2            1
@@ -146,19 +144,19 @@ single-line, fast, generation <!-- of an example `data_frame` input: -->
     ##                                                                       
     ##                                                                       
     ##      score           gene1           gene2           gene3      
-    ##  Min.   : 0.50   Min.   :0.000   Min.   :4.170   Min.   :0.000  
-    ##  1st Qu.:15.38   1st Qu.:2.322   1st Qu.:4.755   1st Qu.:2.000  
-    ##  Median :30.25   Median :2.585   Median :4.907   Median :2.322  
-    ##  Mean   :30.25   Mean   :2.442   Mean   :4.913   Mean   :2.289  
-    ##  3rd Qu.:45.12   3rd Qu.:2.807   3rd Qu.:5.087   3rd Qu.:2.807  
-    ##  Max.   :60.00   Max.   :3.459   Max.   :5.392   Max.   :3.322  
+    ##  Min.   : 0.50   Min.   :0.000   Min.   :4.087   Min.   :0.000  
+    ##  1st Qu.:15.38   1st Qu.:2.000   1st Qu.:4.755   1st Qu.:1.585  
+    ##  Median :30.25   Median :2.585   Median :4.954   Median :2.322  
+    ##  Mean   :30.25   Mean   :2.521   Mean   :4.910   Mean   :2.150  
+    ##  3rd Qu.:45.12   3rd Qu.:3.000   3rd Qu.:5.087   3rd Qu.:2.585  
+    ##  Max.   :60.00   Max.   :3.585   Max.   :5.728   Max.   :3.459  
     ##      gene4           gene5            PC1                PC2          
-    ##  Min.   :0.000   Min.   :3.322   Min.   :-2.66486   Min.   :-2.49358  
-    ##  1st Qu.:1.000   1st Qu.:3.907   1st Qu.:-0.45730   1st Qu.:-0.72710  
-    ##  Median :1.585   Median :4.087   Median : 0.09616   Median :-0.05090  
-    ##  Mean   :1.469   Mean   :4.123   Mean   : 0.14231   Mean   :-0.05283  
-    ##  3rd Qu.:2.000   3rd Qu.:4.392   3rd Qu.: 0.62054   3rd Qu.: 0.56351  
-    ##  Max.   :2.807   Max.   :4.807   Max.   : 3.09990   Max.   : 2.87039  
+    ##  Min.   :0.000   Min.   :3.000   Min.   :-2.18928   Min.   :-2.52977  
+    ##  1st Qu.:1.000   1st Qu.:3.907   1st Qu.:-0.53074   1st Qu.:-0.42993  
+    ##  Median :1.585   Median :4.087   Median :-0.06990   Median :-0.03467  
+    ##  Mean   :1.412   Mean   :4.110   Mean   : 0.07182   Mean   : 0.03301  
+    ##  3rd Qu.:2.000   3rd Qu.:4.322   3rd Qu.: 0.57025   3rd Qu.: 0.55958  
+    ##  Max.   :3.000   Max.   :4.700   Max.   : 2.38530   Max.   : 2.54280  
     ##   clustering            sample        category         subcategory       
     ##  Length:120         Min.   : 1.00   Length:120         Length:120        
     ##  Class :character   1st Qu.: 3.75   Class :character   Class :character  
@@ -188,7 +186,7 @@ columns for color, shape, faceting, or other features.
         x.by = "PC1", y.by = "PC2"
     )
 
-![](images/unnamed-chunk-4-1.png)
+![](images/unnamed-chunk-5-1.png)
 
     # Additionally colored by a discrete or numeric feature 
     scatterPlot(
@@ -196,14 +194,14 @@ columns for color, shape, faceting, or other features.
         x.by = "PC1", y.by = "PC2",
         color.by = "clustering")
 
-![](images/unnamed-chunk-5-1.png)
+![](images/unnamed-chunk-6-1.png)
 
     scatterPlot(
         data_frame = example_df,
         x.by = "PC1", y.by = "PC2",
         color.by = "gene1")
 
-![](images/unnamed-chunk-5-2.png)
+![](images/unnamed-chunk-6-2.png)
 
     # Additionally shaped or faceted by a discrete feature 
     scatterPlot(
@@ -212,7 +210,7 @@ columns for color, shape, faceting, or other features.
         color.by = "clustering",
         shape.by = "clustering")
 
-![](images/unnamed-chunk-6-1.png)
+![](images/unnamed-chunk-7-1.png)
 
     scatterPlot(
         data_frame = example_df,
@@ -220,7 +218,7 @@ columns for color, shape, faceting, or other features.
         color.by = "clustering",
         split.by = "conditions")
 
-![](images/unnamed-chunk-6-2.png)
+![](images/unnamed-chunk-7-2.png)
 
 ### Additional features
 
@@ -259,7 +257,7 @@ A few examples:
             c(1,4,3)),
         trajectory.group.by = "clustering")
 
-![](images/unnamed-chunk-7-1.png)
+![](images/unnamed-chunk-8-1.png)
 
 ## yPlot (+ ridgePlot, ridgeJitter, boxPlot wrappers)
 
@@ -281,7 +279,7 @@ box, and ridge plots.
         example_df, "gene1", group.by = "clustering"
     )
 
-![](images/unnamed-chunk-8-1.png)
+![](images/unnamed-chunk-9-1.png)
 
 `yPlot()` is the main function, but `ridgePlot()`, `ridgeJitter()`, and
 `boxPlot()` are wrappers which just adjust the default for the `plots`
@@ -290,15 +288,15 @@ c(“ridgeplot”, “jitter”), or c(“boxplot”,“jitter”), respectively
 
     ridgePlot(example_df, "gene1", group.by = "clustering")
 
-![](images/unnamed-chunk-9-1.png)
+![](images/unnamed-chunk-10-1.png)
 
     ridgeJitter(example_df, "gene1", group.by = "clustering")
 
-![](images/unnamed-chunk-9-2.png)
+![](images/unnamed-chunk-10-2.png)
 
     boxPlot(example_df, "gene1", group.by = "clustering")
 
-![](images/unnamed-chunk-9-3.png)
+![](images/unnamed-chunk-10-3.png)
 
 ### Adjustments to data representations
 
@@ -325,7 +323,7 @@ For example…
         add.line = 0.9
         )
 
-![](images/unnamed-chunk-10-1.png)
+![](images/unnamed-chunk-11-1.png)
 
 ## barPlot & freqPlot
 
@@ -338,12 +336,12 @@ this is controlled by the `scale` input.
     # barPlot
     barPlot(example_df, var = "sample", group.by = "clustering")
 
-![](images/unnamed-chunk-11-1.png)
+![](images/unnamed-chunk-12-1.png)
 
     barPlot(example_df, var = "sample", group.by = "clustering",
         scale = "count")
 
-![](images/unnamed-chunk-11-2.png)
+![](images/unnamed-chunk-12-2.png)
 
 freqPlot separates each ‘var’-value into its own facet, and thus puts
 more emphasis on each individual element. An additional `sample.by`
@@ -357,7 +355,7 @@ individual samples.
         sample.by = "sample",
         group.by = "category")
 
-![](images/unnamed-chunk-12-1.png)
+![](images/unnamed-chunk-13-1.png)
 
 ## scatterHex
 
@@ -375,7 +373,7 @@ density via opacity in addition to some other feature via color.
         x.by = "PC1", y.by = "PC2"
     )
 
-![](images/unnamed-chunk-13-1.png)
+![](images/unnamed-chunk-14-1.png)
 
     # Colored instead via a discrete or numeric feature 
     scatterHex(
@@ -383,14 +381,14 @@ density via opacity in addition to some other feature via color.
         x.by = "PC1", y.by = "PC2",
         color.by = "clustering")
 
-![](images/unnamed-chunk-14-1.png)
+![](images/unnamed-chunk-15-1.png)
 
     scatterHex(
         data_frame = example_df,
         x.by = "PC1", y.by = "PC2",
         color.by = "gene1")
 
-![](images/unnamed-chunk-14-2.png)
+![](images/unnamed-chunk-15-2.png)
 
 ### Summary methods
 
@@ -413,7 +411,7 @@ context.
         color.by = "gene1",
         color.method = "sum")
 
-![](images/unnamed-chunk-15-1.png)
+![](images/unnamed-chunk-16-1.png)
 
 ### Additional features
 
@@ -446,7 +444,7 @@ A few examples:
             c(1,4,3)),
         trajectory.group.by = "clustering")
 
-![](images/unnamed-chunk-16-1.png)
+![](images/unnamed-chunk-17-1.png)
 
 # Customization via Simple Inputs
 
@@ -467,7 +465,7 @@ logical vector that states whether each row should be included.
     # Original
     barPlot(example_df, var = "sample", group.by = "clustering", scale = "count")
 
-![](images/unnamed-chunk-17-1.png)
+![](images/unnamed-chunk-18-1.png)
 
     # First 10 cells
     barPlot(example_df, var = "sample", group.by = "clustering", scale = "count",
@@ -477,14 +475,14 @@ logical vector that states whether each row should be included.
         # rows.use = 1:5
         )
 
-![](images/unnamed-chunk-17-2.png)
+![](images/unnamed-chunk-18-2.png)
 
     # "1"-cluster only 
     barPlot(example_df, var = "sample", group.by = "clustering", scale = "count",
         # Logical method
         rows.use = example_df$clustering == 1)
 
-![](images/unnamed-chunk-17-3.png)
+![](images/unnamed-chunk-18-3.png)
 
 ## Faceting with split.by
 
@@ -495,13 +493,13 @@ values of 1 or 2 discrete columns with a `split.by` input.
         split.by = "category",
         sub = "faceted by category")
 
-![](images/unnamed-chunk-18-1.png)
+![](images/unnamed-chunk-19-1.png)
 
     scatterPlot(example_df, x.by = "PC1", y.by = "PC2", color.by = "gene1", 
         split.by = c("category", "subcategory"),
         sub = "faceted by category and subcategory")
 
-![](images/unnamed-chunk-18-2.png)
+![](images/unnamed-chunk-19-2.png)
 
 Extra control over how this is done can be achieved with the
 `split.adjust` input. `split.adjust` allows inputs to be passed through
@@ -510,7 +508,7 @@ to the ggplot functions used for achieving the faceting.
     yPlot(example_df, "gene1", group.by = "clustering", split.by = "category",
         split.adjust = list(scales = "free_y"))
 
-![](images/unnamed-chunk-19-1.png)
+![](images/unnamed-chunk-20-1.png)
 
 When splitting is by only one metadata, the shape of the facet grid can
 be controlled with `split.ncol` and `split.nrow`.
@@ -518,7 +516,7 @@ be controlled with `split.ncol` and `split.nrow`.
     ridgePlot(example_df, "gene1", group.by = "clustering", split.by = "category",
         split.ncol = 1)
 
-![](images/unnamed-chunk-20-1.png)
+![](images/unnamed-chunk-21-1.png)
 
 ## All titles are adjustable.
 
@@ -533,7 +531,7 @@ Relevant inputs are generally `main`, `sub`, `xlab`, `ylab`, and
         legend.title = "Types",
         x.labels.rotate = FALSE)
 
-![](images/unnamed-chunk-21-1.png)
+![](images/unnamed-chunk-22-1.png)
 
 ## Colors can be adjusted easily.
 
@@ -546,30 +544,30 @@ in scatter plots!
     # original - discrete
     scatterPlot(example_df, "PC1", "PC2", "clustering")
 
-![](images/unnamed-chunk-22-1.png)
+![](images/unnamed-chunk-23-1.png)
 
     # swapped colors
     scatterPlot(example_df, "PC1", "PC2", "clustering",
         colors = 4:1)
 
-![](images/unnamed-chunk-22-2.png)
+![](images/unnamed-chunk-23-2.png)
 
     # different colors
     scatterPlot(example_df, "PC1", "PC2", "clustering",
         color.panel = c("red", "orange", "purple", "yellow", "skyblue"))
 
-![](images/unnamed-chunk-22-3.png)
+![](images/unnamed-chunk-23-3.png)
 
     # original - continuous
     scatterPlot(example_df, "PC1", "PC2", "gene1")
 
-![](images/unnamed-chunk-23-1.png)
+![](images/unnamed-chunk-24-1.png)
 
     # different colors
     scatterPlot(example_df, "PC1", "PC2", "gene1",
         max.color = "red", min.color = "gray90")
 
-![](images/unnamed-chunk-23-2.png)
+![](images/unnamed-chunk-24-2.png)
 
 ## Underlying data can be output.
 
@@ -581,59 +579,59 @@ representation of the underlying data will be output.
 
     ## $p
 
-![](images/unnamed-chunk-24-1.png)
+![](images/unnamed-chunk-25-1.png)
 
     ## 
     ## $data
     ##    label grouping count label.count.total.per.facet    percent
-    ## 1      1        1     2                          29 0.06896552
-    ## 2      2        1     4                          29 0.13793103
-    ## 3      3        1     3                          29 0.10344828
-    ## 4      4        1     3                          29 0.10344828
-    ## 5      5        1     2                          29 0.06896552
-    ## 6      6        1     2                          29 0.06896552
-    ## 7      7        1     1                          29 0.03448276
-    ## 8      8        1     1                          29 0.03448276
-    ## 9      9        1     4                          29 0.13793103
-    ## 10    10        1     1                          29 0.03448276
-    ## 11    11        1     2                          29 0.06896552
-    ## 12    12        1     4                          29 0.13793103
-    ## 13     1        2     5                          28 0.17857143
-    ## 14     2        2     2                          28 0.07142857
-    ## 15     3        2     1                          28 0.03571429
-    ## 16     4        2     2                          28 0.07142857
-    ## 17     5        2     4                          28 0.14285714
-    ## 18     6        2     3                          28 0.10714286
-    ## 19     7        2     1                          28 0.03571429
-    ## 20     8        2     2                          28 0.07142857
-    ## 21     9        2     2                          28 0.07142857
-    ## 22    10        2     2                          28 0.07142857
-    ## 23    11        2     1                          28 0.03571429
-    ## 24    12        2     3                          28 0.10714286
-    ## 25     1        3     2                          38 0.05263158
-    ## 26     2        3     2                          38 0.05263158
-    ## 27     3        3     2                          38 0.05263158
-    ## 28     4        3     2                          38 0.05263158
-    ## 29     5        3     4                          38 0.10526316
-    ## 30     6        3     3                          38 0.07894737
-    ## 31     7        3     6                          38 0.15789474
-    ## 32     8        3     4                          38 0.10526316
-    ## 33     9        3     2                          38 0.05263158
-    ## 34    10        3     3                          38 0.07894737
-    ## 35    11        3     5                          38 0.13157895
-    ## 36    12        3     3                          38 0.07894737
-    ## 37     1        4     1                          25 0.04000000
-    ## 38     2        4     2                          25 0.08000000
-    ## 39     3        4     4                          25 0.16000000
-    ## 40     4        4     3                          25 0.12000000
-    ## 41     5        4     0                          25 0.00000000
-    ## 42     6        4     2                          25 0.08000000
-    ## 43     7        4     2                          25 0.08000000
-    ## 44     8        4     3                          25 0.12000000
-    ## 45     9        4     2                          25 0.08000000
-    ## 46    10        4     4                          25 0.16000000
-    ## 47    11        4     2                          25 0.08000000
-    ## 48    12        4     0                          25 0.00000000
+    ## 1      1        1     3                          26 0.11538462
+    ## 2      2        1     1                          26 0.03846154
+    ## 3      3        1     2                          26 0.07692308
+    ## 4      4        1     3                          26 0.11538462
+    ## 5      5        1     2                          26 0.07692308
+    ## 6      6        1     2                          26 0.07692308
+    ## 7      7        1     2                          26 0.07692308
+    ## 8      8        1     1                          26 0.03846154
+    ## 9      9        1     3                          26 0.11538462
+    ## 10    10        1     4                          26 0.15384615
+    ## 11    11        1     2                          26 0.07692308
+    ## 12    12        1     1                          26 0.03846154
+    ## 13     1        2     2                          27 0.07407407
+    ## 14     2        2     3                          27 0.11111111
+    ## 15     3        2     0                          27 0.00000000
+    ## 16     4        2     2                          27 0.07407407
+    ## 17     5        2     3                          27 0.11111111
+    ## 18     6        2     2                          27 0.07407407
+    ## 19     7        2     0                          27 0.00000000
+    ## 20     8        2     3                          27 0.11111111
+    ## 21     9        2     2                          27 0.07407407
+    ## 22    10        2     4                          27 0.14814815
+    ## 23    11        2     3                          27 0.11111111
+    ## 24    12        2     3                          27 0.11111111
+    ## 25     1        3     2                          31 0.06451613
+    ## 26     2        3     3                          31 0.09677419
+    ## 27     3        3     6                          31 0.19354839
+    ## 28     4        3     3                          31 0.09677419
+    ## 29     5        3     3                          31 0.09677419
+    ## 30     6        3     4                          31 0.12903226
+    ## 31     7        3     2                          31 0.06451613
+    ## 32     8        3     2                          31 0.06451613
+    ## 33     9        3     2                          31 0.06451613
+    ## 34    10        3     2                          31 0.06451613
+    ## 35    11        3     1                          31 0.03225806
+    ## 36    12        3     1                          31 0.03225806
+    ## 37     1        4     3                          36 0.08333333
+    ## 38     2        4     3                          36 0.08333333
+    ## 39     3        4     2                          36 0.05555556
+    ## 40     4        4     2                          36 0.05555556
+    ## 41     5        4     2                          36 0.05555556
+    ## 42     6        4     2                          36 0.05555556
+    ## 43     7        4     6                          36 0.16666667
+    ## 44     8        4     4                          36 0.11111111
+    ## 45     9        4     3                          36 0.08333333
+    ## 46    10        4     0                          36 0.00000000
+    ## 47    11        4     4                          36 0.11111111
+    ## 48    12        4     5                          36 0.13888889
 
 ## plotly hovering can be added.
 
@@ -671,7 +669,7 @@ offers this capability via `do.raster` and `raster.dpi` inputs.
         do.raster = TRUE,
         raster.dpi = 300)
 
-![](images/unnamed-chunk-26-1.png)
+![](images/unnamed-chunk-27-1.png)
 
 # The ‘colLevels()’ Helper Function
 
@@ -755,7 +753,7 @@ to FALSE. `used.only` is TRUE by default.
     ## [1] stats     graphics  grDevices utils     datasets  methods   base     
     ## 
     ## other attached packages:
-    ## [1] dittoViz_0.99.0 ggplot2_3.3.6  
+    ## [1] dittoViz_1.0.0 ggplot2_3.3.6 
     ## 
     ## loaded via a namespace (and not attached):
     ##  [1] gtable_0.3.3            dplyr_1.1.2             compiler_4.3.2         

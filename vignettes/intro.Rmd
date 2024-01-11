@@ -4,7 +4,7 @@ author:
 - name: Daniel Bunis
   affiliation: Data Science CoLab, University of California, San Francisco
   email: daniel.bunis@ucsf.edu
-date: "Jan 3rd, 2024"
+date: "Jan 11th, 2024"
 output:
   md_document:
     toc: true
@@ -57,10 +57,13 @@ or for showing additional groupings.)
 
 # Installation
 
-dittoViz will eventually be available through CRAN.  This section will be
-updated once that is the case.
+dittoViz is available through CRAN.
 
-For now, install from the GitHub:
+```{r, eval=FALSE}
+install.packages("dittoViz")
+```
+
+Alternatively, you can install from GitHub:
 
 ```{r, eval=FALSE}
 # Install remotes if needed
@@ -71,9 +74,7 @@ if (!requireNamespace("remotes", quietly = TRUE))
 remotes::install_github("dtm2451/dittoViz")
 ```
 
-# Getting started
-
-## Input Data
+# Quick Input Data
 
 All dittoViz functions have a `data_frame` input which takes a data.frame-like
 object with observations / individual data points in rows, and features of those
@@ -81,7 +82,7 @@ observations in columns.
 
 To get started here, we'll make use of the `?dittoExampleData` documentation
 point which was created entirely in order to allow single-line, fast, generation
-<!-- of an example `data_frame` input: -->
+of an example `data_frame` input:
 
 ```{r}
 library(dittoViz)

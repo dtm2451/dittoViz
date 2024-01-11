@@ -4,22 +4,45 @@ A comprehensive visualization toolkit built with coders of all skill levels and
 color-vision impaired audiences in mind. It allows creation of finely-tuned,
 publication-quality figures from single function calls.
 
-Spawned out of the scRNAseq-focused dittoSeq-package, dittoViz contains most of
-it's visualization machinery with none of the added (sc)RNAseq-related
-dependency requirements.
+Spawned out of the scRNAseq-focused [dittoSeq](https://github.com/dtm2451/dittoSeq)-package,
+dittoViz contains most of it's visualization machinery with none of the added
+scRNAseq-related dependencies.
 
-Visualizations include scatterplots, compositional bar plots, violin, box, and
-ridge plots, and more. Customizations range from size and title adjustments to
+Visualizations include scatter plots, compositional bar plots, violin, box, and
+ridge plots, and more. Customization ranges from size and title adjustments to
 discrete-group circling and labeling, hidden data overlay upon cursor hovering
-via ggplotly conversion, and many more. All with simple, discrete inputs.
+via ggplotly() conversion, and many more, all with simple, discrete inputs.
 
 Color blindness friendliness is powered by legend adjustments (enlarged keys),
 and by allowing the use of shapes or letter-overlay in addition to the carefully
-selected dittoColors.
+selected dittoColors().
 
 ## Getting Started
 
-A vignette detailing installation and use is available [here!](vignettes/intro.md)
+Installation:
+
+```
+install.packages("dittoViz")
+```
+
+Then there are a few options for getting aquainted with the package:
+
+1. Read and follow along with the vignette available [here!](vignettes/intro.md)
+2. View documentation and run examples inside R with, e.g. `?yPlot` or
+`example("yPlot")`.
+
+Visualizations functions are:
+
+- `scatterPlot()`
+- `scatterHex()`
+- `yPlot()`
+- `barPlot()`
+- `freqPlot()`
+
+Helper functions are:
+
+- `dittoColors()`
+- `colLevels()`
 
 ## Long-Term plans for dittoViz
 
