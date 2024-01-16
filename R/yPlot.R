@@ -486,9 +486,11 @@ yPlot <- function(
             }
 
             jitter.aes.args <- list()
-            # if (do.hover) {
-            #     jitter.aes.args$text <-  "hover.string"
-            # }
+            jitter.aes.args$group <- group.by
+
+            if (do.hover) {
+                jitter.aes.args$text <-  "hover.string"
+            }
 
             # If shape.by given, use it. Else, shapes[1] which = dots (16) by default
             if (!is.null(shape.by)) {
