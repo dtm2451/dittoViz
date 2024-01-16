@@ -50,6 +50,12 @@ scatterPlot(
   add.trajectory.curves = NULL,
   trajectory.group.by,
   trajectory.arrow.size = 0.15,
+  add.xline = NULL,
+  xline.linetype = "dashed",
+  xline.color = "black",
+  add.yline = NULL,
+  yline.linetype = "dashed",
+  yline.color = "black",
   do.letter = FALSE,
   do.ellipse = FALSE,
   do.label = FALSE,
@@ -187,6 +193,20 @@ Defaults to "solid", but see \code{\link[ggplot2]{linetype}} for other options.}
 \item{trajectory.group.by}{String denoting the name of a column of \code{data_frame} to use for generating trajectories from data point groups.}
 
 \item{trajectory.arrow.size}{Number representing the size of trajectory arrows, in inches.  Default = 0.15.}
+
+\item{add.xline}{numeric value(s) where one or multiple vertical line(s) should be added.}
+
+\item{xline.linetype}{String which sets the type of line for \code{add.xline}.
+Defaults to "dashed", but any ggplot linetype will work.}
+
+\item{xline.color}{String that sets the color(s) of the \code{add.xline} line(s).}
+
+\item{add.yline}{numeric value(s) where one or multiple vertical line(s) should be added.}
+
+\item{yline.linetype}{String which sets the type of line for \code{add.yline}.
+Defaults to "dashed", but any ggplot linetype will work.}
+
+\item{yline.color}{String that sets the color(s) of the \code{add.yline} line(s).}
 
 \item{do.letter}{Logical which sets whether letters should be added on top of the colored dots.
 For extended colorblindness compatibility.
