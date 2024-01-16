@@ -319,8 +319,17 @@ yPlot <- function(
         group.by = group.by,
         color.by = color.by,
         shape.by = shape.by,
-        split.by = split.by
+        split.by = split.by,
+        group.aes = group.by
     )
+    if (group.by != color.by) {
+        cols_use$group.aes <- "group.aes"
+        data_frame$`group.aes` <- paste0(
+            as.character(data_frame[,group.by]),
+            ".-.",
+            as.character(data_frame[,color.by])
+        )
+    }
     # Relabel/reorder for groups
     data_frame[,group.by] <-
         .rename_and_or_reorder(data_frame[,group.by], x.reorder, x.labels)
@@ -375,7 +384,8 @@ yPlot <- function(
             boxplot.position.dodge, boxplot.lineweight,
             vlnplot.lineweight, vlnplot.width, vlnplot.scaling,
             vlnplot.quantiles, add.line, line.linetype, line.color,
-            x.labels.rotate, do.hover, y.breaks, min, max, data_frame)
+            x.labels.rotate, do.hover, y.breaks, min, max, data_frame,
+            cols_use$group.aes)
     } else {
         p <- .yPlot_add_data_x_direction(
             p, Target_data, cols_use$var, cols_use$group.by,
@@ -421,7 +431,7 @@ yPlot <- function(
     vlnplot.lineweight, vlnplot.width, vlnplot.scaling, vlnplot.quantiles,
     add.line, line.linetype, line.color,
     x.labels.rotate, do.hover, y.breaks, min, max,
-    data_frame) {
+    data_frame, group.aes) {
     # This function takes in a partial yPlot ggplot data_frame without any data
     # overlay, and parses adding the main data visualizations.
     # Adds plots based on what is requested in plots, ordered by their order.
@@ -485,10 +495,10 @@ yPlot <- function(
                 jitter.args$raster.dpi <- raster.dpi
             }
 
-            jitter.aes.args <- list()
-            # if (do.hover) {
-            #     jitter.aes.args$text <-  "hover.string"
-            # }
+            jitter.aes.args <- list(group = group.aes)
+            if (do.hover) {
+                jitter.aes.args$text <- "hover.string"
+            }
 
             # If shape.by given, use it. Else, shapes[1] which = dots (16) by default
             if (!is.null(shape.by)) {
