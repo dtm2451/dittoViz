@@ -102,6 +102,14 @@
 #' @param trajectory.group.by String denoting the name of a column of \code{data_frame} to use for generating trajectories from data point groups.
 #' @param trajectory.arrow.size Number representing the size of trajectory arrows, in inches.  Default = 0.15.
 #' @param add.trajectory.curves List of matrices, each representing coordinates for a trajectory path, from start to end, where matrix columns represent x and y coordinates of the paths.
+#' @param add.xline numeric value(s) where one or multiple vertical line(s) should be added.
+#' @param xline.linetype String which sets the type of line for \code{add.xline}.
+#' Defaults to "dashed", but any ggplot linetype will work.
+#' @param xline.color String that sets the color(s) of the \code{add.xline} line(s).
+#' @param add.yline numeric value(s) where one or multiple vertical line(s) should be added.
+#' @param yline.linetype String which sets the type of line for \code{add.yline}.
+#' Defaults to "dashed", but any ggplot linetype will work.
+#' @param yline.color String that sets the color(s) of the \code{add.yline} line(s).
 #' @param theme A ggplot theme which will be applied before internal adjustments.
 #' Default = \code{theme_bw()}.
 #' See \url{https://ggplot2.tidyverse.org/reference/ggtheme.html} for other options and ideas.
@@ -302,6 +310,12 @@ scatterPlot <- function(
     add.trajectory.curves = NULL,
     trajectory.group.by,
     trajectory.arrow.size = 0.15,
+    add.xline = NULL,
+    xline.linetype = "dashed",
+    xline.color = "black",
+    add.yline = NULL,
+    yline.linetype = "dashed",
+    yline.color = "black",
     do.letter = FALSE,
     do.ellipse = FALSE,
     do.label = FALSE,
@@ -363,7 +377,9 @@ scatterPlot <- function(
         legend.show, legend.color.title, legend.color.size,
         legend.color.breaks, legend.color.breaks.labels, legend.shape.title,
         legend.shape.size, do.raster, raster.dpi,
-        cols_use$split.by, split.show.all.others, show.grid.lines)
+        cols_use$split.by, split.show.all.others, show.grid.lines,
+        add.xline, xline.linetype, xline.color,
+        add.yline, yline.linetype, yline.color)
 
     ### Add extra features
     if (!is.null(cols_use$split.by)) {
@@ -444,7 +460,13 @@ scatterPlot <- function(
     raster.dpi,
     split.by,
     split.show.all.others,
-    show.grid.lines
+    show.grid.lines,
+    add.xline,
+    xline.linetype,
+    xline.color,
+    add.yline,
+    yline.linetype,
+    yline.color
 ) {
 
     ### Set up plotting
@@ -533,6 +555,14 @@ scatterPlot <- function(
         } else {
             p <- p + do.call(geom_point, geom.args)
         }
+    }
+
+    if (!is.null(add.xline)) {
+        p <- p + geom_vline(xintercept = add.xline, linetype = xline.linetype, color = xline.color)
+    }
+
+    if (!is.null(add.yline)) {
+        p <- p + geom_hline(yintercept = add.yline, linetype = yline.linetype, color = yline.color)
     }
 
     if (!legend.show) {
