@@ -241,6 +241,12 @@ scatterHex <- function(
         add.trajectory.curves = NULL,
         trajectory.group.by,
         trajectory.arrow.size = 0.15,
+        add.xline = NULL,
+        xline.linetype = "dashed",
+        xline.color = "black",
+        add.yline = NULL,
+        yline.linetype = "dashed",
+        yline.color = "black",
         legend.show = TRUE,
         legend.color.title = "make",
         legend.color.breaks = waiver(),
@@ -319,7 +325,9 @@ scatterHex <- function(
         xlab, ylab, main, sub, theme, legend.show,
         legend.color.title, legend.color.breaks, legend.color.breaks.labels,
         legend.density.title, legend.density.breaks, legend.density.breaks.labels,
-        show.grid.lines)
+        show.grid.lines,
+        add.xline, xline.linetype, xline.color,
+        add.yline, yline.linetype, yline.color)
 
     ### Add extra features
     if (!is.null(cols_use$split.by)) {
@@ -387,7 +395,13 @@ scatterHex <- function(
         legend.density.title,
         legend.density.breaks,
         legend.density.breaks.labels,
-        show.grid.lines
+        show.grid.lines,
+        add.xline,
+        xline.linetype,
+        xline.color,
+        add.yline,
+        yline.linetype,
+        yline.color
 ) {
 
     if (!show.grid.lines) {
@@ -472,6 +486,14 @@ scatterHex <- function(
         p <- p + do.call(ggplot.multistats::stat_summaries_hex, geom.args)
     } else {
         p <- p + do.call(stat_bin_hex, geom.args)
+    }
+
+    if (!is.null(add.xline)) {
+        p <- p + geom_vline(xintercept = add.xline, linetype = xline.linetype, color = xline.color)
+    }
+
+    if (!is.null(add.yline)) {
+        p <- p + geom_hline(yintercept = add.yline, linetype = yline.linetype, color = yline.color)
     }
 
     if (!legend.show) {

@@ -363,3 +363,19 @@ test_that("scatterPlot data adjustments applied", {
     expect_equal(
         max(p$data[[p$cols_used$y.by]]), 1)
 })
+
+test_that("scatterPlot added arbitrary horizontal and vertical lines work", {
+    expect_s3_class(
+        scatterHex(df, "PC1", "PC2", disc,
+                    add.yline = c(-1, 1), add.xline = c(2)),
+        "ggplot")
+
+    ### Manual Check:
+    # Vertical lines dotted and horizontal line red (not black and dashed as above)
+    expect_s3_class(
+        scatterHex(df, "PC1", "PC2", disc,
+                    add.yline = c(-1, 1), add.xline = c(2),
+                    yline.color = "red", xline.linetype = "dotted"),
+        "ggplot")
+})
+
