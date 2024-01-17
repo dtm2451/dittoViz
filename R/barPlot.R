@@ -121,6 +121,7 @@ barPlot <- function(
     data.out = FALSE,
     data.only = FALSE,
     do.hover = FALSE,
+    hover.round.digits = 5,
     color.panel = dittoColors(),
     colors = seq_along(color.panel),
     split.nrow = NULL,
@@ -147,8 +148,8 @@ barPlot <- function(
     # Gather data
     data <- .make_composition_summary_df(
         data_frame, var, group.by, split.by, rows.use, x.reorder, x.labels,
-        var.labels.reorder, var.labels.rename, do.hover, FALSE,
-        retain.factor.levels, retain.factor.levels)
+        var.labels.reorder, var.labels.rename, do.hover, hover.round.digits,
+        FALSE, retain.factor.levels, retain.factor.levels)
     if (data.only) {
         return(data)
     }
@@ -209,117 +210,4 @@ barPlot <- function(
     } else {
         p
     }
-}
-
-.make_composition_summary_df <- function(
-    data_frame, var, group.by, split.by, rows.use,
-    x.reorder, x.labels,
-    var.labels.reorder, var.labels.rename,
-    do.hover, max.normalize = FALSE,
-    retain.factor.levels.var, retain.factor.levels.group,
-    make.factor.var = FALSE, keep.level.order.group = FALSE
-) {
-
-    rows.use <- .which_rows(rows.use, data_frame)
-
-    data_frame_use <- data_frame[rows.use, , drop = FALSE]
-
-    # Extract x.grouping and y.labels data
-    y.var <- ._col(var, data_frame_use, add.names = FALSE)
-    x.var <- ._col(group.by, data_frame_use, add.names = FALSE)
-    if (any(is.na(x.var))) {
-        stop('Cannot calculate composition among grouping data containing NAs. Offending column: ', group.by)
-    }
-
-    # Factor editting
-    if(!retain.factor.levels.var) {
-        y.var <- as.character(y.var)
-    }
-    if(make.factor.var) {
-        y.var <- as.factor(y.var)
-    }
-    x.levs <- levels(as.factor(x.var))
-    if(!retain.factor.levels.group) {
-        x.var <- as.character(x.var)
-    }
-
-    # Extract or negate-away split.by data
-    facet <- "filler"
-    split.data <- list()
-    if (!is.null(split.by)) {
-        for (by in seq_along(split.by)) {
-            split.data[[by]] <- data_frame_use[, split.by[by]]
-            if (any(is.na(split.data[[by]]))) {
-                stop('Cannot calculate composition among sub-grouping data containing NAs. Offending column: ', split.by[by])
-            }
-        }
-        facet <- do.call(paste, split.data)
-    }
-
-    # Create dataframe (per split.by group)
-    data <- do.call(
-        rbind,
-        lapply(
-            unique(facet),
-            function(this_facet) {
-
-                # Subset data per facet
-                use <- facet==this_facet
-                use_first <- which(use)[1]
-                y.var <- y.var[use]
-                x.var <- x.var[use]
-
-                # Create data frame
-                new <- data.frame(table(y.var, x.var))
-                names(new) <- c("label", "grouping", "count")
-
-                new$label.count.total.per.facet <- rep(
-                    as.vector(table(x.var)),
-                    each = length(levels(as.factor(y.var))))
-                new$percent <- new$count / new$label.count.total.per.facet
-
-                # Catch 0/0
-                new$percent[is.nan(new$percent)] <- 0
-
-                # Add facet info
-                for (by in seq_along(split.by)) {
-                    new[[split.by[by]]] <- split.data[[by]][use_first]
-                }
-
-                new
-            }
-        )
-    )
-
-    # max.normalization per var-label
-    if (max.normalize) {
-        data$count.norm <- 0
-        data$percent.norm <- 0
-
-        for (i in unique(data$label)) {
-            this_lab <- data$label == i
-            data$count.norm[this_lab] <-
-                data$count[this_lab]/max(data$count[this_lab])
-            data$percent.norm[this_lab] <-
-                data$percent[this_lab]/max(data$percent[this_lab])
-        }
-    }
-
-    # Rename/reorder
-    if(keep.level.order.group){
-        data$grouping <- factor(data$grouping, levels = x.levs)
-    }
-    data$grouping <- .rename_and_or_reorder(data$grouping, x.reorder, x.labels)
-    data$label <- .rename_and_or_reorder(
-        data$label, var.labels.reorder, var.labels.rename)
-
-    # Add hover info
-    if (do.hover) {
-        hover.data <- data[,names(data) %in% c("label", "count", "percent")]
-        names(hover.data)[1] <- var
-        # Make hover strings, "data.type: data" \n "data.type: data"
-        data$hover.string <- .make_hover_strings_from_df(hover.data)
-    }
-
-    data
 }

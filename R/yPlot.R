@@ -46,6 +46,11 @@
 #' For example, \code{function(x) \{log2(x)\}} or \code{as.factor}.
 #'
 #' In order to leave the unedited data available for use in other features, the adjusted data are put in a new column and that new column is used for plotting.
+#' @param hover.data String vector which denotes what data to show for each jitter data point, upon hover, when \code{do.hover} is set to \code{TRUE}.
+#' Defaults to all data expected to be useful.
+#' Only values present in the plotting data are actually used.
+#' These can be column names of \code{data_frame} and any column names which will be created to accommodate multivar and data adjustment functionality.
+#' You can run the function with \code{data.out = TRUE} and inspect the \code{$data} output's columns to view your available options.
 #' @param main String, sets the plot title. Default = "make" and if left as make, a title will be automatically generated.  To remove, set to \code{NULL}.
 #' @param theme A ggplot theme which will be applied before internal adjustments.
 #' Default = \code{theme_classic()}.
@@ -244,7 +249,11 @@ yPlot <- function(
     var.adjustment = NULL,
     var.adj.fxn = NULL,
     do.hover = FALSE,
-    hover.data = unique(c(var, paste0(var,".adj"), paste0(var,".multi"), paste0(var,".which"), group.by, shape.by, split.by)),
+    hover.data = unique(c(
+        var, paste0(var,".adj"), "var.multi", "var.which",
+        group.by, color.by, shape.by, split.by
+    )),
+    hover.round.digits = 5,
     color.panel = dittoColors(),
     colors = seq_along(color.panel),
     shape.panel = c(16,15,17,23,25,8),
@@ -363,7 +372,7 @@ yPlot <- function(
     if (do.hover) {
         hover_exists <- hover.data[hover.data %in% colnames(Target_data)]
         Target_data$hover.string <- .make_hover_strings_from_df(
-            Target_data[,hover_exists,drop=FALSE])
+            Target_data[,hover_exists,drop=FALSE], hover.round.digits)
         cols_use$hover.text <- "hover.string"
     }
 
