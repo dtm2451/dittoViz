@@ -108,6 +108,25 @@ test_that("scatterPlot hover.data default captures all desired aspects", {
     )
 })
 
+test_that("scatterPlot hover.round.digits rounds numeric data", {
+    skip_if_not(plotly_installed, message = "No plotly")
+
+    length2 <- nchar(
+        scatterPlot(
+            df, cont1, cont2, do.hover = TRUE,
+            hover.data = "PC1", data.out = TRUE,
+            hover.round.digits = 2)$Target_data$hover.string[1]
+    )
+    length1 <- nchar(
+        scatterPlot(
+            df, cont1, cont2, do.hover = TRUE,
+            hover.data = "PC1", data.out = TRUE,
+            hover.round.digits = 1)$Target_data$hover.string[1]
+    )
+
+    expect_gt(length2, length1)
+})
+
 ### yPlot
 test_that("Showing hover.data works for yPlot, with rows.use", {
     if (plotly_installed) {
@@ -203,6 +222,25 @@ test_that("yPlot hover.data default captures all desired aspects", {
     )
 })
 
+test_that("yPlot hover.round.digits rounds numeric data", {
+    skip_if_not(plotly_installed, message = "No plotly")
+
+    length2 <- nchar(
+        yPlot(
+            df, cont1, group.by = disc, do.hover = TRUE,
+            hover.data = "PC1", data.out = TRUE,
+            hover.round.digits = 2)$data$hover.string[1]
+    )
+    length1 <- nchar(
+        yPlot(
+            df, cont1, group.by = disc, do.hover = TRUE,
+            hover.data = "PC1", data.out = TRUE,
+            hover.round.digits = 1)$data$hover.string[1]
+    )
+
+    expect_gt(length2, length1)
+})
+
 ### barPlot
 test_that("Showing hover.data works for barPlot (with rows.use)", {
     if (requireNamespace("plotly", quietly = TRUE)) {
@@ -255,6 +293,22 @@ test_that("barPlot hover.data default captures all desired aspects", {
         rep(TRUE, length(expectations)),
         ignore_attr = TRUE
     )
+})
+
+test_that("barPlot hover.round.digits rounds numeric data", {
+    skip_if_not(plotly_installed, message = "No plotly")
+
+    length2 <- nchar(
+        barPlot(
+            df, disc, group.by = disc2, do.hover = TRUE, data.out = TRUE,
+            hover.round.digits = 2)$data$hover.string[1]
+    )
+    length0 <- nchar(
+        barPlot(
+            df, disc, group.by = disc2, do.hover = TRUE, data.out = TRUE,
+            hover.round.digits = 0)$data$hover.string[1]
+    )
+    expect_gt(length2, length0)
 })
 
 ### freqPlot
@@ -312,5 +366,21 @@ test_that("freqPlot hover.data default captures all desired aspects", {
         rep(TRUE, length(expectations)),
         ignore_attr = TRUE
     )
+})
+
+test_that("freqPlot hover.round.digits rounds numeric data", {
+    skip_if_not(plotly_installed, message = "No plotly")
+
+    length2 <- nchar(
+        freqPlot(
+            df, disc2, group.by = disc, do.hover = TRUE, data.out = TRUE,
+            hover.round.digits = 2)$data$hover.string[1]
+    )
+    length0 <- nchar(
+        freqPlot(
+            df, disc2, group.by = disc, do.hover = TRUE, data.out = TRUE,
+            hover.round.digits = 0)$data$hover.string[1]
+    )
+    expect_gt(length2, length0)
 })
 
