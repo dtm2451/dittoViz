@@ -42,7 +42,10 @@ scatterPlot(
   sub = NULL,
   theme = theme_bw(),
   do.hover = FALSE,
-  hover.data = unique(c(color.by, paste0(color.by, "-adj"), shape.by, x.by, y.by)),
+  hover.data = unique(c(color.by, paste0(color.by, ".color.adj"), "color.multi",
+    "color.which", x.by, paste0(x.by, ".x.adj"), y.by, paste0(y.by, ".y.adj"), shape.by,
+    split.by)),
+  hover.round.digits = 5,
   do.contour = FALSE,
   contour.color = "black",
   contour.linetype = 1,
@@ -171,7 +174,13 @@ See \url{https://ggplot2.tidyverse.org/reference/ggtheme.html} for other options
 \item{do.hover}{Logical which controls whether the ggplot output will be converted to a plotly object so that data about individual points can be displayed when you hover your cursor over them.
 The \code{hover.data} argument is used to determine what data to show upon hover.}
 
-\item{hover.data}{String vector of column names of \code{data_frame} which denotes what data to show for each data point, upon hover, when \code{do.hover} is set to \code{TRUE}.}
+\item{hover.data}{String vector which denotes what data to show for each data point, upon hover, when \code{do.hover} is set to \code{TRUE}.
+Defaults to all data expected to be useful.
+Only values present in the plotting data are actually used.
+These can be column names of \code{data_frame} and any column names which will be created to accommodate multivar and data adjustment functionality.
+You can run the function with \code{data.out = TRUE} and inspect the \code{$Target_data} output's columns to view your available options.}
+
+\item{hover.round.digits}{Integer number specifying the number of decimal digits to round displayed numeric values to, when \code{do.hover} is set to \code{TRUE}.}
 
 \item{do.contour}{Logical. Whether density-based contours should be displayed.}
 

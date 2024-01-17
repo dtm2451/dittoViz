@@ -21,6 +21,7 @@ freqPlot(
   data.out = FALSE,
   data.only = FALSE,
   do.hover = FALSE,
+  hover.round.digits = 5,
   color.panel = dittoColors(),
   colors = seq_along(color.panel),
   y.breaks = NULL,
@@ -117,8 +118,9 @@ Alternatively, a Logical vector, the same length as the number of rows in \code{
 
 \item{data.only}{Logical. When set to \code{TRUE}, the underlying data will be returned, but not the plot itself.}
 
-\item{do.hover}{Logical which controls whether the ggplot output will be converted to a plotly object so that data about individual points can be displayed when you hover your cursor over them.
-The \code{hover.data} argument is used to determine what data to show upon hover.}
+\item{do.hover}{Logical which sets whether the ggplot output should be converted to a ggplotly object with data about individual bars displayed when you hover your cursor over them.}
+
+\item{hover.round.digits}{Integer number specifying the number of decimal digits to round displayed numeric values to, when \code{do.hover} is set to \code{TRUE}.}
 
 \item{color.panel}{String vector which sets the colors to draw from for data representation fills.
 Default = \code{dittoColors()}.

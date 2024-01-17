@@ -30,6 +30,7 @@
 #' See \code{\link[ggplot2]{facet_wrap}} for options.
 #' @param ylab String, sets the continuous-axis label (=y-axis for box and violin plots, x-axis for ridgeplots).
 #' Default = "make" and if left as make, this title will be automatically generated.
+#' @param do.hover Logical which sets whether the ggplot output should be converted to a ggplotly object with data about individual bars displayed when you hover your cursor over them.
 #' @param data.out Logical. When set to \code{TRUE}, changes the output, from the plot alone, to a list containing the plot (\code{p}), its underlying data (\code{data}).
 #' @return A ggplot plot where frequencies of discrete \code{var}-data per sample, grouped by condition, timepoint, etc., is shown on the y-axis by a violin plot, boxplot, and/or jittered points, or on the x-axis by a ridgeplot with or without jittered points.
 #'
@@ -184,6 +185,7 @@ freqPlot <- function(
     data.out = FALSE,
     data.only = FALSE,
     do.hover = FALSE,
+    hover.round.digits = 5,
     color.panel = dittoColors(),
     colors = seq_along(color.panel),
     y.breaks = NULL,
@@ -244,8 +246,8 @@ freqPlot <- function(
     data <- .make_composition_summary_df(
         data_frame, var, group.by, split.by = c(sample.by, color.by),
         rows.use, x.reorder, x.labels,
-        var.labels.reorder, var.labels.rename, do.hover, max.normalize,
-        TRUE, FALSE, TRUE, TRUE)
+        var.labels.reorder, var.labels.rename, FALSE, hover.round.digits,
+        max.normalize, TRUE, FALSE, TRUE, TRUE)
     if (data.only) {
         return(data)
     }
@@ -271,7 +273,9 @@ freqPlot <- function(
         data, scale, group.by = "grouping", color.by = color.by,
         shape.by = NULL, split.by = "label", plots = plots,
         var.adjustment = NULL, var.adj.fxn = NULL,
-        do.hover = do.hover, color.panel = color.panel, colors = colors,
+        do.hover = do.hover, hover.round.digits = hover.round.digits,
+        hover.data = unique(c("grouping", "label", sample.by, color.by, "count", "percent")),
+        color.panel = color.panel, colors = colors,
         theme = theme, main = main, sub = sub, ylab = ylab, y.breaks = y.breaks,
         min = min, max = max, xlab = xlab, x.labels = x.labels,
         x.labels.rotate = x.labels.rotate, x.reorder = x.reorder,

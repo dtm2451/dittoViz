@@ -52,7 +52,12 @@
 #' In order to leave the unedited data available for use in other features, the adjusted data are put in a new column and that new column is used for plotting.
 #' @param do.hover Logical which controls whether the ggplot output will be converted to a plotly object so that data about individual points can be displayed when you hover your cursor over them.
 #' The \code{hover.data} argument is used to determine what data to show upon hover.
-#' @param hover.data String vector of column names of \code{data_frame} which denotes what data to show for each data point, upon hover, when \code{do.hover} is set to \code{TRUE}.
+#' @param hover.data String vector which denotes what data to show for each data point, upon hover, when \code{do.hover} is set to \code{TRUE}.
+#' Defaults to all data expected to be useful.
+#' Only values present in the plotting data are actually used.
+#' These can be column names of \code{data_frame} and any column names which will be created to accommodate multivar and data adjustment functionality.
+#' You can run the function with \code{data.out = TRUE} and inspect the \code{$Target_data} output's columns to view your available options.
+#' @param hover.round.digits Integer number specifying the number of decimal digits to round displayed numeric values to, when \code{do.hover} is set to \code{TRUE}.
 #' @param shape.panel Vector of integers, corresponding to ggplot shapes, which sets what shapes to use in conjunction with \code{shape.by}.
 #' When nothing is supplied to \code{shape.by}, only the first value is used.
 #' Default is a set of 6, \code{c(16,15,17,23,25,8)}, the first being a simple, solid, circle.
@@ -283,7 +288,13 @@ scatterPlot <- function(
     sub = NULL,
     theme = theme_bw(),
     do.hover = FALSE,
-    hover.data = unique(c(color.by, paste0(color.by,"-adj"), shape.by, x.by, y.by)),
+    hover.data = unique(c(
+        color.by, paste0(color.by,".color.adj"), "color.multi", "color.which",
+        x.by, paste0(x.by,".x.adj"),
+        y.by, paste0(y.by,".y.adj"),
+        shape.by, split.by
+    )),
+    hover.round.digits = 5,
     do.contour = FALSE,
     contour.color = "black",
     contour.linetype = 1,
@@ -330,7 +341,7 @@ scatterPlot <- function(
         x.adjustment, y.adjustment, color.adjustment,
         x.adj.fxn, y.adj.fxn, color.adj.fxn,
         rename.color.groups, rename.shape.groups,
-        multivar.split.dir, rows.use, do.hover, hover.data
+        multivar.split.dir, rows.use, do.hover, hover.data, hover.round.digits
     )
     Target_data <- edit_outs$data_use
     Others_data <- edit_outs$data_other
@@ -533,7 +544,7 @@ scatterPlot <- function(
 
 .rep_all_data_per_facet <- function(Target_data, Others_data, split.by) {
 
-    all_data <- rbind(Target_data, Others_data)
+    all_data <- rbind(Target_data[, colnames(Others_data)], Others_data)
 
     facet <- if (is.null(split.by)) {
         "filler"
