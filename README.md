@@ -31,7 +31,7 @@ Then there are a few options for getting aquainted with the package:
 2. View documentation and run examples inside R with, e.g. `?yPlot` or
 `example("yPlot")`.
 
-Visualizations functions are:
+Visualization functions are:
 
 - `scatterPlot()`
 - `scatterHex()`
