@@ -414,7 +414,7 @@ scatterHex <- function(
     p <- ggplot() + ylab(ylab) + xlab(xlab) + ggtitle(main,sub) + theme
 
     ### Determine how to add data while adding proper theming
-    aes.args <- list(x = x.by, y = y.by)
+    aes.use <- aes(x = .data[[x.by]], y = .data[[y.by]])
     geom.args <- list(
         data = data, bins = bins, na.rm = TRUE)
 
@@ -441,20 +441,21 @@ scatterHex <- function(
             labels = legend.density.breaks.labels)
 
         # Prep aesthetics
-        aes.args$z <- color.by
-        aes.args$fill <- "stat(c)"
-        aes.args$alpha <- "stat(d)"
-        # Fix for when color is a factor
-        aes.args$group <- 1
+        aes.use <- modifyList(aes.use, aes(
+            z = .data[[color.by]],
+            fill = after_stat(.data$fxn_c),
+            alpha = after_stat(.data$fxn_d),
+            # Fix for when color is a factor
+            group = 1))
 
         # Determine how 'c' and 'd' should be calculated &
         # set fill based on color.method
         if (discrete) {
 
             geom.args$funs <- c(
-                c = if (color.method == "max") {
+                fxn_c = if (color.method == "max") {
                     function(x) names(which.max(table(x)))
-                }, d = length)
+                }, fxn_d = length)
 
             p <- p + scale_fill_manual(
                 name = legend.color.title,
@@ -463,11 +464,11 @@ scatterHex <- function(
         } else {
 
             geom.args$funs <- c(
-                c = if (color.method == "max.prop") {
+                fxn_c = if (color.method == "max.prop") {
                     function(x) max(table(x)/length(x))
                 } else {
                     color.method
-                }, d = length)
+                }, fxn_d = length)
 
             p <- p + scale_fill_gradient(
                 name = legend.color.title,
@@ -481,7 +482,7 @@ scatterHex <- function(
     }
 
     ### Add data
-    geom.args$mapping <- do.call(aes_string, aes.args)
+    geom.args$mapping <- aes.use
     if (!is.null(color.by)) {
         p <- p + do.call(ggplot.multistats::stat_summaries_hex, geom.args)
     } else {

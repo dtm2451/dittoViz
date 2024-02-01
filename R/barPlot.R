@@ -161,7 +161,7 @@ barPlot <- function(
     #Build Plot
     p <- ggplot(
         data=data,
-        aes_string(x = "grouping", y= scale, fill = "label")) +
+        aes(x = .data$grouping, y=.data[[scale]], fill = .data$label)) +
         theme + xlab(xlab) + ylab(ylab) + ggtitle(main, subtitle = sub) +
         scale_fill_manual(name = legend.title, values = color.panel[colors]) +
         if (x.labels.rotate) {
@@ -171,7 +171,7 @@ barPlot <- function(
         #Add the bars.
         if(do.hover){
             p <- p + suppressWarnings(geom_col(
-                aes_string(text = "hover.string")))
+                aes(text = .data$hover.string)))
         } else {
             p <- p + geom_col()
         }

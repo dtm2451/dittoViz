@@ -1,3 +1,7 @@
+#' @importFrom utils modifyList
+#' @importFrom stats median
+NULL
+
 #' Example Data Generation
 #' @name dittoExampleData
 #' @details This documentation point exists only to be a set source of example data for other dittoViz documentation.
