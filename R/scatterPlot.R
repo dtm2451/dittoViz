@@ -482,7 +482,7 @@ scatterPlot <- function(
     geom.args <- list(data = Target_data, alpha = opacity)
 
     if (is.character(size)) {
-        aes.use <- modifyList(aes.use, aes(size <- .data[[size]]))
+        aes.use <- modifyList(aes.use, aes(size = .data[[size]]))
     } else {
         geom.args$size <- size
     }

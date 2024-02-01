@@ -459,7 +459,7 @@ yPlot <- function(
     for (i in seq_along(plots)) {
         if (plots[i] == "vlnplot") {
             p <- p + geom_violin(
-                size = vlnplot.lineweight,
+                linewidth = vlnplot.lineweight,
                 width = vlnplot.width,
                 scale = vlnplot.scaling,
                 draw_quantiles = vlnplot.quantiles,
@@ -586,7 +586,7 @@ yPlot <- function(
         scale_y_discrete(expand = expansion(mult=c(0, ridgeplot.ymax.expansion)))
 
     # Add ridgeplot and jitter data
-    ridge.args <- list(size = ridgeplot.lineweight, scale = ridgeplot.scale)
+    ridge.args <- list(linewidth = ridgeplot.lineweight, scale = ridgeplot.scale)
     if (ridgeplot.shape == "hist") {
         ridge.args$stat <- "binline"
         ridge.args$bins <- ridgeplot.bins
