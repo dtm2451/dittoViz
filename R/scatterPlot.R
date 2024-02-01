@@ -478,18 +478,18 @@ scatterPlot <- function(
     }
 
     # Determine how to add data while adding proper theming
-    aes.args <- list(x = x.by, y = y.by)
+    aes.use <- aes(x = .data[[x.by]], y = .data[[y.by]])
     geom.args <- list(data = Target_data, alpha = opacity)
 
     if (is.character(size)) {
-        aes.args$size <- size
+        aes.use <- modifyList(aes.use, aes(size = .data[[size]]))
     } else {
         geom.args$size <- size
     }
 
     if (!is.null(color.by)) {
 
-        aes.args$color <- color.by
+        aes.use <- modifyList(aes.use, aes(color = .data[[color.by]]))
 
         if (is.numeric(Target_data[,color.by])) {
             p <- p +
@@ -509,7 +509,7 @@ scatterPlot <- function(
 
     if (!is.null(shape.by)) {
 
-        aes.args$shape <- shape.by
+        aes.use <- modifyList(aes.use, aes(shape = .data[[shape.by]]))
 
         p <- p +
             scale_shape_manual(
@@ -533,22 +533,22 @@ scatterPlot <- function(
             if (do.raster) {
                 .error_if_no_ggrastr()
                 p <- p + ggrastr::geom_point_rast(
-                    data = Others_data, aes_string(x = x.by, y = y.by),
+                    data = Others_data, aes(x = .data[[x.by]], y = .data[[y.by]]),
                     size=size, color = "gray90", raster.dpi = raster.dpi)
             } else {
                 p <- p + geom_point(
-                    data = Others_data, aes_string(x = x.by, y = y.by),
+                    data = Others_data, aes(x = .data[[x.by]], y = .data[[y.by]]),
                     size=size, color = "gray90")
             }
         }
     }
     # Target_data
     if (do.hover) {
-        aes.args$text <- "hover.string"
-        geom.args$mapping <- do.call(aes_string, aes.args)
+        aes.use <- modifyList(aes.use, aes(text = .data$hover.string))
+        geom.args$mapping <- aes.use
         p <- p + suppressWarnings(do.call(geom_point, geom.args))
     } else {
-        geom.args$mapping <- do.call(aes_string, aes.args)
+        geom.args$mapping <- aes.use
         if (do.raster) {
             .error_if_no_ggrastr()
             p <- p + do.call(ggrastr::geom_point_rast, geom.args)

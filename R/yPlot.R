@@ -377,7 +377,7 @@ yPlot <- function(
     }
 
     # Make the plot
-    p <- ggplot(Target_data, aes_string(fill=cols_use$color.by)) +
+    p <- ggplot(Target_data, aes(fill=.data[[cols_use$color.by]])) +
         theme +
         scale_fill_manual(name = legend.title, values=color.panel[colors]) +
         ggtitle(main, sub)
@@ -446,7 +446,7 @@ yPlot <- function(
     # Adds plots based on what is requested in plots, ordered by their order.
 
     # Now that we know the plot's direction, set direction & y-axis limits
-    p <- p + aes_string(x = group.by, y = var)
+    p <- p + aes(x = .data[[group.by]], y = .data[[var]])
 
     if (!is.null(y.breaks)) {
         p <- p + scale_y_continuous(breaks = y.breaks)
@@ -459,7 +459,7 @@ yPlot <- function(
     for (i in seq_along(plots)) {
         if (plots[i] == "vlnplot") {
             p <- p + geom_violin(
-                size = vlnplot.lineweight,
+                linewidth = vlnplot.lineweight,
                 width = vlnplot.width,
                 scale = vlnplot.scaling,
                 draw_quantiles = vlnplot.quantiles,
@@ -504,16 +504,16 @@ yPlot <- function(
                 jitter.args$raster.dpi <- raster.dpi
             }
 
-            jitter.aes.args <- list(group = group.aes)
+            jitter.aes <- aes(group = .data[[group.aes]])
             if (do.hover) {
-                jitter.aes.args$text <- "hover.string"
+                jitter.aes <- modifyList(jitter.aes, aes(text = .data$hover.string))
             }
 
             # If shape.by given, use it. Else, shapes[1] which = dots (16) by default
             if (!is.null(shape.by)) {
 
                 # Set shape in aes & set scales/theming.
-                jitter.aes.args$shape <- shape.by
+                jitter.aes <- modifyList(jitter.aes, aes(shape = .data[[shape.by]]))
 
                 p <- p + scale_shape_manual(
                     values = shape.panel[seq_along(colLevels(shape.by, data_frame, rownames(Target_data)))])
@@ -531,7 +531,7 @@ yPlot <- function(
                 jitter.args$shape <- shape.panel[1]
             }
 
-            jitter.args$mapping <- do.call(aes_string, jitter.aes.args)
+            jitter.args$mapping <- jitter.aes
 
             if (do.hover) {
                 p <- p + suppressWarnings(do.call(geom_for_jitter, jitter.args))
@@ -565,7 +565,7 @@ yPlot <- function(
     #This function takes in a partial yPlot ggplot object without any data overlay, and parses adding the main data visualizations.
 
     # Now that we know the plot's direction, set direction & "y"-axis limits
-    p <- p + aes_string(x = var, y = group.by)
+    p <- p + aes(x = .data[[var]], y = .data[[group.by]])
 
     if (!is.null(y.breaks)) {
         p <- p + scale_x_continuous(breaks = y.breaks)
@@ -586,7 +586,7 @@ yPlot <- function(
         scale_y_discrete(expand = expansion(mult=c(0, ridgeplot.ymax.expansion)))
 
     # Add ridgeplot and jitter data
-    ridge.args <- list(size = ridgeplot.lineweight, scale = ridgeplot.scale)
+    ridge.args <- list(linewidth = ridgeplot.lineweight, scale = ridgeplot.scale)
     if (ridgeplot.shape == "hist") {
         ridge.args$stat <- "binline"
         ridge.args$bins <- ridgeplot.bins
