@@ -1,0 +1,560 @@
+---
+title: Jump-starting visualization with dittoViz
+author:
+- name: Daniel Bunis
+  affiliation: Data Science CoLab, University of California, San Francisco
+  email: daniel.bunis@ucsf.edu
+date: "Jan 11th, 2024"
+output:
+  md_document:
+    toc: true
+bibliography: ref.bib
+---
+
+```{r, echo=FALSE, results="hide", message=FALSE}
+knitr::opts_chunk$set(error=FALSE, message=FALSE, warning=FALSE,
+    fig.path = "images/",
+    dev="png", dpi = 150, fig.width = 4.5, fig.height = 3.5)
+```
+
+# Introduction
+
+dittoViz is a tool built to make analysis and visualization of data easier,
+faster, and more accessible. All included visualizations were built with
+color-vision impaired users and viewers in mind. Thus, it provides functions for
+jump-starting many useful visualization types, which all utilize red-green
+color-blindness optimized colors by default, and which allow sufficient
+customization, via discrete inputs, for out-of-the-box creation of
+publication-ready figures.
+
+The intention is for dittoViz to be a generalized version of the popular yet
+scRNAseq focused dittoSeq package. Although we have started with simply pulling
+the plotting features out of all dittoSeq's visualizations, the goal is to
+include many more plot types and to grow dittoViz into a comprehensive,
+data-type agnostic visualization suite. If there is a plot type missing that
+you would like to suggest be added, please do so by
+[creating an issue](https://github.com/dtm2451/dittoViz/issues/new) on the
+github!
+
+## Color-blindness friendliness:
+
+The default colors of this package are red-green color-blindness friendly. To
+make it so, I used the suggested colors from [@wong_points_2011] and adapted
+them slightly by appending darker and lighter versions to create a 24 color
+vector. All plotting functions use these colors, stored in `dittoColors()`, by
+default.
+
+Additionally:
+
+- Shapes displayed in the legends are generally enlarged as this can be almost
+as helpful as the actual color choice for colorblind individuals.
+- When sensible, dittoViz functions have a shape.by input for having groups
+displayed through shapes in addition to color. (But note: even as a red-green
+color impaired individual myself writing this vignette, I often still recommend
+using color and generally use shapes as either a duplication of the color-data
+or for showing additional groupings.)
+- scatterPlots can be generated with letters overlaid (set do.letter = TRUE)
+
+# Installation
+
+dittoViz is available through CRAN.
+
+```{r, eval=FALSE}
+install.packages("dittoViz")
+```
+
+Alternatively, you can install from GitHub:
+
+```{r, eval=FALSE}
+# Install remotes if needed
+if (!requireNamespace("remotes", quietly = TRUE))
+    install.packages("remotes")
+
+# Install dittoViz
+remotes::install_github("dtm2451/dittoViz")
+```
+
+# Quick Input Data
+
+All dittoViz functions have a `data_frame` input which takes a data.frame-like
+object with observations / individual data points in rows, and features of those
+observations in columns.
+
+To get started here, we'll make use of the `?dittoExampleData` documentation
+point which was created entirely in order to allow single-line, fast, generation
+of an example `data_frame` input:
+
+```{r}
+library(dittoViz)
+example("dittoExampleData", echo = FALSE)
+
+head(example_df, 10)
+summary(example_df)
+```
+
+# Visualizations
+
+There are many different types of dittoViz visualizations. Each has intuitive
+defaults which allow creation of immediately usable plots. Each also has many
+additional tweaks available through discrete inputs that can help ensure you
+can create precisely-tuned, deliberately-labeled, publication-quality plots
+directly 'out-of-the-box'!
+
+## scatterPlot
+
+These show data points overlaid on a scatter plot, using two numeric columns of
+the `data_frame` as the axes and optionally additional columns for color, shape,
+faceting, or other features.
+
+```{r, results = "hold"}
+# Simplest Form
+scatterPlot(
+    data_frame = example_df,
+    x.by = "PC1", y.by = "PC2"
+)
+```
+
+```{r}
+# Additionally colored by a discrete or numeric feature 
+scatterPlot(
+    data_frame = example_df,
+    x.by = "PC1", y.by = "PC2",
+    color.by = "clustering")
+scatterPlot(
+    data_frame = example_df,
+    x.by = "PC1", y.by = "PC2",
+    color.by = "gene1")
+```
+
+```{r}
+# Additionally shaped or faceted by a discrete feature 
+scatterPlot(
+    data_frame = example_df,
+    x.by = "PC1", y.by = "PC2",
+    color.by = "clustering",
+    shape.by = "clustering")
+scatterPlot(
+    data_frame = example_df,
+    x.by = "PC1", y.by = "PC2",
+    color.by = "clustering",
+    split.by = "conditions")
+```
+
+### Additional features
+
+Various additional features can be overlaid on top of these plots.
+Adding each is controlled by an input that starts with `add.` or `do.` such as:
+
+- `do.label`
+- `do.ellipse`
+- `do.letter`
+- `do.contour`
+- `do.hover`
+- `add.trajectory.by.groups`
+- `add.trajectory.curves`
+
+Additional inputs that apply to and adjust these features will then start with
+the XXXX part that comes after `add.XXXX` or `do.XXXX`, as exemplified below.
+(Tab-completion friendly!)
+
+A few examples:
+
+```{r}
+# A bit noisy looking because we're adding a LOT of the extras here...
+scatterPlot(
+    example_df, x.by = "PC1", y.by = "PC2", color.by = "clustering",
+    
+    do.label = TRUE,
+    labels.repel = FALSE,
+    
+    do.ellipse = TRUE,
+    
+    do.contour = TRUE,
+    contour.color = "gray90",
+    
+    add.trajectory.by.groups = list(
+        c(1,2),
+        c(1,4,3)),
+    trajectory.group.by = "clustering")
+```
+
+## yPlot (+ ridgePlot, ridgeJitter, boxPlot wrappers)
+
+This plotter displays **continuous** data on a continuous-axis,
+grouped in the other axis by any discrete feature such as sample or condition.
+
+Data can be represented with violin plots, box plots, jitter representing
+individual data points, and/or ridge plots, and the `plots` input controls which
+of these data representations are used.
+(The function name can be a bit of a misnomer in that ridge plots will use the
+x-axis for the continuous data, and the y-axis for your groupings.)
+
+The `group.by` input controls how the data are grouped in the x-axis.
+
+The optional `color.by` input controls the colors that fill in violin, box, and
+ridge plots.
+
+```{r, results = "hold"}
+yPlot(
+    example_df, "gene1", group.by = "clustering"
+)
+```
+
+`yPlot()` is the main function, but `ridgePlot()`, `ridgeJitter()`, and
+`boxPlot()` are wrappers which just adjust the default for the `plots` input
+from c("vlnplot", "boxplot", "jitter") to c("ridgeplot"),
+c("ridgeplot", "jitter"), or c("boxplot","jitter"), respectively.
+
+```{r}
+ridgePlot(example_df, "gene1", group.by = "clustering")
+ridgeJitter(example_df, "gene1", group.by = "clustering")
+boxPlot(example_df, "gene1", group.by = "clustering")
+```
+
+### Adjustments to data representations
+
+Tweaks to the individual data representation types can be made with discrete
+inputs, all of which start with the representation types' name.  For
+example...
+
+```{r}
+yPlot(example_df, "gene1", group.by = "clustering",
+    plots = c("vlnplot", "jitter", "boxplot"), # <- order matters
+    
+    # change the color and size of jitter points
+    jitter.color = "blue", jitter.size = 0.5, jitter.width = 1,
+    
+    # change the outline color and width, and remove the fill of boxplots
+    boxplot.color = "white", boxplot.width = 0.1,
+    boxplot.fill = FALSE,
+    
+    # change how the violin plot widths are normalized across groups
+    vlnplot.scaling = "count",
+    # also add lines at specified quantiles
+    vlnplot.quantiles = c(0.1, 0.9),
+    
+    # add a dotted line representing some important cutoff
+    add.line = 0.9
+    )
+```
+
+## barPlot & freqPlot
+
+These functions quantify and display frequencies of values of a **discrete**
+data per sample / clustering / some other discrete data.
+
+For both, data can be represented as either percentages or counts, and this is
+controlled by the `scale` input.
+
+```{r, results = "hold"}
+# barPlot
+barPlot(example_df, var = "sample", group.by = "clustering")
+barPlot(example_df, var = "sample", group.by = "clustering",
+    scale = "count")
+```
+
+freqPlot separates each 'var'-value into its own facet, and thus puts more
+emphasis on each individual element. An additional `sample.by` input controls
+splitting of cells within `group.by`-groups into individual samples.
+
+```{r, results = "hold"}
+# freqPlot
+freqPlot(
+    data_frame = example_df,
+    var = "clustering",
+    sample.by = "sample",
+    group.by = "category")
+```
+
+## scatterHex
+
+An alternative to scatterPlot where instead of plotting each data point
+individually, observations are first binned into hexagonal regions, and then a
+summary from all observations of each bin is plotted.
+
+The plot type is most handy for very densely packed data, and allows plotting 1)
+observation density alone via color, or 2) observation density via opacity in
+addition to some other feature via color.
+
+```{r, results = "hold"}
+# Simplest Form, Density by color
+scatterHex(
+    data_frame = example_df,
+    x.by = "PC1", y.by = "PC2"
+)
+```
+
+```{r}
+# Colored instead via a discrete or numeric feature 
+scatterHex(
+    data_frame = example_df,
+    x.by = "PC1", y.by = "PC2",
+    color.by = "clustering")
+scatterHex(
+    data_frame = example_df,
+    x.by = "PC1", y.by = "PC2",
+    color.by = "gene1")
+```
+
+### Summary methods
+
+One key point of control lies how the `color.by` data are summarized. This is
+controlled with the `color.method` input. As we saw above, this input defaults
+to the "max" or most common value for discrete `color.by`-data, and to the
+median value for numeric `color.by` data.
+
+For discrete `color.by` data, we also offer `color.method = "max.prop"` for
+highlighting diversity among regions of the plot.
+
+For continuous `color.by` data, any named function which inputs a vector of
+numbers and outputs a single numberic value can be used.  E.g. mean, min, max,
+sum, or sd (standard deviation) might all be useful in a given context.
+
+```{r}
+scatterHex(
+    data_frame = example_df,
+    x.by = "PC1", y.by = "PC2",
+    color.by = "gene1",
+    color.method = "sum")
+```
+
+### Additional features
+
+All additional features of scatterPlot, that don't rely on plotting of all
+individual data points, are available here as well:
+
+- `do.label`
+- `do.ellipse`
+- `do.contour`
+- `do.hover`
+- `add.trajectory.by.groups`
+- `add.trajectory.curves`
+
+A few examples:
+
+```{r}
+# A bit noisy looking because we're adding a LOT of the extras here...
+scatterHex(
+    example_df, x.by = "PC1", y.by = "PC2", color.by = "clustering",
+    
+    do.label = TRUE,
+    labels.repel = FALSE,
+    
+    do.ellipse = TRUE,
+    
+    do.contour = TRUE,
+    contour.color = "gray90",
+    
+    add.trajectory.by.groups = list(
+        c(1,2),
+        c(1,4,3)),
+    trajectory.group.by = "clustering")
+```
+
+# Customization via Simple Inputs 
+
+**Many adjustments can be made with simple additional inputs**.  Here, we'll go
+through a few that are consistent across most dittoViz functions, but there
+are many more.  Be sure to check the function documentation (e.g.
+`?scatterPlot`) to explore more!  Often, there will be a section towards the
+bottom of a function's documentation dedicated to its specific tweaks!
+
+## Subsetting to certain observations / rows
+
+The data shown in a given plot can be adjusted with the `rows.use`
+input. This can be provided as either a list of rownames to
+include, as an integer vector with the indices of which rows to keep, or as a
+logical vector that states whether each row should be included.
+
+```{r}
+# Original
+barPlot(example_df, var = "sample", group.by = "clustering", scale = "count")
+
+# First 10 cells
+barPlot(example_df, var = "sample", group.by = "clustering", scale = "count",
+    # String method
+    rows.use = c("obs1", "obs2", "obs3", "obs4", "obs5")
+    # Index method, which would achieve the same effect
+    # rows.use = 1:5
+    )
+
+# "1"-cluster only 
+barPlot(example_df, var = "sample", group.by = "clustering", scale = "count",
+    # Logical method
+    rows.use = example_df$clustering == 1)
+```
+
+## Faceting with split.by
+
+Most dittoViz plot types can be faceted into separate plots based on the values
+of 1 or 2 discrete columns with a `split.by` input.
+
+```{r}
+yPlot(example_df, "gene1", group.by = "clustering",
+    split.by = "category",
+    sub = "faceted by category")
+scatterPlot(example_df, x.by = "PC1", y.by = "PC2", color.by = "gene1", 
+    split.by = c("category", "subcategory"),
+    sub = "faceted by category and subcategory")
+```
+
+Extra control over how this is done can be achieved with the `split.adjust`
+input. `split.adjust` allows inputs to be passed through to the ggplot 
+functions used for achieving the faceting.
+
+```{r}
+yPlot(example_df, "gene1", group.by = "clustering", split.by = "category",
+    split.adjust = list(scales = "free_y"))
+```
+
+When splitting is by only one metadata, the shape of the facet grid can be
+controlled with `split.ncol` and `split.nrow`.
+
+```{r, fig.height=7}
+ridgePlot(example_df, "gene1", group.by = "clustering", split.by = "category",
+    split.ncol = 1)
+```
+
+## All titles are adjustable.
+
+Relevant inputs are generally `main`, `sub`, `xlab`, `ylab`, and `legend.title`.
+
+```{r}
+barPlot(example_df, "sample", group.by = "clustering",
+    main = "Encounters",
+    sub = "By Type",
+    xlab = NULL, # NULL = remove
+    ylab = "Generation 1",
+    legend.title = "Types",
+    x.labels.rotate = FALSE)
+```
+
+## Colors can be adjusted easily.
+
+Colors are normally set with `color.panel` or `max.color` and `min.color`.
+When color.panel is used (discrete data), an additional input called `colors`
+sets the order in which those are actually used to make swapping around colors
+easy when nearby groups appear too similar in scatter plots!
+
+```{r, results="hold"}
+# original - discrete
+scatterPlot(example_df, "PC1", "PC2", "clustering")
+# swapped colors
+scatterPlot(example_df, "PC1", "PC2", "clustering",
+    colors = 4:1)
+# different colors
+scatterPlot(example_df, "PC1", "PC2", "clustering",
+    color.panel = c("red", "orange", "purple", "yellow", "skyblue"))
+```
+
+```{r, results="hold"}
+# original - continuous
+scatterPlot(example_df, "PC1", "PC2", "gene1")
+# different colors
+scatterPlot(example_df, "PC1", "PC2", "gene1",
+    max.color = "red", min.color = "gray90")
+```
+
+## Underlying data can be output.
+
+Simply add  `data.out = TRUE` to any of the individual plotters and a
+representation of the underlying data will be output.
+
+```{r}
+barPlot(example_df, "sample", group.by = "clustering",
+    data.out = TRUE)
+```
+
+## plotly hovering can be added.
+
+Many dittoViz functions can be supplied `do.hover = TRUE` to have them convert
+the output into an interactive plotly object that will display additional data
+about each data point when the user hovers their cursor on top.
+
+Generally, a second input, `hover.data`, is used for denoting what extra
+data to display. This input takes in a vector of column names in the order you
+wish for them to be displayed. However, when the types of underlying data
+possible to be shown are constrained because the plot pieces represent summary
+data (barPlot and freqPlot), the `hover.data` input is not used.
+
+```{r, eval = FALSE}
+# These can be finicky to render in knitting, but still, example code:
+scatterPlot(example_df, "PC1", "PC2", "gene1",
+    do.hover = TRUE,
+    hover.data = c("gene1", "sample", "clustering", "timepoint"))
+barPlot(example_df, "sample", group.by = "clustering",
+    do.hover = TRUE)
+```
+
+## Rasterization / flattening to pixels
+
+Sometimes, datasets have so many data points that working with each one rendered
+individually becomes prohibitively computationally intensive, especially when
+opening them in a vector-based graphics editor, such as Illustrator. In such
+instances, it can be helpful to have the per-point graphics layers flattened
+to a pixel representation. Generally, dittoViz offers this capability via
+`do.raster` and `raster.dpi` inputs.
+
+```{r}
+# Note: dpi gets re-set by the styling code of this vignette, so this is
+#   just a code example -- the rendered plot won't look quite as intended.
+scatterPlot(example_df, "PC1", "PC2", "gene1",
+    do.raster = TRUE,
+    raster.dpi = 300)
+```
+
+# The 'colLevels()' Helper Function
+
+dittoViz includes one helper functions that make it easier to determine the
+discrete values within a column of your data frame. There are base R functions
+which can achieve the same purpose, but the utility of this function is it works
+regardless of whether the target data is a character, numeric, or factor type.
+
+This functionality is useful for certain inputs, ex: `vars.use` of `freqPlot()`,
+for determining the full option set which you might want to pull only a few
+options from.
+
+```{r}
+# Tells the unique values of any discrete data column
+# The 'conditions' column is a factor, while 'clustering' is a character vector
+colLevels("conditions", example_df)
+colLevels("clustering", example_df)
+```
+
+There are 2 addition inputs for the function, `rows.use` & `used.only`:
+
+You can use the function along with standard dittoViz `rows.use` subsetting to
+see if any groupings are removed by the given subsetting.
+
+```{r}
+# We can use rows.use to achieve any subsetting prior to value/level summary.
+colLevels(
+    "conditions", example_df,
+    rows.use = example_df$conditions!='condition1'
+)
+```
+
+And if you wish to know the recorded levels of your data, regardless of whether
+any data points exist for those levels, you can set `used.only` to FALSE.
+`used.only` is TRUE by default.
+
+```{r}
+# Note: Set 'used.only' (default = TRUE) to FALSE to show unused levels
+#  of data that are already factors.  By default, only the used options
+#  of the data are given.
+colLevels("conditions", example_df,
+    rows.use = example_df$conditions!="condition1"
+)
+colLevels("conditions", example_df,
+    rows.use = example_df$conditions!="condition1",
+    used.only = FALSE
+)
+```
+
+# Session information
+
+```{r}
+sessionInfo()
+```
+
+# References

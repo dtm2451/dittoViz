@@ -1,12 +1,52 @@
 # dittoViz
 
-Caution: Early Development Stage. Although much functionality is already pulled over, the package is not fully functional yet and is very much in a "Use at your own risk" state. I will not shy away from making breaking changes at this early stage, where I'm still determining the 'right' way to code things, if if making that breaking change now will make the package easier to use in the future!
+A comprehensive visualization toolkit built with coders of all skill levels and
+color-vision impaired audiences in mind. It allows creation of finely-tuned,
+publication-quality figures from single function calls.
 
-## Scope
+Spawned out of the scRNAseq-focused [dittoSeq](https://github.com/dtm2451/dittoSeq)-package,
+dittoViz contains most of it's visualization machinery with none of the added
+scRNAseq-related dependencies.
 
-This package will be a data.frame focused version of [dittoSeq](https://github.com/dtm2451/dittoSeq), where all the simplified plot setup and color blindness friendly tweaks afforded by dittoSeq can be applied to any data type, not just to omics data.
+Visualizations include scatter plots, compositional bar plots, violin, box, and
+ridge plots, and more. Customization ranges from size and title adjustments to
+discrete-group circling and labeling, hidden data overlay upon cursor hovering
+via ggplotly() conversion, and many more, all with simple, discrete inputs.
 
-The two major goals for this package:
+Color blindness friendliness is powered by legend adjustments (enlarged keys),
+and by allowing the use of shapes or letter-overlay in addition to the carefully
+selected dittoColors().
+
+## Getting Started
+
+Installation:
+
+```
+install.packages("dittoViz")
+```
+
+Then there are a few options for getting aquainted with the package:
+
+1. Read and follow along with the vignette available [here!](vignettes/intro.md)
+2. View documentation and run examples inside R with, e.g. `?yPlot` or
+`example("yPlot")`.
+
+Visualization functions are:
+
+- `scatterPlot()`
+- `scatterHex()`
+- `yPlot()`
+- `barPlot()`
+- `freqPlot()`
+
+Helper functions are:
+
+- `dittoColors()`
+- `colLevels()`
+
+## Long-Term plans for dittoViz
 
 1. Carry over as much functionality from dittoSeq as makes sense for targeting data stored in a data.frame-type object (rather than in Seurat/SingleCellExperiemnt/SummarizedExperiment objects).
-2. Python counterpart: a similarly named, largely equivalent, python companion which would target `pandas.DataFrame`s using similar syntax. (Similarity level is a question, due to divergent constraints on the R vs. python versions, but the priority is there.)
+  - Much of this work is now complete! ... But there are still a few missing bits, the biggest of which are `dittoDotPlot()` and `dittoHeatmap()` counterparts.
+2. Implement dittoViz inside of a dittoSeq-v2.0 after it gets accepted into Bioconductor.
+3. Python counterpart: a similarly named, largely equivalent, python companion which would target `pandas.DataFrame`s using the `plotnine` ggplot-mimic and as similar syntax as possible.

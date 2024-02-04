@@ -32,11 +32,12 @@
 
 .add_letters_ellipses_labels_if_discrete <- function(
     p, data, x.by, y.by, color.by,
-    is.discrete, do.letter, do.ellipse, do.label,
+    do.letter, do.ellipse, do.label,
     labels.highlight, labels.size, labels.repel, labels.split.by,
+    labels.repel.adjust,
     letter.size, letter.opacity, letter.legend.title, letter.legend.size) {
 
-    if (is.discrete) {
+    if (!is.numeric(data[,color.by])) {
 
         if (do.letter) {
             p <- .add_letters(
@@ -47,20 +48,21 @@
         if (do.ellipse) {
             p <- p + stat_ellipse(
                 data=data,
-                aes_string(x = x.by, y = y.by, colour = color.by),
-                type = "t", linetype = 2, size = 0.5, show.legend = FALSE, na.rm = TRUE)
+                aes(x = .data[[x.by]], y = .data[[y.by]], colour = .data[[color.by]]),
+                type = "t", linetype = 2, linewidth = 0.5, show.legend = FALSE, na.rm = TRUE)
         }
 
         if (do.label) {
             p <- .add_labels(
                 p, data, color.by, x.by, y.by,
-                labels.highlight, labels.size, labels.repel, labels.split.by)
+                labels.highlight, labels.size, labels.repel, labels.split.by,
+                labels.repel.adjust)
         }
 
     } else {
 
         # Data is incompatible, so message instead of adding.
-        ignored.targs = paste(
+        ignored.targs <- paste(
             c("do.letter", "do.ellipse", "do.label")[c(do.letter,do.ellipse,do.label)],
             collapse = ", ")
         .msg_if(
@@ -73,12 +75,12 @@
 
 .add_contours <- function(
     p, data, x.by, y.by, color, linetype = 1) {
-    # Add contours based on the density of cells/samples
+    # Add contours based on the density of data points
     # (Dim and Scatter plots)
 
     p + geom_density_2d(
         data = data,
-        mapping = aes_string(x = x.by, y = y.by),
+        mapping = aes(x = .data[[x.by]], y = .data[[y.by]]),
         color = color,
         linetype = linetype,
         na.rm = TRUE)
@@ -86,7 +88,9 @@
 
 .add_labels <- function(
     p, Target_data, labels.by, x.by, y.by,
-    labels.highlight, labels.size, labels.repel, split.by) {
+    labels.highlight, labels.size, labels.repel, split.by,
+    labels.repel.adjust
+    ) {
     # Add text labels at/near the median x and y values for each group
     # (Dim and Scatter plots)
 
@@ -147,22 +151,25 @@
     #Add labels
     args <- list(
         data = median.data,
-        mapping = aes_string(x = "cent.x", y = "cent.y", label = "label"),
+        mapping = aes(x = .data$cent.x, y = .data$cent.y, label = .data$label),
         size = labels.size)
-    geom.use <-
-        if (labels.highlight) {
-            if (labels.repel) {
-                ggrepel::geom_label_repel
-            } else {
-                geom_label
-            }
-        } else {
-            if (labels.repel) {
-                ggrepel::geom_text_repel
-            } else {
-                geom_text
-            }
+    if (labels.repel) {
+        if (is.list(labels.repel.adjust)) {
+            args <- c(args, labels.repel.adjust)
         }
+        geom.use <- if (labels.highlight) {
+            ggrepel::geom_label_repel
+        } else {
+            ggrepel::geom_text_repel
+        }
+    } else {
+        geom.use <- if (labels.highlight) {
+            geom_label
+        } else {
+            geom_text
+        }
+    }
+
     p + do.call(geom.use, args)
 }
 
@@ -174,43 +181,64 @@
     }
 }
 
-#' @importFrom stats median
 .calc_xy_medians <- function(x.y.group.df, group.col, x.by, y.by) {
     groups <- levels(as.factor(as.character(x.y.group.df[,group.col])))
     data.frame(
         cent.x = vapply(
             groups,
             function(level) {
-                median(x.y.group.df[x.by, x.y.group.df[,group.col]==level], na.rm = TRUE)
+                median(x.y.group.df[x.y.group.df[,group.col]==level, x.by], na.rm = TRUE)
             }, FUN.VALUE = numeric(1)),
         cent.y = vapply(
             groups,
             function(level) {
-                median(x.y.group.df[y.by, x.y.group.df[,group.col]==level], na.rm = TRUE)
+                median(x.y.group.df[x.y.group.df[,group.col]==level, y.by], na.rm = TRUE)
             }, FUN.VALUE = numeric(1)),
         label = groups)
 }
 
 .add_trajectories_by_groups <- function(
-    p, data, x.by, y.by, trajectories, group.by, arrow.size = 0.15, data_frame) {
+    p, data, x.by, y.by, trajectories, group.by, arrow.size = 0.15) {
     # Add trajectory path arrows, following sets of group-to-group paths, from group median to group median.
     # (Scatter plots)
     #
     # p = a ggplot to add to
     # data = a data_frame containing columns of x.by, y.by, and group.by
-    # group.by = the name of the metadata slot that holds the group.by which were used for cluster-based trajectory analysis
-    # trajectories = List of lists of cluster-to-cluster paths. Also, the output of SlingshotDataSet(SCE_with_slingshot)$lineages
+    # group.by = the name of the column that holds the group.by info
+    # trajectories = List of lists of group-to-group paths. If relevant, equivalent to the output of SlingshotDataSet(SCE_with_slingshot)$lineages
     # arrow.size = numeric scalar that sets the arrow length (in inches) at the endpoints of trajectory lines.
 
     # Determine medians
-    cluster.levels <- .colLevels(group.by, data_frame)
+    cluster.levels <- colLevels(group.by, data)
     group_medians <- .calc_xy_medians(data, group.by, x.by, y.by)
 
     #Add trajectories
     for (i in seq_along(trajectories)){
         p <- p + geom_path(
             data = group_medians[as.character(trajectories[[i]]),],
-            aes_string(x = "cent.x", y = "cent.y"),
+            aes(x = .data$cent.x, y = .data$cent.y),
+            arrow = arrow(
+                angle = 20, type = "closed", length = unit(arrow.size, "inches")))
+    }
+    p
+}
+
+.add_trajectory_curves <- function(
+    p, trajectories, arrow.size = 0.15) {
+    # Add trajectory path arrows following sets of given (x,y) coordinates.
+    # (Dim and Scatter plots)
+    #
+    # p = a ggplot to add to
+    # trajectories = List of matrices (or data.frames) containing trajectory curves, all with two columns, x and y coordinates.
+    # arrow.size = numeric scalar that sets the arrow length (in inches) at the endpoints of trajectory lines.
+
+    # Add trajectories for general list of matrices provision method.
+    for (i in seq_along(trajectories)) {
+        data <- as.data.frame(trajectories[[i]])
+        names(data) <- c("x", "y")
+        p <- p + geom_path(
+            data = data,
+            aes(x = .data$x, y = .data$y),
             arrow = arrow(
                 angle = 20, type = "closed", length = unit(arrow.size, "inches")))
     }
@@ -233,7 +261,7 @@
     p <- p +
         geom_point(
             data=Target_data,
-            aes_string(x = x.by, y = y.by, shape = col.use),
+            aes(x = .data[[x.by]], y = .data[[y.by]], shape = .data[[col.use]]),
             color = "black", size=size*3/4, alpha = opacity) +
         scale_shape_manual(
             name = legend.title,
