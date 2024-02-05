@@ -1,24 +1,25 @@
 #' Compact plotting of per group summaries for expression of multiple features
 #'
-#' @param vars String vector (example: \code{c("gene1","gene2","gene3")}) which selects which variables, typically genes, to show.
-#' @param group.by String representing the name of a metadata to use for separating the cells/samples into discrete groups.
-#' @param summary.fxn.color,summary.fxn.size A function which sets how color or size will be used to summarize variables' data for each group.
+#' @inheritParams yPlot
+#' @inheritParams scatterPlot
+#' @param vars String vector denoting the names of all columns of \code{data_frame} you wish to have summarized (per group / facet) in the dotPlot.
+#' @param group.by String representing the name of a columns of \code{data_frame} to use for separating the observations into discrete groups.
+#' @param summary.fxn.color,summary.fxn.size A function which sets how color or size will be used to summarize \code{vars}-data within each group.
 #' Any function can be used as long as it takes in a numeric vector and returns a single numeric value.
-#' @param var.adjustment When plotting gene expression (or antibody, or other forms of counts data), should that data be adjusted altogether before \code{rows.use} subsetting and splitting into groups?
+#' @param var.adjustment A recognized string indicating whether the \code{var}-data should be used directly (default) or should be adjusted in the ways below prior to summarization with the \code{summary.fxn}s:
 #' \itemize{
+#' \item{"z-score": scaled with the scale() function to produce a relative-to-mean z-score representation}
 #' \item{"relative.to.max": divided by the maximum expression value to give percent of max values between [0,1]}
-#' \item{"z-score": centered and scaled to produce a relative-to-mean z-score representation}
-#' \item{NULL: Default, no adjustment}
 #' }
-#' @param scale String which sets whether the values shown with color (default: mean non-zero expression) should be centered and scaled.
-#' @param size Number which sets the dot size associated with the highest value shown by dot size (default: percent non-zero expression).
-#' @param min.size,max.size Numbers between 0 and 1 which sets the minimum and maximum percent expression to show.
+#' @param scale String which sets whether the values shown with color should be z-scored (centered and scaled) after summarization.
+#' @param size Number which sets the visual dot size associated with the highest value shown by dot size.
+#' @param min.size,max.size Numbers, representing after summarization size values, which set the bounds of the size scale.
 #' When set to NA, the minimum/maximum of the data are used.
 #' @param scale_for_size,scale_for_color a ggplot scale to use for color and size aesthetics. Default values are the only place that makes use of related dotPlot inputs, so if you use your own scale, you either need to write it with these inputs included, or else they will not get utilized: \itemize{
 #' \item size, min.size, max.size, legend.size.title for \code{scale_for_size}
 #' \item min.color, max.color, min.value.color, max.value.color, legend.color.title, legend.color.breaks, legend.color.breaks.labels for \code{scale_for_color}
 #' }
-#' @param min.color,max.color colors to use for minimum and maximum color values.
+#' @param min.color,max.color colors to use to represent minimum and maximum color values.
 #' Default = light grey and purple.
 #' @param min.value.color,max.value.color Numbers which set the values associated with the minimum and maximum colors.
 #' @param ylab String which sets the y/grouping-axis label.
@@ -36,13 +37,11 @@
 #'
 #' Recommendation for advanced users: If you find yourself coming back to this input too many times, an alternative solution that can be easier long-term
 #' is to make the target data into a factor, and to put its levels in the desired order: \code{factor(data, levels = c("level1", "level2", ...))}.
-#' \code{\link{metaLevels}} can be used to quickly get the identities that need to be part of this 'levels' input.
+#' \code{\link{colLevels}} can be used to quickly get the identities that need to be part of this 'levels' input.
 #' @param legend.color.title,legend.size.title String or \code{NULL}, sets the title displayed above legend keys.
 #' @param do.hover Logical. Default = \code{FALSE}.
 #' If set to \code{TRUE} the ggplot output will be converted to an interactive plotly object in which underlying data for individual dots will be displayed when you hover your cursor over them.
-#'
 #' @param numeric.only Logical. Whether the function should error if data given by \code{vars} is not numeric.
-#' @inheritParams scatterPlot
 #'
 #' @return a ggplot object where dots of different colors and sizes summarize continuous data for multiple features (columns) per multiple groups (rows)
 #'
@@ -51,25 +50,26 @@
 #' Alternatively when \code{do.hover = TRUE}, a plotly converted version of the plot where additional data will be displayed when the cursor is hovered over the dots.
 #'
 #' @details
-#' This function will output a compact summary of multiple genes, or of values of multiple numeric metadata, across cell/sample groups (clusters, sample identity, conditions, etc.),
-#' where dot-size and dot-color are used to reflect distinct features of the data.
-#' Typically, and by default, size will reflect the percent of non-zero values, and color will reflect the mean of non-zero values for each var and group pairing.
+#' This function outputs a compact dual-value summarization, per group, of multiple attributes,
+#' where dot-size and dot-color are used to reflect these dual-values.
 #'
 #' Internally, the data for each element of \code{vars} is obtained.
-#' and \code{var.adjustment} determines if and how the data might be adjusted.
-#' (Note that 'adjustment' would be applied \emph{before} cells/samples subsetting, and across all groups of cells/samples.)
-#'
+#' Then, \code{var.adjustment} and \code{var.adj.fxn} determine if and how the data might be adjusted \emph{prior to} summarization and \code{rows.use}-subsetting.
 #' Groupings are determined using \code{group.by}, and then data for each variable is summarized based on \code{summary.fxn.color} & \code{summary.fxn.size}.
 #'
-#' If \code{scale = TRUE} (default setting), the color summary values are centered and scaled.
+#' If \code{scale = TRUE} (default setting), the color summary values are then centered and scaled.
 #' Doing so 1) puts values for all \code{vars} in a similar range, and 2) emphasizes relative differences between groups.
+#'
+#' Note: It can be good to look at both scaled and un-scaled versions because this emphasis of differences between groups can be both good and bad.
+#' Tiny differences within an attribute with a small standard deviation across groups can be made to appear drastic, visually, in the scaled version.
+#' E.g. summarized color data of 2.01 versus 2.02, where summary values for that \code{var} all fell between this small [2.01,2.02] range, will appear quite drastic!)
 #'
 #' Finally, data is plotted as dots of differing colors and sizes.
 #'
 #' @section Many characteristics of the plot can be adjusted using discrete inputs:
 #' \itemize{
 #' \item Size of the dots can be changed with \code{size}.
-#' \item Subsetting to utilize only certain cells/samples can be achieved with \code{rows.use}.
+#' \item Subsetting to utilize only certain observations can be achieved with \code{rows.use}.
 #' \item Colors can be adjusted with \code{min.color} and \code{max.color}.
 #' \item Displayed value ranges can be adjusted with \code{min.value.color} and \code{max.value.color} for color, or \code{min.size} and \code{max.size} for size.
 #' \item Titles and axes labels can be adjusted with \code{main}, \code{sub}, \code{xlab}, \code{ylab}, \code{legend.color.title}, and \code{legend.size.title} arguments.
@@ -80,57 +80,57 @@
 #' }
 #'
 #' @seealso
-#' \code{\link{dittoPlotVarsAcrossGroups}} for a method of summarizing expression of multiple features across distinct groups that can be better (and more compact) when the identities of the individual genes are unimportant.
-#'
-#' \code{\link{dittoPlot}} and \code{\link{multi_dittoPlot}} for plotting of expression and metadata vars, each as separate plots, on a per cell/sample basis.
+#' \code{\link{yPlot}} for plotting of individual \code{var}s where each makes up a separate plot or (set of) facet(s).
 #'
 #' @examples
-#' library(dittoSeq)
-#' example(importDittoBulk, echo = FALSE)
-#' myRNA
+#' example("dittoExampleData", echo = FALSE)
+#'
+#' ### For now, modeling this example around the way dotPlots are used for
+#' # single-cell cluster expression summarization, but plan will be to expand to
+#' # additionally include summary of effect sizes + pvals.
 #'
 #' # These random data aren't very exciting, but we can at least add some zeros
 #' #   for making slightly more interesting dot plots.
-#' counts(myRNA)[1:4,1:40] <- 0
-#' logcounts(myRNA)[1:4,1:40] <- 0
+#' example_df[1:40, paste0("gene", 1:3)] <- 0
 #'
-#' df <- cbind(colData(myRNA), t(logcounts(myRNA)))
 #' dotPlotCalc(
-#'     df, c("gene1", "gene2", "gene3", "gene4"),
+#'     example_df, c("gene1", "gene2", "gene3", "gene4"),
 #'     group.by = "clustering")
 #'
+#' # 'summary.fxn.color' determines how var-data are summarized per group for the
+#' #   color/fill based visual representation.
+#' dotPlotCalc(example_df, c("gene1", "gene2", "gene3", "gene4"), "clustering",
+#'     summary.fxn.color = function(x) { mean(x[x!=0]) },
+#'     legend.color.title = "Average\nExpression\n(when captured)")
+#'
+#' # 'summary.fxn.size' determines how var-data are summarized per group for the
+#' #   dot-size based visual representation.
+#' dotPlotCalc(example_df, c("gene1", "gene2", "gene3", "gene4"), "clustering",
+#'     summary.fxn.color = function(x) { mean(x[x!=0]) },
+#'     legend.color.title = "Average\nExpression\n(when expressed)",
+#'     summary.fxn.size = function(x) { sum(x!=0)/length(x) * 100 },
+#'     legend.size.title = "Percent\nExpression")
+#'
 #' # 'size' adjusts the dot-size associated with the highest percent expression
-#' dotPlotCalc(df, c("gene1", "gene2", "gene3", "gene4"), "clustering",
+#' dotPlotCalc(example_df, c("gene1", "gene2", "gene3", "gene4"), "clustering",
 #'     size = 12)
 #'
 #' # 'scale' input can be used to control / turn off scaling of avg exp values.
-#' dotPlotCalc(df, c("gene1", "gene2", "gene3", "gene4"), "clustering",
+#' dotPlotCalc(example_df, c("gene1", "gene2", "gene3", "gene4"), "clustering",
 #'     scale = FALSE)
 #'
 #' # x-axis label rotation can be controlled with 'x.labels.rotate'
-#' dotPlotCalc(df, c("gene1", "gene2", "gene3", "gene4"), "clustering",
+#' dotPlotCalc(example_df, c("gene1", "gene2", "gene3", "gene4"), "clustering",
 #'     x.labels.rotate = FALSE)
 #'
 #' # Title are adjustable via various discrete inputs:
-#' dotPlotCalc(df, c("gene1", "gene2", "gene3", "gene4"), "clustering",
+#' dotPlotCalc(example_df, c("gene1", "gene2", "gene3", "gene4"), "clustering",
 #'     main = "Title",
 #'     sub = "Subtitle",
 #'     ylab = "y-axis label",
 #'     xlab = "x-axis label",
 #'     legend.color.title = "Colors title",
 #'     legend.size.title = "Dot size title")
-#'
-#' # For certain specialized applications, it may be helpful to adjust the
-#' #   functions used for summarizing the data as well. Inputs are:
-#' #   summary.fxn.color & summary.fxn.size
-#' #     Requirement for each: Any function that takes in a numeric vector &
-#' #     returns, as output, a single numeric value.
-#' dotPlotCalc(df, c("gene1", "gene2", "gene3", "gene4"), "clustering",
-#'     summary.fxn.color = mean,
-#'     legend.color.title = "mean\nexpression\nincluding 0s",
-#'     main = "scater::plotDots() defaulting recreation",
-#'     x.labels.rotate = FALSE,
-#'     scale = FALSE)
 #'
 #' @author Daniel Bunis
 #' @export
@@ -139,8 +139,8 @@ dotPlotCalc <- function(
         data_frame,
         vars,
         group.by,
-        summary.fxn.color = function(x) {mean(x)},
-        summary.fxn.size = function(x) {length(x)},
+        summary.fxn.color = mean,
+        summary.fxn.size = length,
         scale = TRUE,
         split.by = NULL,
         rows.use = NULL,
@@ -238,11 +238,12 @@ dotPlotCalc <- function(
     }
 }
 
-#' Compact plotting of per group summaries for expression of multiple features
+#' Compact plotting of per group summaries for
+#' @inheritParams dotPlotCalc
+#' @inheritParams scatterPlot
 #' @param color.by Single string denoting the name of a column of \code{data_frame} to use for the color of plotted dots.
 #' @param size.by Single string denoting the name of a column of \code{data_frame} to use for the size plotted dots.
 #' @param scale "none", "rows", "cols". Sets whether or not to z-score transform each row, or each column, of color-values.
-#' @inheritParams scatterPlot
 #' @author Daniel Bunis
 #' @export
 #'
@@ -255,6 +256,7 @@ dotPlot <- function(
         scale = "none",
         split.by = NULL,
         rows.use = NULL,
+        do.hover = FALSE,
         size = 6,
         min.size = 0.01,
         max.size = NA,
@@ -295,9 +297,10 @@ dotPlot <- function(
     rows.use <- .which_rows(rows.use, data_frame)
     data_frame <- data_frame[rows.use, ]
 
-    if (scale) {
+    if (scale!="none") {
         data_frame$pre.scale <- data_frame[, color.by]
         for (i in vars) {
+            #ToDo: Make this scaling informed by x.by/y.by!
             data$color[data$var == i] <-
                 # center, if multiple groups express this var, also scale
                 if (sum(!is.na(data$color[data$var == i]))>1) {
@@ -320,10 +323,10 @@ dotPlot <- function(
             p, split.by, split.nrow, split.ncol, split.adjust)
     }
 
-    # if (do.hover) {
-    #     .error_if_no_plotly()
-    #     p <- plotly::ggplotly(p, tooltip = "text")
-    # }
+    if (do.hover) {
+        .error_if_no_plotly()
+        p <- plotly::ggplotly(p, tooltip = "text")
+    }
 
     # DONE. Return
     if (data.out) {

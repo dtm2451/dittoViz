@@ -54,10 +54,8 @@
     }
 
     # Trim by rows.use
-    if (!is.null(rows.use)) {
-        rows.use <- .which_rows(rows.use, data_frame)
-        data_frame <- data_frame[rows.use,]
-    }
+    rows.use <- .which_rows(rows.use, data_frame)
+    data_frame <- data_frame[rows.use,]
 
     # Retrieve target columns's values
     values <- data_frame[, col, drop = TRUE]
