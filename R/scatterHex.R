@@ -11,9 +11,10 @@
 #' Can be any function that inputs (summarizes) a numeric vector and outputs a single numeric value.
 #' Default is \code{median}.
 #' Other useful options are \code{sum}, \code{mean}, \code{sd}, or \code{max}.
-#' You can also use a custom function as long as you give it a name; e.g. first run \code{logsum <- function(x) \{ log(sum(x)) \}} externally, then give \code{color.method = "logsum"}
+#' You can also use a custom function as long as you give it a name; e.g. first run \code{logsum <- function(x) \{ log(sum(x)) \}} externally, then give \code{color.method = "logsum"}.
 #'
 #' \strong{Discrete}: A string signifying whether the color should (default) be simply based on the "max" grouping of the bin,
+#' based on "prop.<value>" the proportion of a specific value (e.g. "prop.A" or "prop.TRUE"),
 #' or based on the "max.prop"ortion of observations belonging to any grouping.
 #' @param legend.density.title,legend.color.title Strings which set the title for the legends.
 #' @param legend.density.breaks,legend.color.breaks Numeric vector which sets the discrete values to label in the density and color.by legends.
@@ -94,6 +95,26 @@
 #'     scatterHex(
 #'         example_df, x.by = "PC1", y.by = "PC2",
 #'         color.by = "gene1")
+#' }
+#'
+#' # 'color.method' is then used to adjust how the target data is summarized
+#' if (requireNamespace("ggplot.multistats", quietly = TRUE)) {
+#'     scatterHex(example_df, x.by = "PC1", y.by = "PC2",
+#'         color.by = "groups",
+#'         color.method = "max.prop")
+#' }
+#' if (requireNamespace("ggplot.multistats", quietly = TRUE)) {
+#'     scatterHex(example_df, x.by = "PC1", y.by = "PC2",
+#'         color.by = "gene1",
+#'         color.method = "mean")
+#' }
+#' # One particularly useful 'color.method' for discrete 'color.by'-data is
+#' #   to use 'prop.<value>' to color by the proportion of a particular value
+#' #   within each bin:
+#' if (requireNamespace("ggplot.multistats", quietly = TRUE)) {
+#'     scatterHex(example_df, x.by = "PC1", y.by = "PC2",
+#'         color.by = "groups",
+#'         color.method = "prop.A")
 #' }
 #'
 #' # Data can be "split" or faceted by a discrete variable as well.
@@ -283,7 +304,7 @@ scatterHex <- function(
         if (!is.numeric(data[,cols_use$color.by])) {
             discrete_data <- TRUE
 
-            if (!("max.prop" %in% color.method)) {
+            if (!any(c("max.prop", paste0("prop.", unique(data[,cols_use$color.by]))) %in% color.method)) {
                 discrete_disp <- TRUE
             }
         }
@@ -466,6 +487,11 @@ scatterHex <- function(
             geom.args$funs <- c(
                 fxn_c = if (color.method == "max.prop") {
                     function(x) max(table(x)/length(x))
+                } else if (grepl("^prop.", color.method)) {
+                    function(x) {
+                        lev <- substr(color.method, 6, nchar(color.method))
+                        sum(x==lev)/length(x)
+                    }
                 } else {
                     color.method
                 }, fxn_d = length)
@@ -505,15 +531,16 @@ scatterHex <- function(
 }
 
 .check_color.method <- function(color.method, discrete) {
-
     valid <- FALSE
     if (discrete) {
         valid <- color.method == "max"
     } else {
-        valid <- color.method == "max.prop" || exists(color.method, mode='function')
+        # Discrete at this point is based on the style of data displayed
+        # Thus originally discrete data with color.method = 'max.prop' gets 'discrete = FALSE' to this function
+        valid <- color.method == "max.prop" || grepl("^prop.", color.method) || exists(color.method, mode='function')
     }
 
     if (!valid) {
-        stop("'color.method' not valid. Must be \"max\" or \"max.prop\" (discrete data) or the name of a function (continuous data)")
+        stop("'color.method' not valid. Must be \"max\", \"max.prop\", or \"prop.<data-level>\" (discrete data) or the name of a function (continuous data)")
     }
 }

@@ -87,9 +87,10 @@ Options, and the default, depend on whether the \code{color.by}-data is continuo
 Can be any function that inputs (summarizes) a numeric vector and outputs a single numeric value.
 Default is \code{median}.
 Other useful options are \code{sum}, \code{mean}, \code{sd}, or \code{max}.
-You can also use a custom function as long as you give it a name; e.g. first run \code{logsum <- function(x) \{ log(sum(x)) \}} externally, then give \code{color.method = "logsum"}
+You can also use a custom function as long as you give it a name; e.g. first run \code{logsum <- function(x) \{ log(sum(x)) \}} externally, then give \code{color.method = "logsum"}.
 
 \strong{Discrete}: A string signifying whether the color should (default) be simply based on the "max" grouping of the bin,
+based on "prop.<value>" the proportion of a specific value (e.g. "prop.A" or "prop.TRUE"),
 or based on the "max.prop"ortion of observations belonging to any grouping.}
 
 \item{split.by}{1 or 2 strings denoting the name(s) of column(s) of \code{data_frame} containing discrete data to use for faceting / separating data points into separate plots.
@@ -291,6 +292,26 @@ if (requireNamespace("ggplot.multistats", quietly = TRUE)) {
     scatterHex(
         example_df, x.by = "PC1", y.by = "PC2",
         color.by = "gene1")
+}
+
+# 'color.method' is then used to adjust how the target data is summarized
+if (requireNamespace("ggplot.multistats", quietly = TRUE)) {
+    scatterHex(example_df, x.by = "PC1", y.by = "PC2",
+        color.by = "groups",
+        color.method = "max.prop")
+}
+if (requireNamespace("ggplot.multistats", quietly = TRUE)) {
+    scatterHex(example_df, x.by = "PC1", y.by = "PC2",
+        color.by = "gene1",
+        color.method = "mean")
+}
+# One particularly useful 'color.method' for discrete 'color.by'-data is
+#   to use 'prop.<value>' to color by the proportion of a particular value
+#   within each bin:
+if (requireNamespace("ggplot.multistats", quietly = TRUE)) {
+    scatterHex(example_df, x.by = "PC1", y.by = "PC2",
+        color.by = "groups",
+        color.method = "prop.A")
 }
 
 # Data can be "split" or faceted by a discrete variable as well.

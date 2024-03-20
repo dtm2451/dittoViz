@@ -1,3 +1,7 @@
+# dittoViz 1.0.2
+
+* Added new 'color.method = "prop.<value>"' functionality to scatterHex() which allows coloring bins by the proportion of a given 'color.by'-data value. 
+
 # dittoViz 1.0.1
 
 * Multiple improvements to 'do.hover' ggplotly() conversion functionality: 

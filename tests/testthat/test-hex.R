@@ -24,6 +24,11 @@ test_that("scatterHex - bins adjusts number of bins", {
 test_that("scatterHex - color.method options work for discrete data, and defaults to 'max'", {
     ### Manual: Should have continuous color-scale and max.props in its title
     expect_s3_class(scatterHex(data_frame=df, x.by=cont1, y.by=cont2, disc,
+                                color.method = "prop.Adelie"),
+                    "ggplot")
+
+    ### Manual: Should have continuous color-scale and max.props in its title
+    expect_s3_class(scatterHex(data_frame=df, x.by=cont1, y.by=cont2, disc,
                                 color.method = "max.prop"),
                     "ggplot")
 
@@ -36,6 +41,9 @@ test_that("scatterHex - color.method options work for discrete data, and default
 
     expect_error(scatterHex(data_frame=df, x.by=cont1, y.by=cont2, disc,
                              color.method = "abcde"),
+                 "'color.method' not valid", fixed = TRUE)
+    expect_error(scatterHex(data_frame=df, x.by=cont1, y.by=cont2, disc,
+                            color.method = "prop.ABC"),
                  "'color.method' not valid", fixed = TRUE)
 })
 
