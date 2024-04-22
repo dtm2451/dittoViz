@@ -15,6 +15,7 @@ barPlot(
   data.out = FALSE,
   data.only = FALSE,
   do.hover = FALSE,
+  hover.data.extra = NULL,
   hover.round.digits = 5,
   color.panel = dittoColors(),
   colors = seq_along(color.panel),
@@ -66,6 +67,10 @@ but Note that this will also force retention of groupings that could otherwise b
 \item{data.only}{Logical. When set to \code{TRUE}, the underlying data will be returned, but not the plot itself.}
 
 \item{do.hover}{Logical which sets whether the ggplot output should be converted to a ggplotly object with data about individual bars displayed when you hover your cursor over them.}
+
+\item{hover.data.extra}{String vector giving additional information to collect and show on hover per label.
+A warning will be produced if not accurate to all cells of the group.
+Data is shown from the FIRST matching observation only, rather than being a summary aggregated from the entire group.}
 
 \item{hover.round.digits}{Integer number specifying the number of decimal digits to round displayed numeric values to, when \code{do.hover} is set to \code{TRUE}.}
 

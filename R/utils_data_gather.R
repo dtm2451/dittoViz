@@ -189,7 +189,8 @@
         data_frame, var, group.by, split.by, rows.use,
         x.reorder, x.labels,
         var.labels.reorder, var.labels.rename,
-        do.hover, hover.round.digits = 5, max.normalize = FALSE,
+        do.hover, hover.data.extra = NULL, hover.round.digits = 5,
+        max.normalize = FALSE,
         retain.factor.levels.var, retain.factor.levels.group,
         make.factor.var = FALSE, keep.level.order.group = FALSE
 ) {
@@ -260,6 +261,37 @@
                     new[[split.by[by]]] <- split.data[[by]][use_first]
                 }
 
+                # Additional Hover Data
+                if (!identical(NULL, hover.data.extra)) {
+                    for (by in hover.data.extra) {
+                        if (!.is_col(by, data_frame)) {
+                            stop(by, "element of 'hover.data.extra' is not a column of 'data_frame'.")
+                        }
+                    }
+                    new_hover_extra <- do.call(rbind, lapply(
+                        seq_len(nrow(new)),
+                        function(i) {
+                            use_extra <- use & x.var==new$grouping[i] & y.var==new$label[i]
+                            dat_extra <- data_frame_use[use_extra, hover.data.extra, drop = FALSE]
+                            for (by in hover.data.extra) {
+                                if (length(unique(dat_extra[,by]))!=1) {
+                                    warning(paste0(
+                                        by, " element of 'hover.data.extra' is not unique for ",
+                                        new$label[i], " of ", new$grouping[i],
+                                        ifelse(
+                                            this_facet=="filler", "",
+                                            paste0(" of split ", facet)
+                                        )
+                                    ))
+                                }
+                            }
+
+                            dat_extra[1, , drop = FALSE]
+                        }
+                    ))
+                    new <- cbind(new, new_hover_extra)
+                }
+
                 new
             }
         )
@@ -289,7 +321,7 @@
 
     # Add hover info
     if (do.hover) {
-        hover.data <- unique(c("grouping", "label", "count", "percent", split.by))
+        hover.data <- unique(c("grouping", "label", "count", "percent", split.by, hover.data.extra))
         hover.df <- data[, hover.data]
         colnames(hover.df)[1:2] <- c(group.by, var)
         # Make hover strings, "data.type: data" \n "data.type: data"

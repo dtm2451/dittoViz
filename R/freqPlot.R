@@ -185,6 +185,7 @@ freqPlot <- function(
     data.out = FALSE,
     data.only = FALSE,
     do.hover = FALSE,
+    hover.data.extra = NULL,
     hover.round.digits = 5,
     color.panel = dittoColors(),
     colors = seq_along(color.panel),
@@ -246,7 +247,8 @@ freqPlot <- function(
     data <- .make_composition_summary_df(
         data_frame, var, group.by, split.by = c(sample.by, color.by),
         rows.use, x.reorder, x.labels,
-        var.labels.reorder, var.labels.rename, FALSE, hover.round.digits,
+        var.labels.reorder, var.labels.rename,
+        do.hover, hover.data.extra, hover.round.digits,
         max.normalize, TRUE, FALSE, TRUE, TRUE)
     if (data.only) {
         return(data)

@@ -6,6 +6,9 @@
 #' @param group.by Single string representing the name of a column of \code{data_frame} to use for separating data across discrete x-axis groups.
 #' @param scale "count" or "percent". Sets whether data should be shown as counts versus percentage.
 #' @param do.hover Logical which sets whether the ggplot output should be converted to a ggplotly object with data about individual bars displayed when you hover your cursor over them.
+#' @param hover.data.extra String vector giving additional information to collect and show on hover per label.
+#' A warning will be produced if not accurate to all cells of the group.
+#' Data is shown from the FIRST matching observation only, rather than being a summary aggregated from the entire group.
 #' @param theme A ggplot theme which will be applied before dittoViz adjustments.
 #' Default = \code{theme_classic()}.
 #' See \url{https://ggplot2.tidyverse.org/reference/ggtheme.html} for other options and ideas.
@@ -121,6 +124,7 @@ barPlot <- function(
     data.out = FALSE,
     data.only = FALSE,
     do.hover = FALSE,
+    hover.data.extra = NULL,
     hover.round.digits = 5,
     color.panel = dittoColors(),
     colors = seq_along(color.panel),
@@ -148,7 +152,8 @@ barPlot <- function(
     # Gather data
     data <- .make_composition_summary_df(
         data_frame, var, group.by, split.by, rows.use, x.reorder, x.labels,
-        var.labels.reorder, var.labels.rename, do.hover, hover.round.digits,
+        var.labels.reorder, var.labels.rename,
+        do.hover, hover.data.extra, hover.round.digits,
         FALSE, retain.factor.levels, retain.factor.levels)
     if (data.only) {
         return(data)
