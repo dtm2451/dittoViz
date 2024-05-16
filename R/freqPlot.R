@@ -314,8 +314,10 @@ freqPlot <- function(
         legend.title = legend.title,
         data.out = TRUE)
     p <- yplot_out$p
+    cols_use <- yplot_out$cols_use
 
     ### Addition: p values
+    stats_calcd <- FALSE
     if (!identical(add.pvalues, NULL) && is.list(add.pvalues)) {
         # ToDo error if no ggpubr
         stats <- list()
@@ -353,14 +355,19 @@ freqPlot <- function(
             )
             y_offset <- y_offset + pvalues.offset.between
         }
+        stats_calcd <- TRUE
     }
 
     # DONE. Return the plot +/- data
     if (data.out) {
-        list(
+        out <- list(
             p = p,
             data = Target_data,
             cols_used = cols_use)
+        if (stats_calcd) {
+            out$stats <- stats
+        }
+        out
     } else {
         p
     }
