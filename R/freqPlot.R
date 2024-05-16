@@ -362,7 +362,7 @@ freqPlot <- function(
     if (data.out) {
         out <- list(
             p = p,
-            data = Target_data,
+            data = data,
             cols_used = cols_use)
         if (stats_calcd) {
             out$stats <- stats
