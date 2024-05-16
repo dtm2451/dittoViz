@@ -177,6 +177,7 @@ freqPlot <- function(
     vars.use = NULL,
     add.pvalues = NULL,
     pvalues.pseudocount = 0,
+    pvalues.adjust = TRUE,
     pvalues.adjust.method = "fdr",
     pvalues.adjust.n = NULL,
     pvalues.offset.first = 0.1,
@@ -346,7 +347,7 @@ freqPlot <- function(
             stats[[new_stats$comparison[1]]] <- new_stats
 
             p <- p + ggpubr::stat_pvalue_manual(
-                data = new_stats, label = "padj",
+                data = new_stats, label = ifelse(pvalues.adjust, "padj", "p"),
                 y.position = new_stats$maxy*y_offset
             ) + geom_text(data = new_stats, aes(
                 x = .data[[group.by]],

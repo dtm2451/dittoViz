@@ -13,6 +13,7 @@ freqPlot(
   vars.use = NULL,
   add.pvalues = NULL,
   pvalues.pseudocount = 0,
+  pvalues.adjust = TRUE,
   pvalues.adjust.method = "fdr",
   pvalues.adjust.n = NULL,
   pvalues.offset.first = 0.1,
