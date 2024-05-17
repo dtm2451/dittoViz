@@ -30,7 +30,8 @@
 #' See \code{\link[ggplot2]{facet_wrap}} for options.
 #' @param ylab String, sets the continuous-axis label (=y-axis for box and violin plots, x-axis for ridgeplots).
 #' Default = "make" and if left as make, this title will be automatically generated.
-#' @param add.pvalues NULL (off), "all", or a list of length 2 string vector which each name a pairwise set of 2 \code{group.by}-values to compare between.
+#' @param add.pvalues NULL (off), "all", or a list of length 2 string vectors which each name a pairwise set of 2 \code{group.by}-values to compare between.
+#' Giving "all" will determine, and run comparisons for, all possible pairwise combinations of \code{group.by}-values.
 #' @param pvalues.round.digits = 3,
 #' @param pvalues.test.adjust named list providing any desired additional inputs for the p-value calculation with \code{\link[stats]{wilcox.test}}.
 #' \code{x} and \code{y} inputs are filled internally, but all others can be adjusted if desired.

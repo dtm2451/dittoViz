@@ -99,7 +99,8 @@ Hint: use \code{\link{colLevels}} or \code{unique(data_frame[,var])} to assess o
 
 Note: When \code{var.labels.rename} is jointly utilized to update how the \code{var}-values are shown, the \strong{updated} values must be used.}
 
-\item{add.pvalues}{NULL (off), "all", or a list of length 2 string vector which each name a pairwise set of 2 \code{group.by}-values to compare between.}
+\item{add.pvalues}{NULL (off), "all", or a list of length 2 string vectors which each name a pairwise set of 2 \code{group.by}-values to compare between.
+Giving "all" will determine, and run comparisons for, all possible pairwise combinations of \code{group.by}-values.}
 
 \item{pvalues.round.digits}{= 3,}
 
