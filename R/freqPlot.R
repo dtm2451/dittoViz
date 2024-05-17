@@ -188,6 +188,7 @@
 #'     plots = "jitter")
 #'
 #' @author Daniel Bunis
+#' @importFrom utils combn
 #' @export
 
 freqPlot <- function(
@@ -340,6 +341,7 @@ freqPlot <- function(
         legend.title = legend.title,
         data.out = TRUE)
     p <- yplot_out$p
+    data <- yplot_out$data # in case of hover additions
     cols_use <- yplot_out$cols_use
 
     ### Addition: p values
