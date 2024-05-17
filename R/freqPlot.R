@@ -349,7 +349,8 @@ freqPlot <- function(
     stats_calcd <- FALSE
     if (!identical(add.pvalues, NULL)) {
         .error_if_no_ggplot.multistats()
-        add.pvalues <- .validate_comparison_sets(add.pvalues, group.by, data)
+        add.pvalues <- .validate_comparison_sets(
+            add.pvalues, group.by, data, color.by, do.hover)
 
         stats <- list()
         y_offset <- 1 + pvalues.offset.first
@@ -418,7 +419,11 @@ freqPlot <- function(
     }
 }
 
-.validate_comparison_sets <- function(comp_sets, group.by, data_frame, var.name = "add.pvalues") {
+.validate_comparison_sets <- function(comp_sets, group.by, data_frame, color.by, do.hover, var.name = "add.pvalues") {
+
+    if (color.by!=group.by || do.hover) {
+        stop("pvalue plotting is incompatible with use of 'color.by' or 'do.hover' at this time.")
+    }
 
     valid_groups <- colLevels(group.by, data_frame)
 
@@ -563,41 +568,44 @@ freq_stats <- function(
     # Here, we loop through all the cell_groups being targeted, 1- calculating stats and 2- building a data.frame during each iteration.
     #  The lapply call performs the iteration, and gathers the data.frames output by each iteration into a list.
     #  That list of data.frames created in our lapply is then 'rbind'ed into a single data.frame.
-    stats <- do.call(
-        rbind,
-        lapply(
-            unique(data$Y),
-            function(cell) {
-                data_use <- data[data$Y==cell,]
-                g1s <- as.vector(data_use[[group.by]]==group.1)
-                g2s <- as.vector(data_use[[group.by]]==group.2)
+    stats <- list()
+    for (cell in unique(data$Y)) {
+        data_use <- data[data$Y==cell,]
+        g1s <- as.vector(data_use[[group.by]]==group.1)
+        g2s <- as.vector(data_use[[group.by]]==group.2)
 
-                new <- data.frame(
-                    Y = cell,
-                    group1 = group.1,
-                    group2 = group.2,
-                    max_freq = max(data_use$percent),
-                    stringsAsFactors = FALSE
-                )
+        if (length(g1s)==0 || length(g2s)==0) {
+            warning("No data")
+            next
+        }
 
-                if (do.fc) {
-                    new$median_g1 <- median(data_use$percent[g1s], na.rm = TRUE)
-                    new$median_g2 <- median(data_use$percent[g2s], na.rm = TRUE)
-                    if (new$median_g2==0 && fc.pseudocount==0) {
-                        warning("Looks like a pseudocount will be needed to avoid division by zero errors. Try adding 'fc.pseudocount = 0.000001' to your call and see the '?freq_stats' documentation for details.")
-                    }
-                    new$median_fold_change <- (new$median_g1 + fc.pseudocount) / (new$median_g2 + fc.pseudocount)
-                    new$median_log2_fold_change <- log2(new$median_fold_change)
-                    new$positive_fc_means_up_in <- group.1
-                }
+        new <- data.frame(
+            Y = cell,
+            group1 = group.1,
+            group2 = group.2,
+            max_freq = max(data_use$percent),
+            stringsAsFactors = FALSE
+        )
 
-                wilcox.adjust$x <- data_use$percent[g1s]
-                wilcox.adjust$y <- data_use$percent[g2s]
-                new$p <- do.call(wilcox.test, wilcox.adjust)$p.value
+        if (do.fc) {
+            new$median_g1 <- median(data_use$percent[g1s], na.rm = TRUE)
+            new$median_g2 <- median(data_use$percent[g2s], na.rm = TRUE)
+            if (new$median_g2==0 && fc.pseudocount==0) {
+                warning("Looks like a pseudocount will be needed to avoid division by zero errors. Try adding 'fc.pseudocount = 0.000001' to your call and see the '?freq_stats' documentation for details.")
+            }
+            new$median_fold_change <- (new$median_g1 + fc.pseudocount) / (new$median_g2 + fc.pseudocount)
+            new$median_log2_fold_change <- log2(new$median_fold_change)
+            new$positive_fc_means_up_in <- group.1
+        }
 
-                new
-            })
-    )
+        wilcox.adjust_this <- wilcox.adjust
+        wilcox.adjust_this$x <- data_use$percent[g1s]
+        wilcox.adjust_this$y <- data_use$percent[g2s]
+        new$p <- do.call(wilcox.test, wilcox.adjust_this)$p.value
+
+        stats[[length(stats)+1]] <- new
+    }
+    stats <- do.call(rbind, stats)
 
     # Apply FDR correction
     if (do.adjust) {
