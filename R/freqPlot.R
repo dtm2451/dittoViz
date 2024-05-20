@@ -348,7 +348,7 @@ freqPlot <- function(
     ### Addition: p values
     stats_calcd <- FALSE
     if (!identical(add.pvalues, NULL)) {
-        .error_if_no_ggplot.multistats()
+        .error_if_no_ggpubr()
         add.pvalues <- .validate_comparison_sets(
             add.pvalues, group.by, data, color.by, do.hover)
 

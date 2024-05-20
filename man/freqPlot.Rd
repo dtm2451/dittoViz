@@ -12,7 +12,7 @@ freqPlot(
   color.by = group.by,
   vars.use = NULL,
   add.pvalues = NULL,
-  pvalues.round.digits = 3,
+  pvalues.round.digits = 4,
   pvalues.test.adjust = list(),
   pvalues.adjust = TRUE,
   pvalues.adjust.method = "fdr",
