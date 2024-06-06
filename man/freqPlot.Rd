@@ -26,7 +26,7 @@ freqPlot(
   plots = c("boxplot", "jitter"),
   split.nrow = NULL,
   split.ncol = NULL,
-  split.adjust = list(),
+  split.adjust = list(scale = "free_y"),
   rows.use = NULL,
   data.out = FALSE,
   data.only = FALSE,

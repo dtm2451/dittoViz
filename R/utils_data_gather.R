@@ -298,3 +298,114 @@
 
     data
 }
+
+.calc_stats <- function(
+    data_frame,
+    var,
+    group.by, group.setups,
+    split.by,
+    split.for.calc.only = NULL,
+    wilcox.adjust = list(),
+    do.adjust = TRUE,
+    p.adjust.method = "fdr",
+    do.fc = TRUE,
+    fc.pseudocount = 0,
+    offset.first = 0.1,
+    offset.between = 0.2
+) {
+
+    # Data coming in should be pre-trimmed
+
+    # Recursion for split.by
+    # Ensure that within-facet split.by cols are innermost
+    split.by <- split.by[order(!split.by %in% split.for.calc.only)]
+    if (!is.null(split.by)) {
+        split_col <- split.by[length(split.by)]
+        if (length(split.by)>1) {
+            out <- do.call(rbind, lapply(
+                unique(data_frame[[split_col]]),
+                function(split_val) {
+                    new <- .calc_stats(
+                        data_frame[data_frame[[split.by[2]]]==split_val,],
+                        var, group.by, group.setups,
+                        split.by = split.by[-1*length(split.by)],
+                        wilcox.adjust = wilcox.adjust, do.adjust = FALSE,
+                        do.fc = do.fc, fc.pseudocount = fc.pseudocount)
+                    new[[split_col]] <- split_val
+                    new
+                })
+            )
+        } else if (length(split.by)==1) {
+            out <- do.call(rbind, lapply(
+                unique(data_frame[[split.by[1]]]),
+                function(split_val) {
+                    new <- .calc_stats(
+                        data_frame[data_frame[[split.by[1]]]==split_val,],
+                        var, group.by, group.setups,
+                        split.by = NULL,
+                        wilcox.adjust = wilcox.adjust, do.adjust = FALSE,
+                        do.fc = do.fc, fc.pseudocount = fc.pseudocount)
+                    new[[split_col]] <- split_val
+                    new
+                })
+            )
+        }
+        if (split_col %in% split.for.calc.only) {
+            out$max_data <- max(out$max_data)
+        }
+    } else {
+        # Standard / single actual iteration:
+        stats <- list()
+        offset <- 1 + offset.first
+        # Loop though comparison setups
+        for (ind in seq_along(group.setups)) {
+            group.1 <- group.setups[[ind]][1]
+            group.2 <- group.setups[[ind]][2]
+            g1s <- as.vector(data_frame[[group.by]]==group.1)
+            g2s <- as.vector(data_frame[[group.by]]==group.2)
+
+            if (length(g1s)==0 || length(g2s)==0) {
+                warning("No data for a given data grouping in stats calculation.")
+                next
+            }
+
+            new <- data.frame(
+                group1 = group.1,
+                group2 = group.2,
+                max_data = max(data_frame[,var]),
+                stringsAsFactors = FALSE
+            )
+
+            if (do.fc) {
+                new$median_g1 <- median(data_frame[g1s, var], na.rm = TRUE)
+                new$median_g2 <- median(data_frame[g2s, var], na.rm = TRUE)
+                if (new$median_g2==0 && fc.pseudocount==0) {
+                    warning("Looks like a pseudocount will be needed to avoid division by zero errors. Try adding 'fc.pseudocount = 0.000001' to your call and see the '?freq_stats' documentation for details.")
+                }
+                new$median_fold_change <- (new$median_g1 + fc.pseudocount) / (new$median_g2 + fc.pseudocount)
+                new$median_log2_fold_change <- log2(new$median_fold_change)
+                new$positive_fc_means_up_in <- group.1
+            }
+
+            wilcox.adjust_this <- wilcox.adjust
+            wilcox.adjust_this$x <- data_frame[g1s, var]
+            wilcox.adjust_this$y <- data_frame[g2s, var]
+            new$p <- do.call(wilcox.test, wilcox.adjust_this)$p.value
+
+            new$offset <- offset
+            offset <- offset + offset.between
+
+            stats[[length(stats)+1]] <- new
+        }
+        out <- do.call(rbind, stats)
+        out[[group.by]] <- group.1 # Needed to avoid ggplot2 complaint per ggpubr implementation
+    }
+
+    # Apply FDR correction
+    if (do.adjust) {
+        out$padj <- p.adjust(out$p, method = p.adjust.method)
+    }
+
+    # Output
+    out
+}

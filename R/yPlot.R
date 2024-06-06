@@ -299,6 +299,16 @@ yPlot <- function(
     add.line = NULL,
     line.linetype = "dashed",
     line.color = "black",
+    add.pvalues = NULL,
+    pvalues.round.digits = 4,
+    pvalues.test.adjust = list(),
+    pvalues.adjust = TRUE,
+    pvalues.adjust.method = "fdr",
+    pvalues.offset.first = 0.1,
+    pvalues.offset.between = 0.2,
+    pvalues.offset.above = 0.1,
+    pvalues.do.fc = FALSE,
+    pvalues.fc.pseudocount = 0,
     legend.show = TRUE,
     legend.title = "make",
     data.out = FALSE) {
@@ -418,12 +428,60 @@ yPlot <- function(
         p <- .warn_or_apply_plotly(p, plots)
     }
 
+    # Stats prep
+    stats_calcd <- FALSE
+    if (!identical(add.pvalues, NULL)) {
+        .error_if_no_ggpubr()
+
+        p.by <- cols_use$group.by
+        p.split.by <- split.by
+        p.split.for.calc.only <- NULL
+        p.pos <- "identity"
+        if (cols_use$group.by!=cols_use$color.by) {
+            p.by <- cols_use$color.by
+            p.split.by <- c(p.split.by, cols_use$group.by)
+            p.split.for.calc.only <- cols_use$group.by
+        }
+
+        add.pvalues <- .validate_comparison_sets(
+            add.pvalues, p.by, Target_data)
+
+        stats <- .calc_stats(
+            Target_data,
+            cols_use$var, p.by, add.pvalues,
+            split.by = p.split.by, split.for.calc.only = p.split.for.calc.only,
+            wilcox.adjust = pvalues.test.adjust, do.adjust = pvalues.adjust,
+            do.fc = pvalues.do.fc, fc.pseudocount = pvalues.fc.pseudocount)
+
+        stats$p_show <- round(
+            stats[[ifelse(pvalues.adjust, "padj", "p")]], pvalues.round.digits)
+
+        # Plot (with empty string geom_text to ensure visibility)
+        p <- p + ggpubr::stat_pvalue_manual(
+            data = stats, label = "p_show",
+            y.position = stats$max_data*stats$offset,
+            mapping = aes(group = .data[[p.by]]),
+            position = "identity" #position_dodge(width = boxplot.position.dodge)
+        ) + geom_text(
+            data = stats, aes(
+                x = .data[[cols_use$group.by]],
+                y = .data$max_data * (.data$offset + pvalues.offset.above)
+            ), label = ""
+        )
+
+        stats_calcd <- TRUE
+    }
+
     # DONE. Return the plot +/- data
     if (data.out) {
-        list(
+        out <- list(
             p = p,
             data = Target_data,
             cols_used = cols_use)
+        if (stats_calcd) {
+            out$stats <- stats
+        }
+        out
     } else {
         p
     }
@@ -644,4 +702,52 @@ boxPlot <- function(..., plots = c("boxplot","jitter")){ yPlot(..., plots = plot
         }
     }
     p
+}
+
+.validate_comparison_sets <- function(comp_sets, group.by, data_frame, var.name = "add.pvalues") {
+
+    valid_groups <- colLevels(group.by, data_frame)
+
+    # Alternative options
+    if (!is.list(comp_sets)) {
+        if (identical(comp_sets, "all")) {
+            combs <- combn(valid_groups, 2)
+            # auto-made, valid, so just return
+            return( lapply(seq_len(ncol(combs)), function(i) { combs[,i] }) )
+        }
+        if (length(comp_sets)==2) {
+            # User made, still check
+            comp_sets <- list(comp_sets)
+        }
+    }
+
+    # Checks
+    errors <- list()
+    for (ind in seq_along(comp_sets)) {
+        new_errors <- c()
+        this_comp <- comp_sets[[ind]]
+        if (length(this_comp)!=2) {
+            new_errors <- "is not length 2"
+        }
+        if (!this_comp[1] %in% valid_groups) {
+            new_errors <- c(new_errors, paste0(
+                "targets an invalid level of '", group.by, "', ", this_comp[1]))
+        }
+        if (!this_comp[2] %in% valid_groups) {
+            new_errors <- c(new_errors, paste0(
+                "targets an invalid level of '", group.by, "', ", this_comp[2]))
+        }
+        if (length(new_errors)!=0) {
+            errors <- c(errors, paste0(
+                "The ", ind, " element of ", var.name, " ",
+                new_errors, collapse = ", and ",
+                ". "
+            ))
+        }
+    }
+    if (length(errors!=0)) {
+        stop(var.name, " cannot be interpretted because: ", errors)
+    }
+
+    comp_sets
 }

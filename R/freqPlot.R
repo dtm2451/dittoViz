@@ -214,7 +214,7 @@ freqPlot <- function(
     plots = c("boxplot","jitter"),
     split.nrow = NULL,
     split.ncol = NULL,
-    split.adjust = list(),
+    split.adjust = list(scale = "free_y"),
     rows.use = NULL,
     data.out = FALSE,
     data.only = FALSE,
@@ -303,12 +303,12 @@ freqPlot <- function(
     }
 
     #Build Plot
-    yplot_out <- yPlot(
-        data, scale, group.by = "grouping", color.by = color.by,
+    yPlot(
+        data, scale, group.by = group.by, color.by = color.by,
         shape.by = NULL, split.by = "Y", rows.use = NULL, plots = plots,
         var.adjustment = NULL, var.adj.fxn = NULL,
         do.hover = do.hover, hover.round.digits = hover.round.digits,
-        hover.data = unique(c("grouping", "Y", sample.by, color.by, "count", "percent")),
+        hover.data = unique(c(group.by, "Y", sample.by, color.by, "count", "percent")),
         color.panel = color.panel, colors = colors,
         theme = theme, main = main, sub = sub, ylab = ylab, y.breaks = y.breaks,
         min = min, max = max, xlab = xlab, x.labels = x.labels,
@@ -335,78 +335,22 @@ freqPlot <- function(
         ridgeplot.shape = ridgeplot.shape,
         ridgeplot.bins = ridgeplot.bins,
         ridgeplot.binwidth = ridgeplot.binwidth,
+        add.pvalues = add.pvalues,
+        pvalues.round.digits = pvalues.round.digits,
+        pvalues.test.adjust = pvalues.test.adjust,
+        pvalues.adjust = pvalues.adjust,
+        pvalues.adjust.method = pvalues.adjust.method,
+        pvalues.offset.first = pvalues.offset.first,
+        pvalues.offset.between = pvalues.offset.between,
+        pvalues.offset.above = pvalues.offset.above,
+        pvalues.do.fc = pvalues.do.fc,
+        pvalues.fc.pseudocount = pvalues.fc.pseudocount,
         add.line = add.line,
         line.linetype = line.linetype,
         line.color = line.color,
         legend.show = legend.show,
         legend.title = legend.title,
-        data.out = TRUE)
-    p <- yplot_out$p
-    data <- yplot_out$data # in case of hover additions
-    cols_use <- yplot_out$cols_use
-
-    ### Addition: p values
-    stats_calcd <- FALSE
-    if (!identical(add.pvalues, NULL)) {
-        .error_if_no_ggpubr()
-        add.pvalues <- .validate_comparison_sets(
-            add.pvalues, group.by, data, color.by, do.hover)
-
-        stats <- list()
-        y_offset <- 1 + pvalues.offset.first
-        for (ind in seq_along(add.pvalues)) {
-            # Calculate per comparison
-            g1 <- add.pvalues[[ind]][1]
-            g2 <- add.pvalues[[ind]][2]
-            new_stats <- freq_stats(
-                data_frame = data, freq.by = "Y", sample.by = sample.by,
-                group.by = group.by, group.1 = g1, group.2 = g2,
-                freq.targs = NULL, rows.use = NULL,
-                wilcox.adjust = pvalues.test.adjust,
-                do.adjust = FALSE, # Performed later
-                do.fc = pvalues.do.fc, fc.pseudocount = pvalues.fc.pseudocount,
-                comp.data.out = FALSE, data.direct = TRUE)
-            new_stats[[group.by]] <- g1 # avoids a ggplot error
-            new_stats$y_offset <- y_offset
-            stats[[paste0(g1, "_vs_", g2)]] <- new_stats
-            y_offset <- y_offset + pvalues.offset.between
-        }
-        stats <- do.call(rbind, stats)
-
-        if (pvalues.adjust) {
-            stats$padj <- p.adjust(stats$p, method = pvalues.adjust.method)
-        }
-
-        stats$p_show <- round(
-            stats[[ifelse(pvalues.adjust, "padj", "p")]], pvalues.round.digits)
-
-        # Plot (with empty string geom_text to ensure visibility)
-        p <- p + ggpubr::stat_pvalue_manual(
-            data = stats, label = "p_show",
-            y.position = stats$max_freq*stats$y_offset
-        ) + geom_text(
-            data = stats, aes(
-                x = .data[[group.by]],
-                y = .data$max_freq * (.data$y_offset + pvalues.offset.above)
-            ), label = ""
-        )
-
-        stats_calcd <- TRUE
-    }
-
-    # DONE. Return the plot +/- data
-    if (data.out) {
-        out <- list(
-            p = p,
-            data = data,
-            cols_used = cols_use)
-        if (stats_calcd) {
-            out$stats <- stats
-        }
-        out
-    } else {
-        p
-    }
+        data.out = data.out)
 }
 
 .check_1value_per_group <- function(groupings, check, input.name, data_frame) {
@@ -417,58 +361,6 @@ freqPlot <- function(
         stop("Unable to interpret '", input.name,"' with 'sample.by'. '",
              check, "' data does not map 1 per sample.")
     }
-}
-
-.validate_comparison_sets <- function(comp_sets, group.by, data_frame, color.by, do.hover, var.name = "add.pvalues") {
-
-    if (color.by!=group.by || do.hover) {
-        stop("pvalue plotting is incompatible with use of 'color.by' or 'do.hover' at this time.")
-    }
-
-    valid_groups <- colLevels(group.by, data_frame)
-
-    # Alternative options
-    if (!is.list(comp_sets)) {
-        if (identical(comp_sets, "all")) {
-            combs <- combn(valid_groups, 2)
-            # auto-made, valid, so just return
-            return( lapply(seq_len(ncol(combs)), function(i) { combs[,i] }) )
-        }
-        if (length(comp_sets)==2) {
-            # User made, still check
-            comp_sets <- list(comp_sets)
-        }
-    }
-
-    # Checks
-    errors <- list()
-    for (ind in seq_along(comp_sets)) {
-        new_errors <- c()
-        this_comp <- comp_sets[[ind]]
-        if (length(this_comp)!=2) {
-            new_errors <- "is not length 2"
-        }
-        if (!this_comp[1] %in% valid_groups) {
-            new_errors <- c(new_errors, paste0(
-                "targets an invalid level of '", group.by, "', ", this_comp[1]))
-        }
-        if (!this_comp[2] %in% valid_groups) {
-            new_errors <- c(new_errors, paste0(
-                "targets an invalid level of '", group.by, "', ", this_comp[2]))
-        }
-        if (length(new_errors)!=0) {
-            errors <- c(errors, paste0(
-                "The ", ind, " element of ", var.name, " ",
-                new_errors, collapse = ", and ",
-                ". "
-            ))
-        }
-    }
-    if (length(errors!=0)) {
-        stop(var.name, " cannot be interpretted because: ", errors)
-    }
-
-    comp_sets
 }
 
 #' Calculate per-sample frequencies of clusters or cell annotations, and compare them across group.
