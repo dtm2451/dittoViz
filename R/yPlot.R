@@ -451,7 +451,9 @@ yPlot <- function(
             cols_use$var, p.by, add.pvalues,
             split.by = p.split.by, split.for.calc.only = p.split.for.calc.only,
             wilcox.adjust = pvalues.test.adjust, do.adjust = pvalues.adjust,
-            do.fc = pvalues.do.fc, fc.pseudocount = pvalues.fc.pseudocount)
+            do.fc = pvalues.do.fc, fc.pseudocount = pvalues.fc.pseudocount,
+            offset.first = pvalues.offset.first,
+            offset.between = pvalues.offset.between)
 
         stats$p_show <- round(
             stats[[ifelse(pvalues.adjust, "padj", "p")]], pvalues.round.digits)
