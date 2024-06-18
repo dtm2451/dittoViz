@@ -490,12 +490,14 @@ yPlot <- function(
         stats$p_show <- round(
             stats[[ifelse(pvalues.adjust, "padj", "p")]], pvalues.round.digits)
 
+        stats <- add_x_pos(stats, Target_data, cols_use$group.by, p.by, boxplot.position.dodge)
+
         # Plot (with empty string geom_text to ensure visibility)
         p <- p + ggpubr::stat_pvalue_manual(
             data = stats, label = "p_show",
             y.position = stats$max_data*stats$offset,
             mapping = aes(group = .data[[p.by]]),
-            position = "identity" #position_dodge(width = boxplot.position.dodge)
+            position = "identity"
         ) + geom_text(
             data = stats, aes(
                 x = .data[[cols_use$group.by]],

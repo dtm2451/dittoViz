@@ -282,11 +282,15 @@ freqPlot <- function(
 
     #Build Plot
     yPlot(
-        data, scale, group.by = group.by, color.by = color.by,
+        data, scale, group.by = "grouping",
+        color.by = ifelse(color.by==group.by, "grouping", color.by),
         shape.by = NULL, split.by = "Y", rows.use = NULL, plots = plots,
         var.adjustment = NULL, var.adj.fxn = NULL,
         do.hover = do.hover, hover.round.digits = hover.round.digits,
-        hover.data = unique(c(group.by, "Y", sample.by, color.by, "count", "percent")),
+        hover.data = unique(c(
+            "grouping", "Y", sample.by,
+            ifelse(color.by==group.by, "grouping", color.by),
+            "count", "percent")),
         color.panel = color.panel, colors = colors,
         theme = theme, main = main, sub = sub, ylab = ylab, y.breaks = y.breaks,
         min = min, max = max, xlab = xlab, x.labels = x.labels,

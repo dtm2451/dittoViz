@@ -367,7 +367,7 @@
             g1s <- as.vector(data_frame[[group.by]]==group.1)
             g2s <- as.vector(data_frame[[group.by]]==group.2)
 
-            if (length(g1s)==0 || length(g2s)==0) {
+            if (sum(g1s)==0 || sum(g2s)==0) {
                 warning("No data for a given data grouping in stats calculation.")
                 next
             }
@@ -411,4 +411,23 @@
 
     # Output
     out
+}
+
+add_x_pos <- function(stats, data, x, group, dodge) {
+    stats$x  <- as.numeric(as.factor(stats[,x]))
+
+    # ggpubr::stat_pvalue_manual looks to group1 and group2 columns except if
+    # xmin and xmax columns exist.  Then, these are used instead.
+    if (group != x) {
+        dodge_step <- dodge/length(levels(as.factor(data[,group])))
+        dodge_vals <- setNames(as.vector(scale(as.numeric(levels(as.factor(data[,group]))), center = TRUE, scale = FALSE)), levels(as.factor(data[,group])))
+
+        stats$xmin <- stats$x + dodge_vals[stats$group1] * dodge_step
+        stats$xmax <- stats$x + dodge_vals[stats$group2] * dodge_step
+    } else {
+        stats$xmin <- stats$group1
+        stats$xmax <- stats$group2
+    }
+
+    stats
 }
