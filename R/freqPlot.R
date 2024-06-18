@@ -30,29 +30,6 @@
 #' See \code{\link[ggplot2]{facet_wrap}} for options.
 #' @param ylab String, sets the continuous-axis label (=y-axis for box and violin plots, x-axis for ridgeplots).
 #' Default = "make" and if left as make, this title will be automatically generated.
-#' @param add.pvalues NULL (off), "all", or a list of length 2 string vectors which each name a pairwise set of 2 \code{group.by}-values to compare between.
-#' Giving "all" will determine, and run comparisons for, all possible pairwise combinations of \code{group.by}-values.
-#' @param pvalues.round.digits = 3,
-#' @param pvalues.test.adjust named list providing any desired additional inputs for the p-value calculation with \code{\link[stats]{wilcox.test}}.
-#' \code{x} and \code{y} inputs are filled internally, but all others can be adjusted if desired.
-#' @param pvalues.adjust Logical stating whether to perform multiple hypothesis test correction and plot the corrected p-values.
-#' Highly recommended, but if you are performing multiple iterations of this function,
-#' proper correction requires running this correction once on all p-values.
-#' See \code{\link[stats]{p.adjust}}.
-#' @param pvalues.adjust.method String used only when \code{pvalues.adjust = TRUE}, and "fdr" by default.
-#' Passed along to the \code{method} input of \code{\link[stats]{p.adjust}}.
-#' Any valid option for that input will work.
-#' @param pvalues.offset.first,pvalues.offset.between,pvalues.offset.above Numbers which set the heights at which pvalue brackets will be plotted, in fractions of y-data values:
-#' \itemize{
-#' \item \code{pvalues.offset.first}: the height between the highest data point and the first p-value bracket plotted.
-#' \item \code{pvalues.offset.between}: if multiple comparisons are to be run, the additional offset to add between them.
-#' \item \code{pvalues.offset.above}: the additional height, above all brackets, to add to the plot in order to ensure p-values are visible. (This is accomplished using a geom_text layer of empty strings, and only required because the ggpubr package does not ensure visibility on its own!)
-#' }
-#' @param pvalues.do.fc Logical stating whether to calculate medians and the fold-changes between them, alongside of p-value calculations.
-#' Only helpful when also using \code{data.out = TRUE}.
-#' @param pvalues.fc.pseudocount Number, zero by default. A value to add within fold_change calculations only, to both \code{group.1} and \code{group.2} median frequencies in order to avoid division by zero errors.
-#' When needed, we recommend something small relative to the lowest expected cell frequencies of the data, 0.000001 perhaps.
-#' Although a relatively small value like this can lead to heavily inflated log fold change values in the extreme cases where \code{group.1} or \code{group.2} frequencies are 0 or near 0, a tiny pseudocount leaves all other fold change values only minimally affected.
 #' @param do.hover Logical which sets whether the ggplot output should be converted to a ggplotly object with data about individual bars displayed when you hover your cursor over them.
 #' @param data.out Logical. When set to \code{TRUE}, changes the output, from the plot alone, to a list containing the plot (\code{p}), its underlying data (\code{data}).
 #' @return A ggplot plot where frequencies of discrete \code{var}-data per sample, grouped by condition, timepoint, etc., is shown on the y-axis by a violin plot, boxplot, and/or jittered points, or on the x-axis by a ridgeplot with or without jittered points.
@@ -201,6 +178,7 @@ freqPlot <- function(
     vars.use = NULL,
     add.pvalues = NULL,
     pvalues.round.digits = 4,
+    pvalues.test.method = wilcox.test,
     pvalues.test.adjust = list(),
     pvalues.adjust = TRUE,
     pvalues.adjust.method = "fdr",
@@ -337,6 +315,7 @@ freqPlot <- function(
         ridgeplot.binwidth = ridgeplot.binwidth,
         add.pvalues = add.pvalues,
         pvalues.round.digits = pvalues.round.digits,
+        pvalues.test.method = pvalues.test.method,
         pvalues.test.adjust = pvalues.test.adjust,
         pvalues.adjust = pvalues.adjust,
         pvalues.adjust.method = pvalues.adjust.method,

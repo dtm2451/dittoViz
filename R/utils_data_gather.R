@@ -305,7 +305,8 @@
     group.by, group.setups,
     split.by,
     split.for.calc.only = NULL,
-    wilcox.adjust = list(),
+    test.method = wilcox.test,
+    test.adjust = list(),
     do.adjust = TRUE,
     p.adjust.method = "fdr",
     do.fc = TRUE,
@@ -329,7 +330,8 @@
                         data_frame[data_frame[[split.by[2]]]==split_val,],
                         var, group.by, group.setups,
                         split.by = split.by[-1*length(split.by)],
-                        wilcox.adjust = wilcox.adjust, do.adjust = FALSE,
+                        test.method = test.method, test.adjust = test.adjust,
+                        do.adjust = FALSE,
                         do.fc = do.fc, fc.pseudocount = fc.pseudocount)
                     new[[split_col]] <- split_val
                     new
@@ -343,7 +345,8 @@
                         data_frame[data_frame[[split.by[1]]]==split_val,],
                         var, group.by, group.setups,
                         split.by = NULL,
-                        wilcox.adjust = wilcox.adjust, do.adjust = FALSE,
+                        test.method = test.method, test.adjust = test.adjust,
+                        do.adjust = FALSE,
                         do.fc = do.fc, fc.pseudocount = fc.pseudocount)
                     new[[split_col]] <- split_val
                     new
@@ -387,10 +390,10 @@
                 new$positive_fc_means_up_in <- group.1
             }
 
-            wilcox.adjust_this <- wilcox.adjust
-            wilcox.adjust_this$x <- data_frame[g1s, var]
-            wilcox.adjust_this$y <- data_frame[g2s, var]
-            new$p <- do.call(wilcox.test, wilcox.adjust_this)$p.value
+            test.adjust_this <- test.adjust
+            test.adjust_this$x <- data_frame[g1s, var]
+            test.adjust_this$y <- data_frame[g2s, var]
+            new$p <- do.call(test.method, test.adjust_this)$p.value
 
             new$offset <- offset
             offset <- offset + offset.between

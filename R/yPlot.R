@@ -119,6 +119,36 @@
 #' Overridden by \code{ridgeplot.binwidth} when that input is provided.
 #' @param ridgeplot.binwidth Integer which sets the width of chunks to break the x-axis into when \code{ridgeplot.shape = "hist"}.
 #' Takes precedence over \code{ridgeplot.bins} when provided.
+#' @param add.pvalues NULL (off), "all", or a list of length 2 string vectors which each name a pairwise set of 2 \code{group.by}-values to compare between.
+#' Giving "all" will determine, and run comparisons for, all possible pairwise combinations of \code{group.by}-values.
+#' @param pvalues.round.digits Integer number which sets how many decimal digits to round to,
+#' @param pvalues.test.method A function for performing the desired statistical test.
+#' Base R stats functions or other functions that perform similarly should work.
+#' Default is \code{wilcox.test}.
+#' The function must:\itemize{
+#' \item accept comparison group data passed in as inputs \code{x} and \code{y}.
+#' \item have a \code{$p.value} element to its return, and this should be the single-test p-value, not one that is already multiple-hypothesis test corrected.
+#' }
+#' @param pvalues.test.adjust named list providing any desired additional inputs for the p-value calculation with \code{\link[stats]{wilcox.test}}.
+#' \code{x} and \code{y} inputs are filled internally, but all others can be adjusted if desired.
+#' @param pvalues.adjust Logical stating whether to perform multiple hypothesis test correction and plot the corrected p-values.
+#' Highly recommended, but if you are performing multiple iterations of this function,
+#' proper correction requires running this correction once on all p-values.
+#' See \code{\link[stats]{p.adjust}}.
+#' @param pvalues.adjust.method String used only when \code{pvalues.adjust = TRUE}, and "fdr" by default.
+#' Passed along to the \code{method} input of \code{\link[stats]{p.adjust}}.
+#' Any valid option for that input will work.
+#' @param pvalues.offset.first,pvalues.offset.between,pvalues.offset.above Numbers which set the heights at which pvalue brackets will be plotted, in fractions of y-data values:
+#' \itemize{
+#' \item \code{pvalues.offset.first}: the height between the highest data point and the first p-value bracket plotted.
+#' \item \code{pvalues.offset.between}: if multiple comparisons are to be run, the additional offset to add between them.
+#' \item \code{pvalues.offset.above}: the additional height, above all brackets, to add to the plot in order to ensure p-values are visible. (This is accomplished using a geom_text layer of empty strings, and only required because the ggpubr package does not ensure visibility on its own!)
+#' }
+#' @param pvalues.do.fc Logical stating whether to calculate medians and the fold-changes between them, alongside of p-value calculations.
+#' Only helpful when also using \code{data.out = TRUE}.
+#' @param pvalues.fc.pseudocount Number, zero by default. A value to add within fold_change calculations only, to both \code{group.1} and \code{group.2} median frequencies in order to avoid division by zero errors.
+#' When needed, we recommend something small relative to the lowest expected cell frequencies of the data, 0.000001 perhaps.
+#' Although a relatively small value like this can lead to heavily inflated log fold change values in the extreme cases where \code{group.1} or \code{group.2} frequencies are 0 or near 0, a tiny pseudocount leaves all other fold change values only minimally affected.
 #' @param legend.show Logical. Whether the legend should be displayed. Default = \code{TRUE}.
 #' @param legend.title String or \code{NULL}, sets the title for the main legend which includes colors and data representations.
 #' @param data.out Logical. When set to \code{TRUE}, changes the output, from the plot alone, to a list containing the plot (\code{p}), its underlying data (\code{data}),
@@ -301,6 +331,7 @@ yPlot <- function(
     line.color = "black",
     add.pvalues = NULL,
     pvalues.round.digits = 4,
+    pvalues.test.method = wilcox.test,
     pvalues.test.adjust = list(),
     pvalues.adjust = TRUE,
     pvalues.adjust.method = "fdr",
@@ -450,7 +481,8 @@ yPlot <- function(
             Target_data,
             cols_use$var, p.by, add.pvalues,
             split.by = p.split.by, split.for.calc.only = p.split.for.calc.only,
-            wilcox.adjust = pvalues.test.adjust, do.adjust = pvalues.adjust,
+            test.method = pvalues.test.method, test.adjust = pvalues.test.adjust,
+            do.adjust = pvalues.adjust, p.adjust.method = pvalues.adjust.method,
             do.fc = pvalues.do.fc, fc.pseudocount = pvalues.fc.pseudocount,
             offset.first = pvalues.offset.first,
             offset.between = pvalues.offset.between)
