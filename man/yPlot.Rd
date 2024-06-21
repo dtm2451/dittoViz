@@ -296,9 +296,19 @@ Giving "all" will determine, and run comparisons for, all possible pairwise comb
 
 \item{pvalues.round.digits}{Integer number which sets how many decimal digits to round to,}
 
+\item{pvalues.sample.by}{NULL (off), or Single string representing the name of a column of \code{data_frame} that contains an indicator of which sample each observation belongs to.
+When provided, data of each sample are summarized into a single data point per sample prior to statistical comparison.}
+
+\item{pvalues.sample.summary}{String naming a function for performing per sample summarization.
+Default is \code{"mean"}.
+The function must:\itemize{
+\item accept a vector or numeric values as input
+\item return a single numeric value as output
+}}
+
 \item{pvalues.test.method}{String naming a function for performing the desired statistical test.
 Base R stats functions or other functions that perform similarly should work.
-Default is \code{wilcox.test}.
+Default is \code{"wilcox.test"}.
 The function must:\itemize{
 \item accept comparison group data passed in as inputs \code{x} and \code{y}.
 \item have a \code{$p.value} element to its return, and this should be the single-test p-value, not one that is already multiple-hypothesis test corrected.

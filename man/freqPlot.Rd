@@ -107,7 +107,7 @@ Giving "all" will determine, and run comparisons for, all possible pairwise comb
 
 \item{pvalues.test.method}{String naming a function for performing the desired statistical test.
 Base R stats functions or other functions that perform similarly should work.
-Default is \code{wilcox.test}.
+Default is \code{"wilcox.test"}.
 The function must:\itemize{
 \item accept comparison group data passed in as inputs \code{x} and \code{y}.
 \item have a \code{$p.value} element to its return, and this should be the single-test p-value, not one that is already multiple-hypothesis test corrected.

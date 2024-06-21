@@ -122,9 +122,17 @@
 #' @param add.pvalues NULL (off), "all", or a list of length 2 string vectors which each name a pairwise set of 2 \code{group.by}-values to compare between.
 #' Giving "all" will determine, and run comparisons for, all possible pairwise combinations of \code{group.by}-values.
 #' @param pvalues.round.digits Integer number which sets how many decimal digits to round to,
+#' @param pvalues.sample.by NULL (off), or Single string representing the name of a column of \code{data_frame} that contains an indicator of which sample each observation belongs to.
+#' When provided, data of each sample are summarized into a single data point per sample prior to statistical comparison.
+#' @param pvalues.sample.summary String naming a function for performing per sample summarization.
+#' Default is \code{"mean"}.
+#' The function must:\itemize{
+#' \item accept a vector or numeric values as input
+#' \item return a single numeric value as output
+#' }
 #' @param pvalues.test.method String naming a function for performing the desired statistical test.
 #' Base R stats functions or other functions that perform similarly should work.
-#' Default is \code{wilcox.test}.
+#' Default is \code{"wilcox.test"}.
 #' The function must:\itemize{
 #' \item accept comparison group data passed in as inputs \code{x} and \code{y}.
 #' \item have a \code{$p.value} element to its return, and this should be the single-test p-value, not one that is already multiple-hypothesis test corrected.
