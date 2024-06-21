@@ -13,7 +13,7 @@ freqPlot(
   vars.use = NULL,
   add.pvalues = NULL,
   pvalues.round.digits = 4,
-  pvalues.test.method = wilcox.test,
+  pvalues.test.method = "wilcox.test",
   pvalues.test.adjust = list(),
   pvalues.adjust = TRUE,
   pvalues.adjust.method = "fdr",
@@ -105,7 +105,7 @@ Giving "all" will determine, and run comparisons for, all possible pairwise comb
 
 \item{pvalues.round.digits}{Integer number which sets how many decimal digits to round to,}
 
-\item{pvalues.test.method}{A function for performing the desired statistical test.
+\item{pvalues.test.method}{String naming a function for performing the desired statistical test.
 Base R stats functions or other functions that perform similarly should work.
 Default is \code{wilcox.test}.
 The function must:\itemize{

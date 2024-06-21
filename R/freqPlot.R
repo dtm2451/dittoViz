@@ -178,7 +178,7 @@ freqPlot <- function(
     vars.use = NULL,
     add.pvalues = NULL,
     pvalues.round.digits = 4,
-    pvalues.test.method = wilcox.test,
+    pvalues.test.method = "wilcox.test",
     pvalues.test.adjust = list(),
     pvalues.adjust = TRUE,
     pvalues.adjust.method = "fdr",

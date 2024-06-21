@@ -122,7 +122,7 @@
 #' @param add.pvalues NULL (off), "all", or a list of length 2 string vectors which each name a pairwise set of 2 \code{group.by}-values to compare between.
 #' Giving "all" will determine, and run comparisons for, all possible pairwise combinations of \code{group.by}-values.
 #' @param pvalues.round.digits Integer number which sets how many decimal digits to round to,
-#' @param pvalues.test.method A function for performing the desired statistical test.
+#' @param pvalues.test.method String naming a function for performing the desired statistical test.
 #' Base R stats functions or other functions that perform similarly should work.
 #' Default is \code{wilcox.test}.
 #' The function must:\itemize{
@@ -331,8 +331,11 @@ yPlot <- function(
     line.color = "black",
     add.pvalues = NULL,
     pvalues.round.digits = 4,
-    pvalues.test.method = wilcox.test,
+    pvalues.sample.by = NULL,
+    pvalues.sample.summary = "mean",
+    pvalues.test.method = "wilcox.test",
     pvalues.test.adjust = list(),
+    pvalues.plot.adjust = list(),
     pvalues.adjust = TRUE,
     pvalues.adjust.method = "fdr",
     pvalues.offset.first = 0.1,
@@ -417,6 +420,41 @@ yPlot <- function(
         cols_use$hover.text <- "hover.string"
     }
 
+    # Stats prep
+    stats_calcd <- FALSE
+    stats <- NULL
+    if (!identical(add.pvalues, NULL)) {
+        .error_if_no_ggpubr()
+        stats_calcd <- TRUE
+
+        cols_use$p.by <- cols_use$group.by
+        p.split.by <- split.by
+        p.split.for.calc.only <- NULL
+        if (cols_use$group.by!=cols_use$color.by) {
+            cols_use$p.by <- cols_use$color.by
+            p.split.by <- c(p.split.by, cols_use$group.by)
+            p.split.for.calc.only <- cols_use$group.by
+        }
+
+        comps <- .validate_comparison_sets(
+            add.pvalues, cols_use$p.by, Target_data)
+
+        stats <- add_x_pos(
+            .calc_stats(
+                Target_data,
+                cols_use$var, cols_use$p.by, comps,
+                sample.by = pvalues.sample.by, sample.summary = pvalues.sample.summary,
+                split.by = p.split.by, split.for.calc.only = p.split.for.calc.only,
+                test.method = pvalues.test.method, test.adjust = pvalues.test.adjust,
+                p.round.digits = pvalues.round.digits,
+                do.adjust = pvalues.adjust, p.adjust.method = pvalues.adjust.method,
+                do.fc = pvalues.do.fc, fc.pseudocount = pvalues.fc.pseudocount,
+                offset.first = pvalues.offset.first,
+                offset.between = pvalues.offset.between),
+            Target_data, cols_use$group.by, cols_use$p.by, boxplot.position.dodge
+        )
+    }
+
     # Make the plot
     p <- ggplot(Target_data, aes(fill=.data[[cols_use$color.by]])) +
         theme +
@@ -435,7 +473,8 @@ yPlot <- function(
             vlnplot.lineweight, vlnplot.width, vlnplot.scaling,
             vlnplot.quantiles, add.line, line.linetype, line.color,
             x.labels.rotate, do.hover, y.breaks, min, max, data_frame,
-            cols_use$group.aes)
+            cols_use$group.aes,
+            stats, cols_use$p.by, pvalues.offset.above, pvalues.plot.adjust)
     } else {
         p <- .yPlot_add_data_x_direction(
             p, Target_data, cols_use$var, cols_use$group.by,
@@ -444,7 +483,8 @@ yPlot <- function(
             ridgeplot.lineweight, ridgeplot.scale, ridgeplot.ymax.expansion,
             ridgeplot.shape, ridgeplot.bins, ridgeplot.binwidth, add.line,
             line.linetype, line.color, x.labels.rotate, do.hover, color.panel,
-            colors, y.breaks, min, max)
+            colors, y.breaks, min, max,
+            stats, cols_use$p.by, pvalues.offset.above, pvalues.plot.adjust)
     }
     # Extra tweaks
     if (!is.null(cols_use$split.by)) {
@@ -457,55 +497,6 @@ yPlot <- function(
 
     if (do.hover) {
         p <- .warn_or_apply_plotly(p, plots)
-    }
-
-    # Stats prep
-    stats_calcd <- FALSE
-    if (!identical(add.pvalues, NULL)) {
-        .error_if_no_ggpubr()
-
-        p.by <- cols_use$group.by
-        p.split.by <- split.by
-        p.split.for.calc.only <- NULL
-        p.pos <- "identity"
-        if (cols_use$group.by!=cols_use$color.by) {
-            p.by <- cols_use$color.by
-            p.split.by <- c(p.split.by, cols_use$group.by)
-            p.split.for.calc.only <- cols_use$group.by
-        }
-
-        add.pvalues <- .validate_comparison_sets(
-            add.pvalues, p.by, Target_data)
-
-        stats <- .calc_stats(
-            Target_data,
-            cols_use$var, p.by, add.pvalues,
-            split.by = p.split.by, split.for.calc.only = p.split.for.calc.only,
-            test.method = pvalues.test.method, test.adjust = pvalues.test.adjust,
-            do.adjust = pvalues.adjust, p.adjust.method = pvalues.adjust.method,
-            do.fc = pvalues.do.fc, fc.pseudocount = pvalues.fc.pseudocount,
-            offset.first = pvalues.offset.first,
-            offset.between = pvalues.offset.between)
-
-        stats$p_show <- round(
-            stats[[ifelse(pvalues.adjust, "padj", "p")]], pvalues.round.digits)
-
-        stats <- add_x_pos(stats, Target_data, cols_use$group.by, p.by, boxplot.position.dodge)
-
-        # Plot (with empty string geom_text to ensure visibility)
-        p <- p + ggpubr::stat_pvalue_manual(
-            data = stats, label = "p_show",
-            y.position = stats$max_data*stats$offset,
-            mapping = aes(group = .data[[p.by]]),
-            position = "identity"
-        ) + geom_text(
-            data = stats, aes(
-                x = .data[[cols_use$group.by]],
-                y = .data$max_data * (.data$offset + pvalues.offset.above)
-            ), label = ""
-        )
-
-        stats_calcd <- TRUE
     }
 
     # DONE. Return the plot +/- data
@@ -534,7 +525,9 @@ yPlot <- function(
     vlnplot.lineweight, vlnplot.width, vlnplot.scaling, vlnplot.quantiles,
     add.line, line.linetype, line.color,
     x.labels.rotate, do.hover, y.breaks, min, max,
-    data_frame, group.aes) {
+    data_frame, group.aes,
+    stats = NULL, p.by, pvalues.offset.above, pvalues.plot.adjust
+    ) {
     # This function takes in a partial yPlot ggplot data_frame without any data
     # overlay, and parses adding the main data visualizations.
     # Adds plots based on what is requested in plots, ordered by their order.
@@ -644,6 +637,25 @@ yPlot <- function(
         p <- p + geom_hline(yintercept=add.line, linetype= line.linetype, color = line.color)
     }
 
+    # Add p-value brackets
+    if (!is.null(stats)) {
+        # Plot (with empty string geom_text to ensure visibility)
+        pvalues.plot.adjust$data <- stats
+        pvalues.plot.adjust$mapping <- aes(group = .data[[p.by]])
+        pvalues.plot.adjust$label <- "p_show"
+        pvalues.plot.adjust$y.position <- stats$max_data*stats$offset
+        pvalues.plot.adjust$position <- "identity"
+        p <- p + do.call(
+            ggpubr::stat_pvalue_manual,
+            pvalues.plot.adjust
+        ) + geom_text(
+            data = stats, aes(
+                x = .data[[group.by]],
+                y = .data$max_data * (.data$offset + pvalues.offset.above)
+            ), label = ""
+        )
+    }
+
     p
 }
 
@@ -655,7 +667,8 @@ yPlot <- function(
     ridgeplot.lineweight, ridgeplot.scale,
     ridgeplot.ymax.expansion, ridgeplot.shape, ridgeplot.bins,
     ridgeplot.binwidth, add.line, line.linetype, line.color,
-    x.labels.rotate, do.hover, color.panel, colors, y.breaks, min, max) {
+    x.labels.rotate, do.hover, color.panel, colors, y.breaks, min, max,
+    stats = NULL, p.by, pvalues.offset.above, pvalues.plot.adjust) {
     #This function takes in a partial yPlot ggplot object without any data overlay, and parses adding the main data visualizations.
 
     # Now that we know the plot's direction, set direction & "y"-axis limits
@@ -707,6 +720,29 @@ yPlot <- function(
     }
     if (!is.null(add.line)) {
         p <- p + geom_vline(xintercept=add.line, linetype= line.linetype, color = line.color)
+    }
+
+    if (!is.null(stats)) {
+        stats$y <- stats$x
+        stats$x <- NULL
+        stats$ymin <- stats$xmin
+        stats$ymax <- stats$xmax
+        # Plot (with empty string geom_text to ensure visibility)
+        pvalues.plot.adjust$data <- stats
+        pvalues.plot.adjust$mapping <- aes(group = .data[[p.by]])
+        pvalues.plot.adjust$label <- "p_show"
+        pvalues.plot.adjust$y.position <- stats$max_data*stats$offset
+        pvalues.plot.adjust$position <- "identity"
+        pvalues.plot.adjust$coord.flip <- TRUE
+        p <- p + do.call(
+            ggpubr::stat_pvalue_manual,
+            pvalues.plot.adjust
+        ) + geom_text(
+            data = stats, aes(
+                y = .data[[group.by]],
+                x = .data$max_data * (.data$offset + pvalues.offset.above)
+            ), label = ""
+        )
     }
 
     p

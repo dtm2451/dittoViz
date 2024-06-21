@@ -305,15 +305,28 @@
     group.by, group.setups,
     split.by,
     split.for.calc.only = NULL,
-    test.method = wilcox.test,
+    sample.by = NULL,
+    sample.summary = "mean",
+    test.method = "wilcox.test",
     test.adjust = list(),
+    p.round.digits = 4,
     do.adjust = TRUE,
     p.adjust.method = "fdr",
     do.fc = TRUE,
     fc.pseudocount = 0,
     offset.first = 0.1,
-    offset.between = 0.2
+    offset.between = 0.2,
+    outermost = TRUE
 ) {
+
+    if (!is.function(get(test.method))) {
+        stop("'get()' of pvalues 'test.method' does not retrieve a function.")
+    }
+    if (!identical(sample.by, NULL) && !is.function(get(sample.summary))) {
+        stop("'get()' of pvalues 'sample.summary' does not retrieve a function.")
+    }
+
+    description <- ''
 
     # Data coming in should be pre-trimmed
 
@@ -330,9 +343,11 @@
                         data_frame[data_frame[[split.by[2]]]==split_val,],
                         var, group.by, group.setups,
                         split.by = split.by[-1*length(split.by)],
+                        sample.by = sample.by, sample.summary = sample.summary,
                         test.method = test.method, test.adjust = test.adjust,
                         do.adjust = FALSE,
-                        do.fc = do.fc, fc.pseudocount = fc.pseudocount)
+                        do.fc = do.fc, fc.pseudocount = fc.pseudocount,
+                        outermost = FALSE)
                     new[[split_col]] <- split_val
                     new
                 })
@@ -345,9 +360,11 @@
                         data_frame[data_frame[[split.by[1]]]==split_val,],
                         var, group.by, group.setups,
                         split.by = NULL,
+                        sample.by = sample.by, sample.summary = sample.summary,
                         test.method = test.method, test.adjust = test.adjust,
                         do.adjust = FALSE,
-                        do.fc = do.fc, fc.pseudocount = fc.pseudocount)
+                        do.fc = do.fc, fc.pseudocount = fc.pseudocount,
+                        outermost = FALSE)
                     new[[split_col]] <- split_val
                     new
                 })
@@ -375,13 +392,32 @@
             new <- data.frame(
                 group1 = group.1,
                 group2 = group.2,
-                max_data = max(data_frame[,var]),
+                max_data = max(data_frame[,var], na.rm = TRUE),
+                min_data = min(data_frame[,var], na.rm = TRUE),
                 stringsAsFactors = FALSE
             )
 
+            if (!identical(sample.by, NULL)) {
+                samples <- ._col(sample.by, data_frame, add.names = FALSE)
+                .summarize_vals_per_sample <- function(set_logical) {
+                    vapply(
+                        colLevels(sample.by, data_frame[set_logical, , drop = FALSE]),
+                        function(samp) {
+                            get(sample.summary)(data_frame[set_logical & samples==samp, var], na.rm = TRUE)
+                        },
+                        numeric(1)
+                    )
+                }
+                g1_vals <- .summarize_vals_per_sample(g1s)
+                g2_vals <- .summarize_vals_per_sample(g2s)
+            } else {
+                g1_vals <- data_frame[g1s, var]
+                g2_vals <- data_frame[g2s, var]
+            }
+
             if (do.fc) {
-                new$median_g1 <- median(data_frame[g1s, var], na.rm = TRUE)
-                new$median_g2 <- median(data_frame[g2s, var], na.rm = TRUE)
+                new$median_g1 <- median(g1_vals, na.rm = TRUE)
+                new$median_g2 <- median(g2_vals, na.rm = TRUE)
                 if (new$median_g2==0 && fc.pseudocount==0) {
                     warning("Looks like a pseudocount will be needed to avoid division by zero errors. Try adding 'fc.pseudocount = 0.000001' to your call and see the '?freq_stats' documentation for details.")
                 }
@@ -391,9 +427,9 @@
             }
 
             test.adjust_this <- test.adjust
-            test.adjust_this$x <- data_frame[g1s, var]
-            test.adjust_this$y <- data_frame[g2s, var]
-            new$p <- do.call(test.method, test.adjust_this)$p.value
+            test.adjust_this$x <- g1_vals
+            test.adjust_this$y <- g2_vals
+            new$p <- do.call(get(test.method), test.adjust_this)$p.value
 
             new$offset <- offset
             offset <- offset + offset.between
@@ -404,26 +440,47 @@
         out[[group.by]] <- group.1 # Needed to avoid ggplot2 complaint per ggpubr implementation
     }
 
-    # Apply FDR correction
+    # Apply FDR correction, and round
+    p_round <- "p"
     if (do.adjust) {
         out$padj <- p.adjust(out$p, method = p.adjust.method)
+        p_round <- "padj"
+    }
+
+    if (outermost) {
+        out$p_show <- round(out[,p_round], p.round.digits)
+        out$stat_calc_method_description <- NA
+        out$stat_calc_method_description[1] <- description
     }
 
     # Output
     out
 }
 
-add_x_pos <- function(stats, data, x, group, dodge) {
-    stats$x  <- as.numeric(as.factor(stats[,x]))
+add_x_pos <- function(stats, data, group.by, p.by, dodge) {
+    stats$x  <- as.numeric(as.factor(stats[,group.by]))
 
     # ggpubr::stat_pvalue_manual looks to group1 and group2 columns except if
     # xmin and xmax columns exist.  Then, these are used instead.
-    if (group != x) {
-        dodge_step <- dodge/length(levels(as.factor(data[,group])))
-        dodge_vals <- setNames(as.vector(scale(as.numeric(levels(as.factor(data[,group]))), center = TRUE, scale = FALSE)), levels(as.factor(data[,group])))
-
-        stats$xmin <- stats$x + dodge_vals[stats$group1] * dodge_step
-        stats$xmax <- stats$x + dodge_vals[stats$group2] * dodge_step
+    if (p.by != group.by) {
+        dodge_steps <- list()
+        dodge_vals <- list()
+        for (this_group in colLevels(group.by, data)) {
+            these_levs <- colLevels(p.by, data[data[,group.by]==this_group,])
+            # x dodge distance between groups
+            dodge_steps[[this_group]] <- dodge / length(these_levs)
+            # centered unit locations of groups
+            dodge_vals[[this_group]] <- setNames(
+                as.vector(scale(seq_along(these_levs), center = TRUE, scale = FALSE)),
+                these_levs
+            )
+        }
+        stats$xmin <- sapply(seq_len(nrow(stats)), function(i) {
+            stats[i,"x"] + dodge_vals[[stats[i,group.by]]][stats[i,"group1"]] * dodge_steps[[stats[i,group.by]]]
+        })
+        stats$xmax <- sapply(seq_len(nrow(stats)), function(i) {
+            stats[i,"x"] + dodge_vals[[stats[i,group.by]]][stats[i,"group2"]] * dodge_steps[[stats[i,group.by]]]
+        })
     } else {
         stats$xmin <- stats$group1
         stats$xmax <- stats$group2
