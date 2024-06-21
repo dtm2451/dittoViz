@@ -139,6 +139,7 @@
 #' }
 #' @param pvalues.test.adjust named list providing any desired additional inputs for the p-value calculation with \code{\link[stats]{wilcox.test}}.
 #' \code{x} and \code{y} inputs are filled internally, but all others can be adjusted if desired.
+#' @param pvalues.plot.adjust named list providing additional inputs, to pass to \code{\link[ggpubr]{stat_pvalue_manual}}, for adjustment of how pvalue brackets and labels are plotted
 #' @param pvalues.adjust Logical stating whether to perform multiple hypothesis test correction and plot the corrected p-values.
 #' Highly recommended, but if you are performing multiple iterations of this function,
 #' proper correction requires running this correction once on all p-values.

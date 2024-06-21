@@ -457,6 +457,8 @@
     out
 }
 
+#' @noRd
+#' @importFrom stats setNames
 add_x_pos <- function(stats, data, group.by, p.by, dodge) {
     stats$x  <- as.numeric(as.factor(stats[,group.by]))
 
