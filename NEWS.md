@@ -1,6 +1,7 @@
 # dittoViz 1.0.2
 
-* Added new 'color.method = "prop.<value>"' functionality to scatterHex() which allows coloring bins by the proportion of a given 'color.by'-data value. 
+* Added new 'color.method = "prop.<value>"' functionality to scatterHex() which allows coloring bins by the proportion of a given 'color.by'-data value.
+* BugFix: Let 'show.grid.lines = FALSE' turn off grid lines (by adjusting 'theme' before, instead of after, adding 'theme' to the growing plot).
 
 # dittoViz 1.0.1
 

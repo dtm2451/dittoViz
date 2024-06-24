@@ -470,12 +470,12 @@ scatterPlot <- function(
 ) {
 
     ### Set up plotting
-    p <- ggplot() + ylab(ylab) + xlab(xlab) + ggtitle(main,sub) + theme
     if (!show.grid.lines) {
         theme <- theme + theme(
             panel.grid.major = element_blank(),
             panel.grid.minor = element_blank())
     }
+    p <- ggplot() + ylab(ylab) + xlab(xlab) + ggtitle(main,sub) + theme
 
     # Determine how to add data while adding proper theming
     aes.use <- aes(x = .data[[x.by]], y = .data[[y.by]])
