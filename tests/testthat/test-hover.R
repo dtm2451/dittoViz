@@ -354,7 +354,7 @@ test_that("freqPlot hover.data default captures all desired aspects", {
             data.out = TRUE))$p,
         "plotly")
     first_hover <- x$data$hover.string[1]
-    expectations <- c("label", "sample", "grouping", "sample_subgroups", "count", "percent")
+    expectations <- c("Y", "sample", "grouping", "sample_subgroups", "count", "percent")
     expect_equal(
         vapply(
             expectations,
