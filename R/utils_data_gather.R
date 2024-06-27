@@ -309,6 +309,7 @@
     sample.summary = "mean",
     test.method = "wilcox.test",
     test.adjust = list(),
+    p.symbols = FALSE,
     p.round.digits = 4,
     do.adjust = TRUE,
     p.adjust.method = "fdr",
@@ -345,7 +346,7 @@
                         split.by = split.by[-1*length(split.by)],
                         sample.by = sample.by, sample.summary = sample.summary,
                         test.method = test.method, test.adjust = test.adjust,
-                        do.adjust = FALSE,
+                        do.adjust = do.adjust,
                         do.fc = do.fc, fc.pseudocount = fc.pseudocount,
                         outermost = FALSE)
                     new[[split_col]] <- split_val
@@ -362,7 +363,7 @@
                         split.by = NULL,
                         sample.by = sample.by, sample.summary = sample.summary,
                         test.method = test.method, test.adjust = test.adjust,
-                        do.adjust = FALSE,
+                        do.adjust = do.adjust,
                         do.fc = do.fc, fc.pseudocount = fc.pseudocount,
                         outermost = FALSE)
                     new[[split_col]] <- split_val
@@ -440,17 +441,32 @@
         out[[group.by]] <- group.1 # Needed to avoid ggplot2 complaint per ggpubr implementation
     }
 
-    # Apply FDR correction, and round
-    p_round <- "p"
-    if (do.adjust) {
-        out$padj <- p.adjust(out$p, method = p.adjust.method)
-        p_round <- "padj"
-    }
-
     if (outermost) {
-        out$p_show <- round(out[,p_round], p.round.digits)
-        out$stat_calc_method_description <- NA
-        out$stat_calc_method_description[1] <- description
+        # Multiple Hypothesis Correction
+        p_use <- "p"
+        if (do.adjust) {
+            out$padj <- p.adjust(out$p, method = p.adjust.method)
+            p_use <- "padj"
+        }
+        # Symbolize or round p-values
+        if (identical(p.symbols, TRUE)) {
+            p.symbolize <- function(p) {
+                ifelse(p > 0.05, "ns",
+                       ifelse(p > 0.01, "*",
+                              ifelse(p > 0.001, "**",
+                                     ifelse(p > 0.0001, "***",
+                                            "****"))))
+            }
+            out$p_show <- p.symbolize(out[,p_use])
+        } else if (is.function(p.symbols)) {
+            out$p_show <- p.symbols(out[,p_use])
+        } else {
+            # Round shown p-values when p.symbols not 'on'
+            out$p_show <- round(out[,p_use], p.round.digits)
+        }
+        # ToDo: Add description in first row of the data frame
+        # out$stat_calc_method_description <- NA
+        # out$stat_calc_method_description[1] <- description
     }
 
     # Output

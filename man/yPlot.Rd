@@ -75,6 +75,7 @@ yPlot(
   pvalues.sample.summary = "mean",
   pvalues.test.method = "wilcox.test",
   pvalues.test.adjust = list(),
+  pvalues.plot.symbols = FALSE,
   pvalues.plot.adjust = list(),
   pvalues.adjust = TRUE,
   pvalues.adjust.method = "fdr",
@@ -316,6 +317,17 @@ The function must:\itemize{
 
 \item{pvalues.test.adjust}{named list providing any desired additional inputs for the p-value calculation with \code{\link[stats]{wilcox.test}}.
 \code{x} and \code{y} inputs are filled internally, but all others can be adjusted if desired.}
+
+\item{pvalues.plot.symbols}{Logical which controls whether pvalues will be replaced with the below symbol representations
+OR a custom function that inputs a numeric vector of p-values and outputs vector of desired labels, where the output is the same length as the input.
+
+When set to \code{TRUE}, symbols will be used which represent:\itemize{
+\item \code{ns}: non significant, p-value > 0.05
+\item \code{*}: 0.01 < p-value <= 0.05
+\item \code{**}: 0.001 < p-value <= 0.01
+\item \code{***}: 0.0001 < p-value <= 0.001
+\item \code{****}: pvalue <= 0.00001
+}}
 
 \item{pvalues.plot.adjust}{named list providing additional inputs, to pass to \code{\link[ggpubr]{stat_pvalue_manual}}, for adjustment of how pvalue brackets and labels are plotted}
 

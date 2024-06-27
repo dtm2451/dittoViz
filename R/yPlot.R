@@ -139,6 +139,16 @@
 #' }
 #' @param pvalues.test.adjust named list providing any desired additional inputs for the p-value calculation with \code{\link[stats]{wilcox.test}}.
 #' \code{x} and \code{y} inputs are filled internally, but all others can be adjusted if desired.
+#' @param pvalues.plot.symbols Logical which controls whether pvalues will be replaced with the below symbol representations
+#' OR a custom function that inputs a numeric vector of p-values and outputs vector of desired labels, where the output is the same length as the input.
+#'
+#' When set to \code{TRUE}, symbols will be used which represent:\itemize{
+#' \item \code{ns}: non significant, p-value > 0.05
+#' \item \code{*}: 0.01 < p-value <= 0.05
+#' \item \code{**}: 0.001 < p-value <= 0.01
+#' \item \code{***}: 0.0001 < p-value <= 0.001
+#' \item \code{****}: pvalue <= 0.00001
+#' }
 #' @param pvalues.plot.adjust named list providing additional inputs, to pass to \code{\link[ggpubr]{stat_pvalue_manual}}, for adjustment of how pvalue brackets and labels are plotted
 #' @param pvalues.adjust Logical stating whether to perform multiple hypothesis test correction and plot the corrected p-values.
 #' Highly recommended, but if you are performing multiple iterations of this function,
@@ -344,6 +354,7 @@ yPlot <- function(
     pvalues.sample.summary = "mean",
     pvalues.test.method = "wilcox.test",
     pvalues.test.adjust = list(),
+    pvalues.plot.symbols = FALSE,
     pvalues.plot.adjust = list(),
     pvalues.adjust = TRUE,
     pvalues.adjust.method = "fdr",
@@ -455,6 +466,7 @@ yPlot <- function(
                 sample.by = pvalues.sample.by, sample.summary = pvalues.sample.summary,
                 split.by = p.split.by, split.for.calc.only = p.split.for.calc.only,
                 test.method = pvalues.test.method, test.adjust = pvalues.test.adjust,
+                p.symbols = pvalues.plot.symbols,
                 p.round.digits = pvalues.round.digits,
                 do.adjust = pvalues.adjust, p.adjust.method = pvalues.adjust.method,
                 do.fc = pvalues.do.fc, fc.pseudocount = pvalues.fc.pseudocount,
