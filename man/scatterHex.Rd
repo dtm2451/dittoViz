@@ -28,10 +28,12 @@ scatterHex(
   min.density = NA,
   max.density = NA,
   min.color = "#F0E442",
+  mid.color = NULL,
   max.color = "#0072B2",
   min.opacity = 0.2,
   max.opacity = 1,
   min = NA,
+  mid = "make",
   max = NA,
   rename.color.groups = NULL,
   xlab = x.by,
@@ -147,9 +149,28 @@ Used no matter whether density is represented through opacity or color.}
 
 \item{min.color, max.color}{color for the min/max values of the color scale.}
 
+\item{mid.color}{NULL (default), "ryb", "rwb", "rgb", or a color to use for the midpoint of a three-color color scale.
+\emph{This parameter acts a switch between using a 2-color scale or a 3-color scale}:\itemize{
+\item When left NULL, the 2-color scale runs from \code{min.color} to \code{max.color}, using \code{\link[ggplot2]{scale_fill_gradient}}.
+\item When given a color, the 3-color scale runs from \code{min.color} to \code{mid.color} to \code{max.color}, using \code{\link[ggplot2]{scale_fill_gradient2}}.
+\item{
+When given \emph{\code{"ryb"}, \code{"rwb"}, or \code{"rgb"} serves as a \strong{single-point, quick switch to a "standard" 3-color scale}} by also updating the \code{min.color} and \code{max.color}.
+Doing so sets:\itemize{
+    \item \code{max.color} to a red,
+    \item \code{min.color} to a blue,
+    \item and \code{mid.color} to either a yellow ("r\emph{y}b"), "white" ("r\emph{w}b"), or "gray97" ("r\emph{g}b", gray not green).
+    \item Actual colors used are inspired by \href{http://www.colorbrewer.org}{ColorBrewer} "RdYlBu" and "RdBu" palettes.
+}
+Thus, the 3-color scale runs from a blue to one of a yellow, "white", or "gray97" to a red, using \code{\link[ggplot2]{scale_fill_gradient2}}.
+}
+}}
+
 \item{min.opacity, max.opacity}{Scalar between [0,1] which sets the minimum or maximum opacity used for the density legend (when color is used for \code{color.by} data and density is shown via opacity).}
 
 \item{min, max}{Number which sets the values associated with the minimum or maximum color for \code{color.by} data.}
+
+\item{mid}{Number or "make" (default) which sets the value associated with the \code{mid.color} of the three-color scale.
+Ignored when \code{mid.color} is left as NULL.}
 
 \item{rename.color.groups}{String vector which sets new names for the identities of \code{color.by} groups.}
 

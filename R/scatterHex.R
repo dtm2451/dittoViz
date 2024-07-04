@@ -23,7 +23,24 @@
 #' @param min.density,max.density Number which sets the min/max values used for the density scale.
 #' Used no matter whether density is represented through opacity or color.
 #' @param min.color,max.color color for the min/max values of the color scale.
+#' @param mid.color NULL (default), "ryb", "rwb", "rgb", or a color to use for the midpoint of a three-color color scale.
+#' \emph{This parameter acts a switch between using a 2-color scale or a 3-color scale}:\itemize{
+#' \item When left NULL, the 2-color scale runs from \code{min.color} to \code{max.color}, using \code{\link[ggplot2]{scale_fill_gradient}}.
+#' \item When given a color, the 3-color scale runs from \code{min.color} to \code{mid.color} to \code{max.color}, using \code{\link[ggplot2]{scale_fill_gradient2}}.
+#' \item{
+#' When given \emph{\code{"ryb"}, \code{"rwb"}, or \code{"rgb"} serves as a \strong{single-point, quick switch to a "standard" 3-color scale}} by also updating the \code{min.color} and \code{max.color}.
+#' Doing so sets:\itemize{
+#'     \item \code{max.color} to a red,
+#'     \item \code{min.color} to a blue,
+#'     \item and \code{mid.color} to either a yellow ("r\emph{y}b"), "white" ("r\emph{w}b"), or "gray97" ("r\emph{g}b", gray not green).
+#'     \item Actual colors used are inspired by \href{http://www.colorbrewer.org}{ColorBrewer} "RdYlBu" and "RdBu" palettes.
+#' }
+#' Thus, the 3-color scale runs from a blue to one of a yellow, "white", or "gray97" to a red, using \code{\link[ggplot2]{scale_fill_gradient2}}.
+#' }
+#' }
 #' @param min,max Number which sets the values associated with the minimum or maximum color for \code{color.by} data.
+#' @param mid Number or "make" (default) which sets the value associated with the \code{mid.color} of the three-color scale.
+#'   Ignored when \code{mid.color} is left as NULL.
 #' @param main String, sets the plot title. The default title is either "Density", \code{color.by}, or NULL, depending on the identity of \code{color.by}.
 #' To remove, set to \code{NULL}.
 #' @param data.out Logical. When set to \code{TRUE}, changes the output from the plot alone to a list containing the plot ("plot"),
@@ -237,10 +254,12 @@ scatterHex <- function(
         min.density = NA,
         max.density = NA,
         min.color = "#F0E442",
+        mid.color = NULL,
         max.color = "#0072B2",
         min.opacity = 0.2,
         max.opacity = 1,
         min = NA,
+        mid = "make",
         max = NA,
         rename.color.groups = NULL,
         xlab = x.by,
@@ -341,8 +360,8 @@ scatterHex <- function(
     p <- .scatter_hex(
         data, cols_use$x.by, cols_use$y.by, cols_use$color.by,
         bins, color_by_var, discrete_disp, color.method, color.panel, colors,
-        min.density, max.density, min.color, max.color,
-        min.opacity, max.opacity, min, max,
+        min.density, max.density, min.color, mid.color, max.color,
+        min.opacity, max.opacity, min, mid, max,
         xlab, ylab, main, sub, theme, legend.show,
         legend.color.title, legend.color.breaks, legend.color.breaks.labels,
         legend.density.title, legend.density.breaks, legend.density.breaks.labels,
@@ -399,10 +418,12 @@ scatterHex <- function(
         min.density,
         max.density,
         min.color,
+        mid.color,
         max.color,
         min.opacity,
         max.opacity,
         min,
+        mid,
         max,
         xlab,
         ylab,
@@ -496,14 +517,50 @@ scatterHex <- function(
                     color.method
                 }, fxn_d = length)
 
-            p <- p + scale_fill_gradient(
-                name = legend.color.title,
-                low= min.color,
-                high = max.color,
-                limits = c(min,max),
-                breaks = legend.color.breaks,
-                labels = legend.color.breaks.labels)
+            if (!identical(mid.color, NULL)) {
+                if (mid.color == "ryb") {
+                    min.color <- "#4575B4"
+                    mid.color <- "#FFFFBF"
+                    max.color <- "#D73027"
+                }
+                if (mid.color == "rgb") {
+                    min.color <- "#2166AC"
+                    mid.color <- "gray97"
+                    max.color <- "#B2182B"
+                }
+                if (mid.color == "rwb") {
+                    min.color <- "#2166AC"
+                    mid.color <- "white"
+                    max.color <- "#B2182B"
+                }
 
+                if (identical(mid, "make") & is.numeric(data[[color.by]])) {
+                    max_calc <- ifelse(identical(max, NA), max(data[[color.by]]), max)
+                    min_calc <- ifelse(identical(min, NA), min(data[[color.by]]), min)
+                    mid <- (min_calc + max_calc)/2
+                }
+            }
+
+            # Using do.call here with color.args list does not work, not entirely sure why
+            if (identical(mid.color, NULL)) {
+                p <- p + scale_fill_gradient(
+                    name = legend.color.title,
+                    low = min.color,
+                    high = max.color,
+                    limits = c(min,max),
+                    breaks = legend.color.breaks,
+                    labels = legend.color.breaks.labels)
+            } else {
+                p <- p + scale_fill_gradient2(
+                    name = legend.color.title,
+                    low = min.color,
+                    mid = mid.color,
+                    high = max.color,
+                    midpoint = mid,
+                    limits = c(min,max),
+                    breaks = legend.color.breaks,
+                    labels = legend.color.breaks.labels)
+            }
         }
     }
 
