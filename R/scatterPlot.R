@@ -82,8 +82,25 @@
 #' @param legend.color.size,legend.shape.size Numbers representing the size of shapes in the color and shape legends (for discrete variable plotting).
 #' Default = 5. *Enlarging the icons in the colors legend is incredibly helpful for making colors more distinguishable by color blind individuals.
 #' @param min.color color for \code{min} value of numeric \code{color.by}-data. Default = yellow
+#' @param mid.color NULL (default), "ryb", "rwb", "rgb", or a color to use for the midpoint of a three-color color scale.
+#' \emph{This parameter acts a switch between using a 2-color scale or a 3-color scale}:\itemize{
+#' \item When left NULL, the 2-color scale runs from \code{min.color} to \code{max.color}, using \code{\link[ggplot2]{scale_fill_gradient}}.
+#' \item When given a color, the 3-color scale runs from \code{min.color} to \code{mid.color} to \code{max.color}, using \code{\link[ggplot2]{scale_fill_gradient2}}.
+#' \item{
+#' When given \emph{\code{"ryb"}, \code{"rwb"}, or \code{"rgb"} serves as a \strong{single-point, quick switch to a "standard" 3-color scale}} by also updating the \code{min.color} and \code{max.color}.
+#' Doing so sets:\itemize{
+#'     \item \code{max.color} to a red,
+#'     \item \code{min.color} to a blue,
+#'     \item and \code{mid.color} to either a yellow ("r\emph{y}b"), "white" ("r\emph{w}b"), or "gray97" ("r\emph{g}b", gray not green).
+#'     \item Actual colors used are inspired by \href{http://www.colorbrewer.org}{ColorBrewer} "RdYlBu" and "RdBu" palettes.
+#' }
+#' Thus, the 3-color scale runs from a blue to one of a yellow, "white", or "gray97" to a red, using \code{\link[ggplot2]{scale_fill_gradient2}}.
+#' }
+#' }
 #' @param max.color color for \code{max} value of numeric \code{color.by}-data. Default = blue
 #' @param min.value,max.value Number which sets the \code{color.by}-data value associated with the minimum or maximum colors.
+#' @param mid.value Number or "make" (default) which sets the value associated with the \code{mid.color} of the three-color scale.
+#'   Ignored when \code{mid.color} is left as NULL.
 #' @param legend.color.breaks Numeric vector which sets the discrete values to label in the color-scale legend for \code{color.by}-data.
 #' @param legend.color.breaks.labels String vector, with same length as \code{legend.color.breaks}, which sets the labels for the tick marks of the color-scale.
 #' @param main String, sets the plot title.
@@ -159,7 +176,7 @@
 #' @seealso
 #' \code{\link{scatterHex}} for a hex-binned version that can be useful when points are very dense.
 #'
-#' @author Daniel Bunis
+#' @author Daniel Bunis, Jared Andrews
 #' @export
 #' @examples
 #' example("dittoExampleData", echo = FALSE)
@@ -286,8 +303,10 @@ scatterPlot <- function(
     rename.color.groups = NULL,
     rename.shape.groups = NULL,
     min.color = "#F0E442",
+    mid.color = NULL,
     max.color = "#0072B2",
     min.value = NA,
+    mid.value = "make",
     max.value = NA,
     plot.order = c("unordered", "increasing", "decreasing", "randomize"),
     xlab = x.by,
@@ -372,7 +391,7 @@ scatterPlot <- function(
         Target_data, Others_data, cols_use$x.by, cols_use$y.by,
         cols_use$color.by, cols_use$shape.by, show.others, size, opacity,
         color.panel, colors, do.hover, shape.panel,
-        min.color, max.color, min.value, max.value,
+        min.color, mid.color, max.color, min.value, mid.value, max.value,
         xlab, ylab, main, sub, theme,
         legend.show, legend.color.title, legend.color.size,
         legend.color.breaks, legend.color.breaks.labels, legend.shape.title,
@@ -441,8 +460,10 @@ scatterPlot <- function(
     do.hover,
     shape.panel,
     min.color,
+    mid.color,
     max.color,
     min.value,
+    mid.value,
     max.value,
     xlab,
     ylab,
@@ -491,13 +512,48 @@ scatterPlot <- function(
 
         aes.use <- modifyList(aes.use, aes(color = .data[[color.by]]))
 
+        if (!identical(mid.color, NULL)) {
+            if (mid.color == "ryb") {
+                min.color <- "#4575B4"
+                mid.color <- "#FFFFBF"
+                max.color <- "#D73027"
+            }
+            if (mid.color == "rgb") {
+                min.color <- "#2166AC"
+                mid.color <- "gray97"
+                max.color <- "#B2182B"
+            }
+            if (mid.color == "rwb") {
+                min.color <- "#2166AC"
+                mid.color <- "white"
+                max.color <- "#B2182B"
+            }
+
+            if (identical(mid.value, "make") & is.numeric(Target_data[,color.by])) {
+                max_calc <- ifelse(identical(max.value, NA), max(Target_data[,color.by]), max.value)
+                min_calc <- ifelse(identical(min.value, NA), min(Target_data[,color.by]), min.value)
+                mid.value <- (min_calc + max_calc)/2
+            }
+        }
+
         if (is.numeric(Target_data[,color.by])) {
-            p <- p +
-                scale_colour_gradient(
-                    name = legend.color.title, low= min.color, high = max.color,
-                    limits = c(min.value, max.value),
-                    breaks = legend.color.breaks,
-                    labels = legend.color.breaks.labels)
+
+            color.args <- list(
+                name = legend.color.title,
+                low = min.color, high = max.color,
+                limits = c(min.value,max.value),
+                breaks = legend.color.breaks,
+                labels = legend.color.breaks.labels
+            )
+
+            if (identical(mid.color, NULL)) {
+                p <- p + do.call(scale_color_gradient, color.args)
+            } else {
+                color.args$mid <- mid.color
+                color.args$midpoint <- mid.value
+                p <- p + do.call(scale_color_gradient2, color.args)
+            }
+
         } else {
             p <- p +
                 scale_colour_manual(
