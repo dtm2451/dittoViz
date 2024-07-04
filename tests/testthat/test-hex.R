@@ -112,6 +112,21 @@ test_that("scatterHex color scales can be adjusted for continuous color data", {
                                 min = -5, max = 150, min.color = "black", max.color = "orange"),
                     "ggplot")
 
+    ### Manual check: Legend range adjusted and built-in 3-color scale works
+    expect_s3_class(scatterHex(data_frame=df, x.by=cont1, y.by=cont2, cont2,
+                                min = -5, max = 150, mid.color = "ryb"),
+                    "ggplot")
+
+    ### Manual check: Changing midpoint of 3-color color scale works
+    expect_s3_class(scatterHex(data_frame=df, x.by=cont1, y.by=cont2, cont2,
+                                mid = 40, mid.color = "ryb"),
+                    "ggplot")
+
+    ### Manual check: Arbitrary midpoint color for 3-color color scale works
+    expect_s3_class(scatterHex(data_frame=df, x.by=cont1, y.by=cont2, cont2,
+                                mid.color = "green"),
+                    "ggplot")
+
     ### Manual check: Legend has breaks at all 50s in 50 to 300
     expect_s3_class(scatterHex(data_frame=df, x.by=cont1, y.by=cont2, cont2,
                                 legend.color.breaks = seq(50,300,50)),
