@@ -2,7 +2,7 @@
 % Please edit documentation in R/scatterPlot.R
 \name{scatterPlot}
 \alias{scatterPlot}
-\title{Show RNAseq data overlayed on a scatter plot}
+\title{Create a scatter plot of arbitrary data with flexible customization options}
 \usage{
 scatterPlot(
   data_frame,
@@ -280,7 +280,7 @@ Alternatively, if \code{do.hover} is set to \code{TRUE}, the plot is coverted fr
 additional information about each data point, determined by the \code{hover.data} input, is displayed upon hovering the cursor over the plot.
 }
 \description{
-Show RNAseq data overlayed on a scatter plot
+Create a scatter plot of arbitrary data with flexible customization options
 }
 \details{
 This function first makes any requested adjustments to data in the given \code{data_frame}, internally only, such as scaling the \code{color.by}-column if \code{color.adjustment} was given \code{"z-score"}.

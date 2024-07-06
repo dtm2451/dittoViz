@@ -1,4 +1,4 @@
-#' Show RNAseq data overlayed on a scatter plot
+#' Create a scatter plot of arbitrary data with flexible customization options
 #' @import ggplot2
 #'
 #' @param data_frame A data_frame where columns are features and rows are observations you might wish to visualize.
