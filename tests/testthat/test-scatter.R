@@ -25,6 +25,12 @@ test_that("scatterPlot basic tweaks work", {
             df, "PC1", "PC2", cont,
             size = 10),
         "ggplot")
+    # Manual Check: size by variable
+    expect_s3_class(
+        scatterPlot(
+            df, "PC1", "PC2", cont,
+            size = cont2),
+        "ggplot")
     # Manuel Check: triangles
     expect_s3_class(
         scatterPlot(
@@ -37,6 +43,13 @@ test_that("scatterPlot basic tweaks work", {
             df, "PC1", "PC2", cont,
             size = 5,
             opacity = 0.5),
+        "ggplot")
+    # Manual check: opacity by variable
+    expect_s3_class(
+        scatterPlot(
+            df, "PC1", "PC2", cont,
+            size = 5,
+            opacity = cont2),
         "ggplot")
 })
 
@@ -377,6 +390,19 @@ test_that("scatterPlot lettering works", {
             df, "PC1", "PC2", disc,
             do.letter = TRUE, size = 3,
             opacity = 0.5),
+        "ggplot")
+    ### Manual Check: varying opacity by variable
+    expect_s3_class(
+        scatterPlot(
+            df, "PC1", "PC2", disc,
+            do.letter = TRUE, size = 3,
+            opacity = cont2),
+        "ggplot")
+    ### Manual Check: varying size by variable
+    expect_s3_class(
+        scatterPlot(
+            df, "PC1", "PC2", disc,
+            do.letter = TRUE, size = cont2),
         "ggplot")
 })
 
