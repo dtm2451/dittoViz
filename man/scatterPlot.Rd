@@ -96,7 +96,10 @@ When 2 columns are named, c(row,col), the first is used as rows and the second i
 
 When 1 column is named, shape control can be achieved with \code{split.nrow} and \code{split.ncol}}
 
-\item{size}{Number which sets the size of data points. Default = 1.}
+\item{size}{Number which sets the size of data points. Default = 1.
+Alternatively, a single string denoting the name of a column of \code{data_frame} to use for setting the size of plotted points.
+
+When providing a column name and using \code{do.hover = TRUE}, the legend will not include meaningful size encoding information.}
 
 \item{rows.use}{String vector of rownames of \code{data_frame} OR an integer vector specifying the row-indices of data points which should be plotted.
 
@@ -125,7 +128,10 @@ In order to leave the unedited data available for use in other features, the adj
 
 \item{opacity}{Number between 0 and 1.
 1 = opaque. 0 = invisible. Default = 1.
-(In terms of typical ggplot variables, = alpha)}
+(In terms of typical ggplot variables, = alpha)
+Alternatively, a single string denoting the name of a column of \code{data_frame} to use for setting the opacity of plotted points.
+
+When providing a column name and using \code{do.hover = TRUE}, the legend will not include meaningful opacity encoding information.}
 
 \item{color.panel}{String vector which sets the colors to draw from when \code{color.by} indicates discrete data.
 \code{dittoColors()} by default, see \code{\link{dittoColors}} for contents.
@@ -291,7 +297,7 @@ If \code{split.by} was used, the plot will be split into a matrix of panels base
 \section{Many characteristics of the plot can be adjusted using discrete inputs}{
 
 \itemize{
-\item \code{size} and \code{opacity} can be used to adjust the size and transparency of the data points. \strong{\code{size}} can be given a number, or a column name of \code{data_frame}.
+\item \code{size} and \code{opacity} can be used to adjust the size and transparency of the data points. \strong{\code{size}} and \strong{\code{opacity}} can be given a number, or a column name of \code{data_frame}.
 \item Colors used can be adjusted with \code{color.panel} and/or \code{colors} for discrete data, or \code{min}, \code{max}, \code{min.color}, and \code{max.color} for continuous data.
 \item Shapes used can be adjusted with \code{shape.panel}.
 \item Color and shape labels can be changed using \code{rename.color.groups} and \code{rename.shape.groups}.
