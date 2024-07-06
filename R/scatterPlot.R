@@ -63,13 +63,13 @@
 #' @param size Number which sets the size of data points. Default = 1.
 #' Alternatively, a single string denoting the name of a column of \code{data_frame} to use for setting the size of plotted points.
 #' 
-#' When providing a column name and using \code{do.hover = TRUE}, the legend will not include meaningful size encoding information.
+#' NOTE: When providing a column name and using \code{do.hover = TRUE}, the legend will not include meaningful size encoding information.
 #' @param opacity Number between 0 and 1.
 #' 1 = opaque. 0 = invisible. Default = 1.
 #' (In terms of typical ggplot variables, = alpha)
 #' Alternatively, a single string denoting the name of a column of \code{data_frame} to use for setting the opacity of plotted points.
 #' 
-#' When providing a column name and using \code{do.hover = TRUE}, the legend will not include meaningful opacity encoding information.
+#' NOTE: When providing a column name and using \code{do.hover = TRUE}, the legend will not include meaningful opacity encoding information.
 #' @param do.ellipse Logical. Whether \code{color.by} groups should be surrounded by median-centered ellipses.
 #' @param do.label  Logical. Whether to add text labels near the center (median) of \code{color.by} groups.
 #' @param labels.size Number which sets the size of labels text when \code{do.label = TRUE}.

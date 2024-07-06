@@ -99,7 +99,7 @@ When 1 column is named, shape control can be achieved with \code{split.nrow} and
 \item{size}{Number which sets the size of data points. Default = 1.
 Alternatively, a single string denoting the name of a column of \code{data_frame} to use for setting the size of plotted points.
 
-When providing a column name and using \code{do.hover = TRUE}, the legend will not include meaningful size encoding information.}
+NOTE: When providing a column name and using \code{do.hover = TRUE}, the legend will not include meaningful size encoding information.}
 
 \item{rows.use}{String vector of rownames of \code{data_frame} OR an integer vector specifying the row-indices of data points which should be plotted.
 
@@ -131,7 +131,7 @@ In order to leave the unedited data available for use in other features, the adj
 (In terms of typical ggplot variables, = alpha)
 Alternatively, a single string denoting the name of a column of \code{data_frame} to use for setting the opacity of plotted points.
 
-When providing a column name and using \code{do.hover = TRUE}, the legend will not include meaningful opacity encoding information.}
+NOTE: When providing a column name and using \code{do.hover = TRUE}, the legend will not include meaningful opacity encoding information.}
 
 \item{color.panel}{String vector which sets the colors to draw from when \code{color.by} indicates discrete data.
 \code{dittoColors()} by default, see \code{\link{dittoColors}} for contents.

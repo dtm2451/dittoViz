@@ -258,13 +258,28 @@
         ")", "-", "+", "_", "=", ";", "/", "|", "{", "}", "~"
     )[seq_len(letters.needed)]
     names(letter.labels) <- levels(as.factor(Target_data[,col.use]))
-    p <- p +
-        geom_point(
-            data=Target_data,
-            aes(x = .data[[x.by]], y = .data[[y.by]], shape = .data[[col.use]]),
-            color = "black", size=size*3/4, alpha = opacity) +
-        scale_shape_manual(
-            name = legend.title,
-            values = letter.labels)
+
+    # Determine how to add data while adding proper theming
+    aes.use <- aes(x = .data[[x.by]], y = .data[[y.by]], shape = .data[[col.use]])
+    geom.args <- list(data = Target_data, color = "black")
+
+    if (is.character(size)) {
+        aes.use <- modifyList(aes.use, aes(size = .data[[size]]))
+    } else {
+        geom.args$size <- size
+    }
+
+    if (is.character(opacity)) {
+        aes.use <- modifyList(aes.use, aes(alpha = .data[[opacity]]))
+    } else {
+        geom.args$alpha <- opacity
+    }
+
+    geom.args$mapping <- aes.use
+    p <- p + do.call(geom_point, geom.args)
+    p <- p + scale_shape_manual(
+                 name = legend.title,
+                 values = letter.labels)
+
     p
 }
