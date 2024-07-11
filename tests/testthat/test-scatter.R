@@ -121,6 +121,18 @@ test_that("scatterPlot color scale can be adjusted", {
             max.color = "grey70",
             mid.value = 100),
         "ggplot")
+
+     ### Manual Check:
+    # 3-color scale with midpoint adjusted respects limits
+    expect_s3_class(
+        scatterPlot(
+            df, "PC1", "PC2", "number",
+            min.color = "black",
+            mid.color = "red",
+            max.color = "grey70",
+            mid.value = 100,
+            max.value = 200),
+        "ggplot")
 })
 
 test_that("scatterPlots can be subset to show only certain rows with any rows.use method", {

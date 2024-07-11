@@ -530,9 +530,16 @@ scatterPlot <- function(
             }
 
             if (identical(mid.value, "make") & is.numeric(Target_data[,color.by])) {
-                max_calc <- ifelse(identical(max.value, NA), max(Target_data[,color.by]), max.value)
-                min_calc <- ifelse(identical(min.value, NA), min(Target_data[,color.by]), min.value)
-                mid.value <- (min_calc + max_calc)/2
+                mid.value <- 0.5
+            } else {
+                max.calc <- ifelse(identical(max.value, NA), max(Target_data[,color.by]), max.value)
+                min.calc <- ifelse(identical(min.value, NA), min(Target_data[,color.by]), min.value)
+                mid.value <- 1 - ((max.calc - mid.value) / (max.calc - min.calc))
+
+                if (mid.value <= 0 | mid.value >= 1) {
+                    warning("mid.value must be between min.value and max.value, setting to default midpoint")
+                    mid.value <- 0.5
+                }
             }
         }
 
@@ -540,18 +547,19 @@ scatterPlot <- function(
 
             color.args <- list(
                 name = legend.color.title,
-                low = min.color, high = max.color,
-                limits = c(min.value,max.value),
+                limits = c(min.value, max.value),
                 breaks = legend.color.breaks,
                 labels = legend.color.breaks.labels
             )
 
             if (identical(mid.color, NULL)) {
+                color.args$low <- min.color
+                color.args$high <- max.color
                 p <- p + do.call(scale_color_gradient, color.args)
             } else {
-                color.args$mid <- mid.color
-                color.args$midpoint <- mid.value
-                p <- p + do.call(scale_color_gradient2, color.args)
+                color.args$colors <- c(min.color, mid.color, max.color)
+                color.args$values <- c(0, mid.value, 1)
+                p <- p + do.call(scale_color_gradientn, color.args)
             }
 
         } else {
