@@ -266,7 +266,7 @@
     if (is.character(size)) {
         aes.use <- modifyList(aes.use, aes(size = .data[[size]]))
     } else {
-        geom.args$size <- size
+        geom.args$size <- size * 0.75
     }
 
     if (is.character(opacity)) {
