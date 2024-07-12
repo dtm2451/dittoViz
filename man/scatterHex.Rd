@@ -33,8 +33,9 @@ scatterHex(
   min.opacity = 0.2,
   max.opacity = 1,
   min = NA,
-  mid = "make",
+  mid = NA,
   max = NA,
+  mid.location = 0.5,
   rename.color.groups = NULL,
   xlab = x.by,
   ylab = y.by,
@@ -169,8 +170,15 @@ Thus, the 3-color scale runs from a blue to one of a yellow, "white", or "gray97
 
 \item{min, max}{Number which sets the values associated with the minimum or maximum color for \code{color.by} data.}
 
-\item{mid}{Number or "make" (default) which sets the value associated with the \code{mid.color} of the three-color scale.
-Ignored when \code{mid.color} is left as NULL.}
+\item{mid}{Number which sets the value associated with the \code{mid.color} of the three-color scale.
+Ignored when \code{mid.color} is left as NULL.
+
+Takes precedence over \code{mid.location} if both are provided.}
+
+\item{mid.location}{Number between 0 and 1 which sets the relative location of the midpoint of the three-color scale.
+Ignored when \code{mid} is provided. Default is 0.5, the true midpoint between the min and max values.
+
+This can be useful for adjusting the midpoint when transformations are applied such that providing the absolute midpoint value is not possible.}
 
 \item{rename.color.groups}{String vector which sets new names for the identities of \code{color.by} groups.}
 

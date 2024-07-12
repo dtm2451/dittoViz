@@ -122,6 +122,11 @@ test_that("scatterHex color scales can be adjusted for continuous color data", {
                                 mid = 40, mid.color = "ryb"),
                     "ggplot")
 
+    ### Manual check: Setting midpoint location by 0-1 range of total range works
+    expect_s3_class(scatterHex(data_frame=df, x.by=cont1, y.by=cont2, cont2,
+                                mid.location = 0.2, mid.color = "ryb"),
+                    "ggplot")
+
     ### Manual check: Arbitrary midpoint color for 3-color color scale works
     expect_s3_class(scatterHex(data_frame=df, x.by=cont1, y.by=cont2, cont2,
                                 mid.color = "green"),

@@ -39,8 +39,14 @@
 #' }
 #' }
 #' @param min,max Number which sets the values associated with the minimum or maximum color for \code{color.by} data.
-#' @param mid Number or "make" (default) which sets the value associated with the \code{mid.color} of the three-color scale.
-#'   Ignored when \code{mid.color} is left as NULL.
+#' @param mid Number which sets the value associated with the \code{mid.color} of the three-color scale.
+#' Ignored when \code{mid.color} is left as NULL.
+#' 
+#' Takes precedence over \code{mid.location} if both are provided.
+#' @param mid.location Number between 0 and 1 which sets the relative location of the midpoint of the three-color scale.
+#' Ignored when \code{mid} is provided. Default is 0.5, the true midpoint between the min and max values.
+#' 
+#' This can be useful for adjusting the midpoint when transformations are applied such that providing the absolute midpoint value is not possible.
 #' @param main String, sets the plot title. The default title is either "Density", \code{color.by}, or NULL, depending on the identity of \code{color.by}.
 #' To remove, set to \code{NULL}.
 #' @param data.out Logical. When set to \code{TRUE}, changes the output from the plot alone to a list containing the plot ("plot"),
@@ -259,8 +265,9 @@ scatterHex <- function(
         min.opacity = 0.2,
         max.opacity = 1,
         min = NA,
-        mid = "make",
+        mid = NA,
         max = NA,
+        mid.location = 0.5,
         rename.color.groups = NULL,
         xlab = x.by,
         ylab = y.by,
@@ -361,7 +368,7 @@ scatterHex <- function(
         data, cols_use$x.by, cols_use$y.by, cols_use$color.by,
         bins, color_by_var, discrete_disp, color.method, color.panel, colors,
         min.density, max.density, min.color, mid.color, max.color,
-        min.opacity, max.opacity, min, mid, max,
+        min.opacity, max.opacity, min, mid, max, mid.location,
         xlab, ylab, main, sub, theme, legend.show,
         legend.color.title, legend.color.breaks, legend.color.breaks.labels,
         legend.density.title, legend.density.breaks, legend.density.breaks.labels,
@@ -425,6 +432,7 @@ scatterHex <- function(
         min,
         mid,
         max,
+        mid.location,
         xlab,
         ylab,
         main,
@@ -534,10 +542,21 @@ scatterHex <- function(
                     max.color <- "#B2182B"
                 }
 
-                if (identical(mid, "make") & is.numeric(data[[color.by]])) {
-                    max_calc <- ifelse(identical(max, NA), max(data[[color.by]]), max)
-                    min_calc <- ifelse(identical(min, NA), min(data[[color.by]]), min)
-                    mid <- (min_calc + max_calc)/2
+                if (is.numeric(data[[color.by]])) {
+                    if (!identical(mid, NA)) {
+                        max.calc <- ifelse(identical(max, NA), max(data[[color.by]]), max)
+                        min.calc <- ifelse(identical(min, NA), min(data[[color.by]]), min)
+                        mid <- 1 - ((max.calc - mid) / (max.calc - min.calc))
+                    } else if (!identical(mid.location, NA)) {
+                        mid <- mid.location
+                    } else {
+                        mid <- 0.5
+                    }
+
+                    if (mid <= 0 | mid >= 1) {
+                        warning("mid.value must be between min.value and max.value, setting to default midpoint")
+                        mid <- 0.5
+                    }
                 }
             }
 
@@ -547,17 +566,15 @@ scatterHex <- function(
                     name = legend.color.title,
                     low = min.color,
                     high = max.color,
-                    limits = c(min,max),
+                    limits = c(min, max),
                     breaks = legend.color.breaks,
                     labels = legend.color.breaks.labels)
             } else {
-                p <- p + scale_fill_gradient2(
+                p <- p + scale_fill_gradientn(
                     name = legend.color.title,
-                    low = min.color,
-                    mid = mid.color,
-                    high = max.color,
-                    midpoint = mid,
-                    limits = c(min,max),
+                    values = c(0, mid, 1),
+                    colors = c(min.color, mid.color, max.color),
+                    limits = c(min, max),
                     breaks = legend.color.breaks,
                     labels = legend.color.breaks.labels)
             }
