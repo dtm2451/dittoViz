@@ -153,7 +153,7 @@ Used no matter whether density is represented through opacity or color.}
 \item{mid.color}{NULL (default), "ryb", "rwb", "rgb", or a color to use for the midpoint of a three-color color scale.
 \emph{This parameter acts a switch between using a 2-color scale or a 3-color scale}:\itemize{
 \item When left NULL, the 2-color scale runs from \code{min.color} to \code{max.color}, using \code{\link[ggplot2]{scale_fill_gradient}}.
-\item When given a color, the 3-color scale runs from \code{min.color} to \code{mid.color} to \code{max.color}, using \code{\link[ggplot2]{scale_fill_gradient2}}.
+\item When given a color, the 3-color scale runs from \code{min.color} to \code{mid.color} to \code{max.color}, using \code{\link[ggplot2]{scale_fill_gradientn}}.
 \item{
 When given \emph{\code{"ryb"}, \code{"rwb"}, or \code{"rgb"} serves as a \strong{single-point, quick switch to a "standard" 3-color scale}} by also updating the \code{min.color} and \code{max.color}.
 Doing so sets:\itemize{
@@ -162,7 +162,7 @@ Doing so sets:\itemize{
     \item and \code{mid.color} to either a yellow ("r\emph{y}b"), "white" ("r\emph{w}b"), or "gray97" ("r\emph{g}b", gray not green).
     \item Actual colors used are inspired by \href{http://www.colorbrewer.org}{ColorBrewer} "RdYlBu" and "RdBu" palettes.
 }
-Thus, the 3-color scale runs from a blue to one of a yellow, "white", or "gray97" to a red, using \code{\link[ggplot2]{scale_fill_gradient2}}.
+Thus, the 3-color scale runs from a blue to one of a yellow, "white", or "gray97" to a red, using \code{\link[ggplot2]{scale_fill_gradientn}}.
 }
 }}
 
@@ -173,7 +173,10 @@ Thus, the 3-color scale runs from a blue to one of a yellow, "white", or "gray97
 \item{mid}{Number which sets the value associated with the \code{mid.color} of the three-color scale.
 Ignored when \code{mid.color} is left as NULL.
 
-Takes precedence over \code{mid.location} if both are provided.}
+Takes precedence over \code{mid.location} if both are provided.
+
+When point density is plotted, \code{min.density} and \code{max.density} \strong{must} be set to use \code{mid}. 
+If not set, the midpoint will be set to the middle of the value range (equivalent to \code{mid.location=0.5}).}
 
 \item{mid.location}{Number between 0 and 1 which sets the relative location of the midpoint of the three-color scale.
 Ignored when \code{mid} is provided. Default is 0.5, the true midpoint between the min and max values.
