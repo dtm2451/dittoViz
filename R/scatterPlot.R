@@ -122,11 +122,17 @@
 #' @param add.xline numeric value(s) where one or multiple vertical line(s) should be added.
 #' @param xline.linetype String which sets the type of line for \code{add.xline}.
 #' Defaults to "dashed", but any ggplot linetype will work.
+#' 
+#' Alternatively, a vector of strings of the same length as \code{add.xline} can be given to set the linetype of each line individually.
 #' @param xline.color String that sets the color(s) of the \code{add.xline} line(s).
+#' Alternatively, a vector of strings of the same length as \code{add.xline} can be given to set the color of each line individually.
 #' @param add.yline numeric value(s) where one or multiple vertical line(s) should be added.
 #' @param yline.linetype String which sets the type of line for \code{add.yline}.
 #' Defaults to "dashed", but any ggplot linetype will work.
+#' 
+#' Alternatively, a vector of strings of the same length as \code{add.yline} can be given to set the linetype of each line individually.
 #' @param yline.color String that sets the color(s) of the \code{add.yline} line(s).
+#' Alternatively, a vector of strings of the same length as \code{add.yline} can be given to set the color of each line individually.
 #' @param theme A ggplot theme which will be applied before internal adjustments.
 #' Default = \code{theme_bw()}.
 #' See \url{https://ggplot2.tidyverse.org/reference/ggtheme.html} for other options and ideas.
@@ -622,10 +628,31 @@ scatterPlot <- function(
     }
 
     if (!is.null(add.xline)) {
+        # Check that length of xline.linetype and xline.color are either length 1 or the same length as add.xline
+        if (length(xline.linetype) != length(add.xline) & length(xline.linetype) != 1) {
+            warning("xline.linetype must be length 1 or the same length as add.xline, setting to first provided value")
+            xline.linetype <- xline.linetype[1]
+        }
+
+        if (length(xline.color) != length(add.xline) & length(xline.color) != 1) {
+            warning("xline.color must be length 1 or the same length as add.xline, setting to first provided value")
+            xline.color <- xline.color[1]
+        }
+
         p <- p + geom_vline(xintercept = add.xline, linetype = xline.linetype, color = xline.color)
     }
 
     if (!is.null(add.yline)) {
+        if (length(yline.linetype) != length(add.yline) & length(yline.linetype) != 1) {
+            warning("yline.linetype must be length 1 or the same length as add.yline, setting to first provided value")
+            yline.linetype <- yline.linetype[1]
+        }
+
+        if (length(yline.color) != length(add.yline) & length(yline.color) != 1) {
+            warning("yline.color must be length 1 or the same length as add.yline, setting to first provided value")
+            yline.color <- yline.color[1]
+        }
+
         p <- p + geom_hline(yintercept = add.yline, linetype = yline.linetype, color = yline.color)
     }
 
