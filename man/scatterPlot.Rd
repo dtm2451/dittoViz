@@ -227,22 +227,16 @@ Defaults to "solid", but see \code{\link[ggplot2]{linetype}} for other options.}
 \item{add.xline}{numeric value(s) where one or multiple vertical line(s) should be added.}
 
 \item{xline.linetype}{String which sets the type of line for \code{add.xline}.
-Defaults to "dashed", but any ggplot linetype will work.
+Defaults to "dashed", but any ggplot linetype will work.}
 
-Alternatively, a vector of strings of the same length as \code{add.xline} can be given to set the linetype of each line individually.}
-
-\item{xline.color}{String that sets the color(s) of the \code{add.xline} line(s).
-Alternatively, a vector of strings of the same length as \code{add.xline} can be given to set the color of each line individually.}
+\item{xline.color}{String that sets the color(s) of the \code{add.xline} line(s).}
 
 \item{add.yline}{numeric value(s) where one or multiple vertical line(s) should be added.}
 
 \item{yline.linetype}{String which sets the type of line for \code{add.yline}.
-Defaults to "dashed", but any ggplot linetype will work.
+Defaults to "dashed", but any ggplot linetype will work.}
 
-Alternatively, a vector of strings of the same length as \code{add.yline} can be given to set the linetype of each line individually.}
-
-\item{yline.color}{String that sets the color(s) of the \code{add.yline} line(s).
-Alternatively, a vector of strings of the same length as \code{add.yline} can be given to set the color of each line individually.}
+\item{yline.color}{String that sets the color(s) of the \code{add.yline} line(s).}
 
 \item{do.letter}{Logical which sets whether letters should be added on top of the colored dots.
 For extended colorblindness compatibility.
