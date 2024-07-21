@@ -73,7 +73,7 @@
 #' \code{\link{scatterPlot}} for making non-hex-binned scatter plots showing each individual data point.
 #' It is often best to investigate your data with both the individual and hex-bin methods, then pick whichever is the best representation for your particular goal.
 #'
-#' @author Daniel Bunis with some code adapted from Giuseppe D'Agostino
+#' @author Daniel Bunis, Jared Andrews with some code adapted from Giuseppe D'Agostino
 #' @examples
 #' example("dittoExampleData", echo = FALSE)
 #'

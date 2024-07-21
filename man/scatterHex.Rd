@@ -456,5 +456,5 @@ out$cols_use
 It is often best to investigate your data with both the individual and hex-bin methods, then pick whichever is the best representation for your particular goal.
 }
 \author{
-Daniel Bunis with some code adapted from Giuseppe D'Agostino
+Daniel Bunis, Jared Andrews with some code adapted from Giuseppe D'Agostino
 }

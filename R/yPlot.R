@@ -72,10 +72,15 @@
 #' is to make the target data into a factor, and to put its levels in the desired order: \code{factor(data, levels = c("level1", "level2", ...))}.
 #' @param x.labels.rotate Logical which sets whether the labels should be rotated.
 #' Default: \code{TRUE} for violin and box plots, but \code{FALSE} for ridgeplots.
-#' @param add.line numeric value(s) where one or multiple line(s) should be added
+#' @param add.line Numeric value(s) where one or multiple line(s) should be added.
 #' @param line.linetype String which sets the type of line for \code{add.line}.
 #' Defaults to "dashed", but any ggplot linetype will work.
-#' @param line.color String that sets the color(s) of the \code{add.line} line(s)
+#' @param line.color String that sets the color(s) of the \code{add.line} line(s). Default = "black".
+#' Alternatively, a vector of strings of the same length as \code{add.line} can be given to set the color of each line individually.
+#' @param line.linewidth Number that sets the linewidth of the \code{add.line} line(s). Default = 0.5.
+#' Alternatively, a vector of numbers of the same length as \code{add.line} can be given to set the linewidth of each line individually.
+#' @param line.opacity Number that sets the opacity of the \code{add.line} line(s). Default = 1.
+#' Alternatively, a vector of numbers of the same length as \code{add.line} can be given to set the opacity of each line individually.
 #' @param jitter.size Scalar which sets the size of the jitter shapes.
 #' @param jitter.width Scalar that sets the width/spread of the jitter in the x direction. Ignored in ridgeplots.
 #'
@@ -232,7 +237,7 @@
 #'     var = c("gene1", "gene2"),
 #'     multivar.aes = "color")
 #'
-#' @author Daniel Bunis
+#' @author Daniel Bunis, Jared Andrews
 #' @export
 
 yPlot <- function(
@@ -299,6 +304,8 @@ yPlot <- function(
     add.line = NULL,
     line.linetype = "dashed",
     line.color = "black",
+    line.linewidth = 0.5,
+    line.opacity = 1,
     legend.show = TRUE,
     legend.title = "make",
     data.out = FALSE) {
@@ -392,7 +399,7 @@ yPlot <- function(
             boxplot.outlier.size, boxplot.fill,
             boxplot.position.dodge, boxplot.lineweight,
             vlnplot.lineweight, vlnplot.width, vlnplot.scaling,
-            vlnplot.quantiles, add.line, line.linetype, line.color,
+            vlnplot.quantiles,
             x.labels.rotate, do.hover, y.breaks, min, max, data_frame,
             cols_use$group.aes)
     } else {
@@ -401,8 +408,8 @@ yPlot <- function(
             plots, xlab, ylab, jitter.size, jitter.color,
             jitter.shape.legend.size, jitter.shape.legend.show,
             ridgeplot.lineweight, ridgeplot.scale, ridgeplot.ymax.expansion,
-            ridgeplot.shape, ridgeplot.bins, ridgeplot.binwidth, add.line,
-            line.linetype, line.color, x.labels.rotate, do.hover, color.panel,
+            ridgeplot.shape, ridgeplot.bins, ridgeplot.binwidth, 
+            x.labels.rotate, do.hover, color.panel,
             colors, y.breaks, min, max)
     }
     # Extra tweaks
@@ -410,6 +417,19 @@ yPlot <- function(
         p <- .add_splitting(
             p, cols_use$split.by, split.nrow, split.ncol, split.adjust)
     }
+
+    # Get number of panels so that replicates of aesthetics can be generated if supplied for each line.
+    pp <- ggplot_build(p)
+    num.panels <- length(levels(pp$data[[1]]$PANEL))
+
+    if (!is.null(add.line)) {
+        if(!("ridgeplot" %in% plots)) {
+            p <- .add_yline(p, add.line, line.linetype, line.color, line.linewidth, line.opacity, num.panels)
+        } else {
+            p <- .add_xline(p, add.line, line.linetype, line.color, line.linewidth, line.opacity, num.panels)
+        }
+    }
+
     if (!legend.show) {
         p <- .remove_legend(p)
     }
@@ -438,7 +458,6 @@ yPlot <- function(
     boxplot.width, boxplot.color, boxplot.show.outliers, boxplot.outlier.size,
     boxplot.fill, boxplot.position.dodge, boxplot.lineweight,
     vlnplot.lineweight, vlnplot.width, vlnplot.scaling, vlnplot.quantiles,
-    add.line, line.linetype, line.color,
     x.labels.rotate, do.hover, y.breaks, min, max,
     data_frame, group.aes) {
     # This function takes in a partial yPlot ggplot data_frame without any data
@@ -546,9 +565,6 @@ yPlot <- function(
     if (is.na(x.labels.rotate) || x.labels.rotate) {
         p <- p + theme(axis.text.x= element_text(angle=45, hjust = 1, vjust = 1))
     }
-    if (!is.null(add.line)) {
-        p <- p + geom_hline(yintercept=add.line, linetype= line.linetype, color = line.color)
-    }
 
     p
 }
@@ -560,7 +576,7 @@ yPlot <- function(
     jitter.shape.legend.size, jitter.shape.legend.show,
     ridgeplot.lineweight, ridgeplot.scale,
     ridgeplot.ymax.expansion, ridgeplot.shape, ridgeplot.bins,
-    ridgeplot.binwidth, add.line, line.linetype, line.color,
+    ridgeplot.binwidth,
     x.labels.rotate, do.hover, color.panel, colors, y.breaks, min, max) {
     #This function takes in a partial yPlot ggplot object without any data overlay, and parses adding the main data visualizations.
 
@@ -610,9 +626,6 @@ yPlot <- function(
     p <- p + xlab(ylab) + ylab(xlab)
     if (!is.na(x.labels.rotate) && x.labels.rotate) {
         p <- p + theme(axis.text.y= element_text(angle=45, hjust = 1, vjust = 1))
-    }
-    if (!is.null(add.line)) {
-        p <- p + geom_vline(xintercept=add.line, linetype= line.linetype, color = line.color)
     }
 
     p

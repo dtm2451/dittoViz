@@ -443,5 +443,5 @@ out$cols_used
 \code{\link{scatterHex}} for a hex-binned version that can be useful when points are very dense.
 }
 \author{
-Daniel Bunis
+Daniel Bunis, Jared Andrews
 }

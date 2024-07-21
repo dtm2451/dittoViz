@@ -180,7 +180,7 @@
 #' @seealso
 #' \code{\link{scatterHex}} for a hex-binned version that can be useful when points are very dense.
 #'
-#' @author Daniel Bunis
+#' @author Daniel Bunis, Jared Andrews
 #' @export
 #' @examples
 #' example("dittoExampleData", echo = FALSE)
