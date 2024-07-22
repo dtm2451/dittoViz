@@ -227,6 +227,8 @@ freqPlot <- function(
     add.line = NULL,
     line.linetype = "dashed",
     line.color = "black",
+    line.linewidth = 0.5,
+    line.opacity = 1,
     legend.show = TRUE,
     legend.title = color.by) {
 
@@ -304,6 +306,8 @@ freqPlot <- function(
         add.line = add.line,
         line.linetype = line.linetype,
         line.color = line.color,
+        line.linewidth = line.linewidth,
+        line.opacity = line.opacity,
         legend.show = legend.show,
         legend.title = legend.title,
         data.out = data.out)

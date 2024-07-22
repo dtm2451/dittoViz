@@ -141,7 +141,12 @@ barPlot <- function(
     main = "make",
     sub = NULL,
     legend.show = TRUE,
-    legend.title = NULL) {
+    legend.title = NULL,
+    add.line = NULL,
+    line.linetype = "dashed",
+    line.color = "black",
+    line.linewidth = 0.5,
+    line.opacity = 1) {
 
     scale <- match.arg(scale)
 
@@ -191,6 +196,14 @@ barPlot <- function(
     if (!is.null(split.by)) {
         p <- .add_splitting(
             p, split.by, split.nrow, split.ncol, split.adjust)
+    }
+
+    # Get number of panels so that replicates of aesthetics can be generated if supplied for each line.
+    pp <- ggplot_build(p)
+    num.panels <- length(levels(pp$data[[1]]$PANEL))
+
+    if (!is.null(add.line)) {
+        p <- .add_yline(p, add.line, line.linetype, line.color, line.linewidth, line.opacity, num.panels)
     }
 
     if (!legend.show) {
