@@ -255,7 +255,6 @@ scatterHex <- function(
         do.label = FALSE,
         labels.size = 5,
         labels.highlight = TRUE,
-        labels.use.numbers = FALSE,
         labels.repel = TRUE,
         labels.split.by = split.by,
         labels.repel.adjust = list(),
@@ -365,7 +364,7 @@ scatterHex <- function(
         p, data, cols_use$x.by, cols_use$y.by, cols_use$color.by,
         FALSE, do.ellipse, do.label,
         labels.highlight, labels.size, labels.repel, labels.split.by,
-        labels.repel.adjust, labels.use.numbers, legend.color.title)
+        labels.repel.adjust, FALSE, legend.color.title)
 
     if (is.list(add.trajectory.by.groups)) {
         p <- .add_trajectories_by_groups(
