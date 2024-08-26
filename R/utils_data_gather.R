@@ -424,7 +424,6 @@
                 }
                 new$median_fold_change <- (new$median_g1 + fc.pseudocount) / (new$median_g2 + fc.pseudocount)
                 new$median_log2_fold_change <- log2(new$median_fold_change)
-                new$positive_fc_means_up_in <- group.1
             }
 
             test.adjust_this <- test.adjust
