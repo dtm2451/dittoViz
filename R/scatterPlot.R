@@ -321,6 +321,7 @@ scatterPlot <- function(
     do.label = FALSE,
     labels.size = 5,
     labels.highlight = TRUE,
+    labels.use.numbers = FALSE,
     labels.repel = TRUE,
     labels.repel.adjust = list(),
     labels.split.by = split.by,
@@ -395,7 +396,7 @@ scatterPlot <- function(
         p, Target_data, cols_use$x.by, cols_use$y.by, cols_use$color.by,
         do.letter, do.ellipse, do.label,
         labels.highlight, labels.size, labels.repel, labels.split.by,
-        labels.repel.adjust,
+        labels.repel.adjust, labels.use.numbers, legend.color.title,
         size, opacity, legend.color.title, legend.color.size)
 
     if (is.list(add.trajectory.by.groups)) {
