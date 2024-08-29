@@ -64,6 +64,8 @@ scatterPlot(
   do.label = FALSE,
   labels.size = 5,
   labels.highlight = TRUE,
+  labels.use.numbers = FALSE,
+  labels.numbers.spacer = ": ",
   labels.repel = TRUE,
   labels.repel.adjust = list(),
   labels.split.by = split.by,
@@ -229,6 +231,11 @@ NOTE: \code{do.letter} is ignored if \code{do.hover = TRUE} or \code{shape.by} i
 
 \item{labels.highlight}{Logical. Whether labels should have a box behind them when \code{do.label = TRUE}.}
 
+\item{labels.use.numbers}{Logical which controls whether numbers will be used in place of original data-values.
+When turned on, so number to value mapping can be known, these numbers are added to the legend.}
+
+\item{labels.numbers.spacer}{String. When \code{do.label = TRUE} and \code{labels.use.numbers}, this string is used in the legend between the numbers and their associated data values.}
+
 \item{labels.repel}{Logical, that sets whether the labels' placements will be adjusted with \link{ggrepel} to avoid intersections between labels and plot bounds when \code{do.label = TRUE}.
 TRUE by default.}
 
@@ -365,10 +372,11 @@ scatterPlot(example_df, x.by = "PC1", y.by = "PC2", color.by = "groups",
     do.label = TRUE)          # Turns on the labeling feature
 scatterPlot(example_df, x.by = "PC1", y.by = "PC2", color.by = "groups",
     sub = "tweaked labeling",
-    do.label = TRUE,          # Turns on the labeling feature
-    labels.size = 8,          # Adjust the text size of labels
-    labels.highlight = FALSE, # Removes white background behind labels
-    labels.repel = FALSE)     # Turns off anti-overlap location adjustments
+    do.label = TRUE,            # Turns on the labeling feature
+    labels.size = 8,            # Adjust the text size of labels
+    labels.highlight = FALSE,   # Removes white background behind labels
+    # labels.use.numbers = TRUE,# Swap to number placeholders
+    labels.repel = FALSE)       # Turns off anti-overlap location adjustments
 
 # Faceting can also be used to show multiple continuous variables side-by-side
 #   by giving a vector of column names to 'color.by'.

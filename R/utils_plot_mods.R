@@ -34,7 +34,8 @@
     p, data, x.by, y.by, color.by,
     do.letter, do.ellipse, do.label,
     labels.highlight, labels.size, labels.repel, labels.split.by,
-    labels.repel.adjust, labels.use.numbers, legend.color.title,
+    labels.repel.adjust, labels.use.numbers, labels.numbers.spacer,
+    legend.color.title,
     letter.size, letter.opacity, letter.legend.title, letter.legend.size) {
 
     if (!is.numeric(data[,color.by])) {
@@ -56,7 +57,8 @@
             p <- .add_labels(
                 p, data, color.by, x.by, y.by,
                 labels.highlight, labels.size, labels.repel, labels.split.by,
-                labels.repel.adjust, labels.use.numbers, legend.color.title)
+                labels.repel.adjust, labels.use.numbers, labels.numbers.spacer,
+                legend.color.title)
         }
 
     } else {
@@ -86,10 +88,12 @@
         na.rm = TRUE)
 }
 
+#' @importFrom stats setNames
 .add_labels <- function(
     p, Target_data, labels.by, x.by, y.by,
     labels.highlight, labels.size, labels.repel, split.by,
-    labels.repel.adjust, labels.use.numbers, legend.color.title
+    labels.repel.adjust, labels.use.numbers, labels.numbers.spacer,
+    legend.color.title
     ) {
     # Add text labels at/near the median x and y values for each group
     # (Scatter plots)
@@ -149,24 +153,30 @@
     }
 
     if (labels.use.numbers) {
-        labels <- levels(as.factor(Target_data[, labels.by]))
-        num_map <- setNames(
-            seq_along(labels),
-            labels)
-        label_map <- setNames(
-            paste0(seq_along(labels), "_", labels),
-            labels)
-        median.data$label <- num_map[median.data$label]
-
-        # Update scale labels
+        # Determine which scale will need to be updated
         which_scale <- NULL
         for (i in (seq_along(p$scales$scales))) {
-            if (p$scales$scales[[i]]$aesthetics=="colour" && p$scales$scales[[i]]$name==legend.color.title) {
+            if (p$scales$scales[[i]]$name==legend.color.title &&
+                p$scales$scales[[i]]$aesthetics %in% c("colour", "fill")) {
                 which_scale <- i
                 break
             }
         }
-        p$scales$scales[[which_scale]]$labels <- label_map[labels]
+        if (is.null(which_scale)) {
+            warning("Cannot determine which scale to modify in the legend for labeling by numbers.")
+        } else {
+            labels <- levels(as.factor(Target_data[, labels.by]))
+            num_map <- setNames(
+                seq_along(labels),
+                labels)
+            label_map <- setNames(
+                paste0(seq_along(labels), labels.numbers.spacer, labels),
+                labels)
+            median.data$label <- num_map[median.data$label]
+
+            # Update scale labels
+            p$scales$scales[[which_scale]]$labels <- label_map[labels]
+        }
     }
 
     # Add labels
