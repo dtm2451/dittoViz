@@ -75,6 +75,9 @@
 #' Defaults to \code{split.by}, so generally there is no need to adjust this except when if you plan to apply faceting externally.
 #' @param labels.repel.adjust A named list which allows extra parameters to be pushed through to ggrepel function calls.
 #' List elements should be valid inputs to the \code{\link[ggrepel]{geom_label_repel}} by default, or \code{\link[ggrepel]{geom_text_repel}} when \code{labels.highlight = FALSE}.
+#' @param labels.use.numbers Logical which controls whether numbers will be used in place of original data-values.
+#' When turned on, so number to value mapping can be known, these numbers are added to the legend.
+#' @param labels.numbers.spacer String. When \code{do.label = TRUE} and \code{labels.use.numbers}, this string is used in the legend between the numbers and their associated data values.
 #' @param rename.color.groups String vector which sets new names for the identities of \code{color.by} groups.
 #' @param rename.shape.groups String vector which sets new names for the identities of \code{shape.by} groups.
 #' @param legend.show Logical. Whether any legend should be displayed. Default = \code{TRUE}.
@@ -226,10 +229,11 @@
 #'     do.label = TRUE)          # Turns on the labeling feature
 #' scatterPlot(example_df, x.by = "PC1", y.by = "PC2", color.by = "groups",
 #'     sub = "tweaked labeling",
-#'     do.label = TRUE,          # Turns on the labeling feature
-#'     labels.size = 8,          # Adjust the text size of labels
-#'     labels.highlight = FALSE, # Removes white background behind labels
-#'     labels.repel = FALSE)     # Turns off anti-overlap location adjustments
+#'     do.label = TRUE,            # Turns on the labeling feature
+#'     labels.size = 8,            # Adjust the text size of labels
+#'     labels.highlight = FALSE,   # Removes white background behind labels
+#'     # labels.use.numbers = TRUE,# Swap to number placeholders
+#'     labels.repel = FALSE)       # Turns off anti-overlap location adjustments
 #'
 #' # Faceting can also be used to show multiple continuous variables side-by-side
 #' #   by giving a vector of column names to 'color.by'.
@@ -321,6 +325,8 @@ scatterPlot <- function(
     do.label = FALSE,
     labels.size = 5,
     labels.highlight = TRUE,
+    labels.use.numbers = FALSE,
+    labels.numbers.spacer = ": ",
     labels.repel = TRUE,
     labels.repel.adjust = list(),
     labels.split.by = split.by,
@@ -395,7 +401,8 @@ scatterPlot <- function(
         p, Target_data, cols_use$x.by, cols_use$y.by, cols_use$color.by,
         do.letter, do.ellipse, do.label,
         labels.highlight, labels.size, labels.repel, labels.split.by,
-        labels.repel.adjust,
+        labels.repel.adjust, labels.use.numbers, labels.numbers.spacer,
+        legend.color.title,
         size, opacity, legend.color.title, legend.color.size)
 
     if (is.list(add.trajectory.by.groups)) {

@@ -46,6 +46,8 @@ scatterHex(
   do.label = FALSE,
   labels.size = 5,
   labels.highlight = TRUE,
+  labels.use.numbers = FALSE,
+  labels.numbers.spacer = ": ",
   labels.repel = TRUE,
   labels.split.by = split.by,
   labels.repel.adjust = list(),
@@ -178,6 +180,11 @@ Defaults to "solid", but see \code{\link[ggplot2]{linetype}} for other options.}
 \item{labels.size}{Number which sets the size of labels text when \code{do.label = TRUE}.}
 
 \item{labels.highlight}{Logical. Whether labels should have a box behind them when \code{do.label = TRUE}.}
+
+\item{labels.use.numbers}{Logical which controls whether numbers will be used in place of original data-values.
+When turned on, so number to value mapping can be known, these numbers are added to the legend.}
+
+\item{labels.numbers.spacer}{String. When \code{do.label = TRUE} and \code{labels.use.numbers}, this string is used in the legend between the numbers and their associated data values.}
 
 \item{labels.repel}{Logical, that sets whether the labels' placements will be adjusted with \link{ggrepel} to avoid intersections between labels and plot bounds when \code{do.label = TRUE}.
 TRUE by default.}
@@ -375,6 +382,7 @@ if (requireNamespace("ggplot.multistats", quietly = TRUE)) {
         do.label = TRUE,          # Turns on the labeling feature
         labels.size = 8,          # Adjust the text size of labels
         labels.highlight = FALSE, # Removes white background behind labels
+        # labels.use.numbers = TRUE,# Swap to number placeholders
         labels.repel = FALSE)     # Turns off anti-overlap location adjustments
 }
 
