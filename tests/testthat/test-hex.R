@@ -347,6 +347,28 @@ test_that("scatterHex ignores do.label/do.ellipse for continuous data", {
                    NA)
 })
 
+test_that("scatterHex labeling with numbers", {
+    ### Manual Check
+    # Number labels with matching legend
+    expect_s3_class(
+        scatterHex(
+            disc, data_frame=df, x.by=cont1, y.by=cont2, do.label = TRUE,
+            labels.use.numbers = TRUE),
+        "ggplot")
+    # _ instead of :
+    expect_s3_class(
+        scatterHex(
+            disc, data_frame=df, x.by=cont1, y.by=cont2, do.label = TRUE,
+            labels.use.numbers = TRUE,
+            labels.numbers.spacer = "_"),
+        "ggplot")
+    # Colors should match with this original
+    expect_s3_class(
+        scatterHex(
+            disc, data_frame=df, x.by=cont1, y.by=cont2, do.label = TRUE),
+        "ggplot")
+})
+
 # adjustments
 test_that("scatterPlot data adjustments applied", {
     expect_s3_class(

@@ -302,6 +302,28 @@ test_that("scatterPlot can be labeled or circled", {
         "ggplot")
 })
 
+test_that("scatterPlot labeling with numbers", {
+    ### Manual Check
+    # Number labels with matching legend
+    expect_s3_class(
+        scatterPlot(
+            df, "PC1", "PC2", disc, do.label = TRUE,
+            labels.use.numbers = TRUE),
+        "ggplot")
+    # _ instead of :
+    expect_s3_class(
+        scatterPlot(
+            df, "PC1", "PC2", disc, do.label = TRUE,
+            labels.use.numbers = TRUE,
+            labels.numbers.spacer = "_"),
+        "ggplot")
+    # Colors should match with this original
+    expect_s3_class(
+        scatterPlot(
+            df, "PC1", "PC2", disc, do.label = TRUE),
+        "ggplot")
+})
+
 test_that("scatterPlot labeling is robust to NAs", {
 
     # In color data
