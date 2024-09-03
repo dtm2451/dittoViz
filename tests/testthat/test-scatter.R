@@ -19,19 +19,19 @@ test_that("scatterPlot can plot continuous or discrete data", {
 })
 
 test_that("scatterPlot basic tweaks work", {
-    # Manuel Check: big dots
+    # Manual Check: big dots
     expect_s3_class(
         scatterPlot(
             df, "PC1", "PC2", cont,
             size = 10),
         "ggplot")
-    # Manuel Check: triangles
+    # Manual Check: triangles
     expect_s3_class(
         scatterPlot(
             df, "PC1", "PC2", cont,
             shape.panel = 17),
         "ggplot")
-    # Manuel Check: see through large dots
+    # Manual Check: see through large dots
     expect_s3_class(
         scatterPlot(
             df, "PC1", "PC2", cont,
@@ -99,6 +99,39 @@ test_that("scatterPlot color scale can be adjusted", {
             df, "PC1", "PC2", "number",
             min.color = "black",
             max.color = "grey70"),
+        "ggplot")
+
+    ### Manual Check:
+    # 3-color scale
+    expect_s3_class(
+        scatterPlot(
+            df, "PC1", "PC2", "number",
+            min.color = "black",
+            mid.color = "red",
+            max.color = "grey70"),
+        "ggplot")
+
+    ### Manual Check:
+    # 3-color scale with midpoint adjusted
+    expect_s3_class(
+        scatterPlot(
+            df, "PC1", "PC2", "number",
+            min.color = "black",
+            mid.color = "red",
+            max.color = "grey70",
+            mid.value = 100),
+        "ggplot")
+
+     ### Manual Check:
+    # 3-color scale with midpoint adjusted respects limits
+    expect_s3_class(
+        scatterPlot(
+            df, "PC1", "PC2", "number",
+            min.color = "black",
+            mid.color = "red",
+            max.color = "grey70",
+            mid.value = 100,
+            max.value = 200),
         "ggplot")
 })
 
@@ -261,7 +294,7 @@ test_that("scatterPlot can be labeled or circled", {
         "ggplot")
 
     ### Manual Check (next 2)
-    # No movement of lebels, only boxed in 1st
+    # No movement of labels, only boxed in 1st
     expect_s3_class(
         scatterPlot(
             df, "PC1", "PC2", disc,
