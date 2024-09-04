@@ -302,7 +302,7 @@
 .calc_stats <- function(
     data_frame,
     var,
-    group.by, group.setups,
+    comp.by, comp.setups,
     split.by,
     split.for.calc.only = NULL,
     sample.by = NULL,
@@ -317,7 +317,8 @@
     fc.pseudocount = 0,
     offset.first = 0.1,
     offset.between = 0.2,
-    outermost = TRUE
+    outermost = TRUE,
+    split.completed = NULL
 ) {
 
     if (!is.function(get(test.method))) {
@@ -333,44 +334,31 @@
 
     # Recursion for split.by
     # Ensure that within-facet split.by cols are innermost
-    split.by <- split.by[order(!split.by %in% split.for.calc.only)]
-    if (!is.null(split.by)) {
+    split.by <- unique(c(split.for.calc.only, split.by))
+    split.by <- split.by[!split.by %in% split.completed]
+    if (!is.null(split.by) && length(split.by)>0) {
         split_col <- split.by[length(split.by)]
-        if (length(split.by)>1) {
-            out <- do.call(rbind, lapply(
-                unique(data_frame[[split_col]]),
-                function(split_val) {
-                    new <- .calc_stats(
-                        data_frame[data_frame[[split.by[2]]]==split_val,],
-                        var, group.by, group.setups,
-                        split.by = split.by[-1*length(split.by)],
-                        sample.by = sample.by, sample.summary = sample.summary,
-                        test.method = test.method, test.adjust = test.adjust,
-                        do.adjust = do.adjust,
-                        do.fc = do.fc, fc.pseudocount = fc.pseudocount,
-                        outermost = FALSE)
-                    new[[split_col]] <- split_val
-                    new
-                })
-            )
-        } else if (length(split.by)==1) {
-            out <- do.call(rbind, lapply(
-                unique(data_frame[[split.by[1]]]),
-                function(split_val) {
-                    new <- .calc_stats(
-                        data_frame[data_frame[[split.by[1]]]==split_val,],
-                        var, group.by, group.setups,
-                        split.by = NULL,
-                        sample.by = sample.by, sample.summary = sample.summary,
-                        test.method = test.method, test.adjust = test.adjust,
-                        do.adjust = do.adjust,
-                        do.fc = do.fc, fc.pseudocount = fc.pseudocount,
-                        outermost = FALSE)
-                    new[[split_col]] <- split_val
-                    new
-                })
-            )
+        split.completed <- c(split.completed, split_col)
+        out_list <- list()
+        for (split_val in unique(data_frame[[split_col]])) {
+            this_split <- data_frame[[split.by[length(split.by)]]]==split_val
+            next_split.by <- split.by[-1*length(split.by)]
+            new <- .calc_stats(
+                data_frame[this_split,],
+                var, comp.by, comp.setups,
+                split.by = next_split.by, split.for.calc.only = split.for.calc.only,
+                sample.by = sample.by, sample.summary = sample.summary,
+                test.method = test.method, test.adjust = test.adjust,
+                do.adjust = do.adjust,
+                do.fc = do.fc, fc.pseudocount = fc.pseudocount,
+                outermost = FALSE, split.completed = split.completed)
+            print(new)
+            if (!is.null(new) && nrow(new) > 0) {
+                new[[split_col]] <- split_val
+                out_list[[length(out_list)+1]] <- new
+            }
         }
+        out <- do.call(rbind, out_list)
         if (split_col %in% split.for.calc.only) {
             out$max_data <- max(out$max_data)
         }
@@ -379,11 +367,11 @@
         stats <- list()
         offset <- 1 + offset.first
         # Loop though comparison setups
-        for (ind in seq_along(group.setups)) {
-            group.1 <- group.setups[[ind]][1]
-            group.2 <- group.setups[[ind]][2]
-            g1s <- as.vector(data_frame[[group.by]]==group.1)
-            g2s <- as.vector(data_frame[[group.by]]==group.2)
+        for (ind in seq_along(comp.setups)) {
+            group.1 <- comp.setups[[ind]][1]
+            group.2 <- comp.setups[[ind]][2]
+            g1s <- as.vector(data_frame[[comp.by]]==group.1)
+            g2s <- as.vector(data_frame[[comp.by]]==group.2)
 
             if (sum(g1s)==0 || sum(g2s)==0) {
                 warning("No data for a given data grouping in stats calculation.")
@@ -437,7 +425,10 @@
             stats[[length(stats)+1]] <- new
         }
         out <- do.call(rbind, stats)
-        out[[group.by]] <- group.1 # Needed to avoid ggplot2 complaint per ggpubr implementation
+        # Needed to avoid ggplot2 complaint per ggpubr implementation
+        if (length(stats) > 0) {
+            out[[comp.by]] <- group.1
+        }
     }
 
     if (outermost) {
@@ -447,7 +438,7 @@
             out$padj <- p.adjust(out$p, method = p.adjust.method)
             p_use <- "padj"
         }
-        # Symbolize or round p-values
+        # Symbolize or Round p-values
         if (identical(p.symbols, TRUE)) {
             p.symbolize <- function(p) {
                 ifelse(p > 0.05, "ns",
@@ -474,16 +465,18 @@
 
 #' @noRd
 #' @importFrom stats setNames
-add_x_pos <- function(stats, data, group.by, p.by, dodge) {
-    stats$x  <- as.numeric(as.factor(stats[,group.by]))
-
+add_x_pos <- function(stats, data, primary.by, p.by, secondary.by, dodge) {
     # ggpubr::stat_pvalue_manual looks to group1 and group2 columns except if
     # xmin and xmax columns exist.  Then, these are used instead.
-    if (p.by != group.by) {
+
+    primary <- setNames(as.numeric(as.factor(stats[,primary.by])), stats[,primary.by])
+
+    if (p.by != primary.by) {
+        # Case: btwn subgroups, within groups
         dodge_steps <- list()
         dodge_vals <- list()
-        for (this_group in colLevels(group.by, data)) {
-            these_levs <- colLevels(p.by, data[data[,group.by]==this_group,])
+        for (this_group in colLevels(primary.by, data)) {
+            these_levs <- colLevels(p.by, data[data[,primary.by]==this_group,])
             # x dodge distance between groups
             dodge_steps[[this_group]] <- dodge / length(these_levs)
             # centered unit locations of groups
@@ -493,14 +486,39 @@ add_x_pos <- function(stats, data, group.by, p.by, dodge) {
             )
         }
         stats$xmin <- sapply(seq_len(nrow(stats)), function(i) {
-            stats[i,"x"] + dodge_vals[[stats[i,group.by]]][stats[i,"group1"]] * dodge_steps[[stats[i,group.by]]]
+            primary[i] + dodge_vals[[stats[i,primary.by]]][stats[i,"group1"]] * dodge_steps[[stats[i,primary.by]]]
         })
         stats$xmax <- sapply(seq_len(nrow(stats)), function(i) {
-            stats[i,"x"] + dodge_vals[[stats[i,group.by]]][stats[i,"group2"]] * dodge_steps[[stats[i,group.by]]]
+            primary[i] + dodge_vals[[stats[i,primary.by]]][stats[i,"group2"]] * dodge_steps[[stats[i,primary.by]]]
         })
     } else {
-        stats$xmin <- stats$group1
-        stats$xmax <- stats$group2
+        if (!is.null(secondary.by)) {
+            # Case: btwn groups, within subgroups
+            dodge_steps <- list()
+            dodge_vals <- list()
+            x_vals <- list()
+            for (this_group in colLevels(primary.by, data)) {
+                x_vals[[this_group]] <- length(x_vals)+1
+                these_levs <- colLevels(secondary.by, data[data[,primary.by]==this_group,])
+                # x dodge distance between groups
+                dodge_steps[[this_group]] <- dodge / length(these_levs)
+                # centered unit locations of groups
+                dodge_vals[[this_group]] <- setNames(
+                    as.vector(scale(seq_along(these_levs), center = TRUE, scale = FALSE)),
+                    these_levs
+                )
+            }
+            stats$xmin <- sapply(seq_len(nrow(stats)), function(i) {
+                x_vals[[stats[i,"group1"]]] + dodge_vals[[stats[i,"group1"]]][stats[i,secondary.by]] * dodge_steps[[stats[i,"group1"]]]
+            })
+            stats$xmax <- sapply(seq_len(nrow(stats)), function(i) {
+                x_vals[[stats[i,"group2"]]] + dodge_vals[[stats[i,"group2"]]][stats[i,secondary.by]] * dodge_steps[[stats[i,"group2"]]]
+            })
+        } else {
+            # Case: No subgroups
+            stats$xmin <- stats$group1
+            stats$xmax <- stats$group2
+        }
     }
 
     stats

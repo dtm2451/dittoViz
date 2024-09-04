@@ -349,6 +349,7 @@ yPlot <- function(
     line.linetype = "dashed",
     line.color = "black",
     add.pvalues = NULL,
+    pvalues.subgroup.method = c("color", "group", "ignore"),
     pvalues.round.digits = 4,
     pvalues.sample.by = NULL,
     pvalues.sample.summary = "mean",
@@ -370,6 +371,7 @@ yPlot <- function(
     ridgeplot.shape <- match.arg(ridgeplot.shape)
     multivar.aes <- match.arg(multivar.aes)
     multivar.split.dir <- match.arg(multivar.split.dir)
+    pvalues.subgroup.method <- match.arg(pvalues.subgroup.method)
 
     #Populate rows.use with a list of names if it was given anything else.
     rows.use <- .which_rows(rows.use, data_frame)
@@ -447,13 +449,28 @@ yPlot <- function(
         .error_if_no_ggpubr()
         stats_calcd <- TRUE
 
-        cols_use$p.by <- cols_use$group.by
-        p.split.by <- split.by
-        p.split.for.calc.only <- NULL
-        if (cols_use$group.by!=cols_use$color.by) {
-            cols_use$p.by <- cols_use$color.by
-            p.split.by <- c(p.split.by, cols_use$group.by)
-            p.split.for.calc.only <- cols_use$group.by
+        ### Directionality Options
+        # group only or group and color (same), btwn groups
+        # group and color (sub), btwn colors within groups == "color"
+        # group and color (sub), btwn groups within colors == "group"
+        # group and color (sub), btwn groups ignoring colors == "ignore"
+        # group and color (super), btwn groups
+        # group and color (super), btwn colors **Unsupported**
+        rel <- .determine_color_to_group_relation(
+            Target_data, cols_use$group.by, cols_use$color.by)
+        secondary.offset <- NULL
+        if (rel %in% c("same","super") || pvalues.subgroup.method == "ignore") {
+            cols_use$p.by <- cols_use$group.by
+            p.split.for.calc.only <- NULL
+        } else {
+            if (pvalues.subgroup.method == "color") {
+                cols_use$p.by <- cols_use$color.by
+                p.split.for.calc.only <- cols_use$group.by
+            } else { # "group"
+                cols_use$p.by <- cols_use$group.by
+                p.split.for.calc.only <- cols_use$color.by
+                secondary.offset <- cols_use$color.by
+            }
         }
 
         comps <- .validate_comparison_sets(
@@ -464,7 +481,7 @@ yPlot <- function(
                 Target_data,
                 cols_use$var, cols_use$p.by, comps,
                 sample.by = pvalues.sample.by, sample.summary = pvalues.sample.summary,
-                split.by = p.split.by, split.for.calc.only = p.split.for.calc.only,
+                split.by = split.by, split.for.calc.only = p.split.for.calc.only,
                 test.method = pvalues.test.method, test.adjust = pvalues.test.adjust,
                 p.symbols = pvalues.plot.symbols,
                 p.round.digits = pvalues.round.digits,
@@ -472,7 +489,8 @@ yPlot <- function(
                 do.fc = pvalues.do.fc, fc.pseudocount = pvalues.fc.pseudocount,
                 offset.first = pvalues.offset.first,
                 offset.between = pvalues.offset.between),
-            Target_data, cols_use$group.by, cols_use$p.by, boxplot.position.dodge
+            Target_data, cols_use$group.by, cols_use$p.by,
+            secondary.offset, boxplot.position.dodge
         )
     }
 
