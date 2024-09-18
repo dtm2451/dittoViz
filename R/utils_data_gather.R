@@ -245,12 +245,12 @@
 
                 # Create data frame
                 new <- data.frame(table(y.var, x.var))
-                names(new) <- c("label", "grouping", "count")
+                names(new) <- c("Y", "grouping", "count")
 
-                new$label.count.total.per.facet <- rep(
+                new$Y.count.total.per.facet <- rep(
                     as.vector(table(x.var)),
                     each = length(levels(as.factor(y.var))))
-                new$percent <- new$count / new$label.count.total.per.facet
+                new$percent <- new$count / new$Y.count.total.per.facet
 
                 # Catch 0/0
                 new$percent[is.nan(new$percent)] <- 0
@@ -270,8 +270,8 @@
         data$count.norm <- 0
         data$percent.norm <- 0
 
-        for (i in unique(data$label)) {
-            this_lab <- data$label == i
+        for (i in unique(data$Y)) {
+            this_lab <- data$Y == i
             data$count.norm[this_lab] <-
                 data$count[this_lab]/max(data$count[this_lab])
             data$percent.norm[this_lab] <-
@@ -284,12 +284,12 @@
         data$grouping <- factor(data$grouping, levels = x.levs)
     }
     data$grouping <- .rename_and_or_reorder(data$grouping, x.reorder, x.labels)
-    data$label <- .rename_and_or_reorder(
-        data$label, var.labels.reorder, var.labels.rename)
+    data$Y <- .rename_and_or_reorder(
+        data$Y, var.labels.reorder, var.labels.rename)
 
     # Add hover info
     if (do.hover) {
-        hover.data <- unique(c("grouping", "label", "count", "percent", split.by))
+        hover.data <- unique(c("grouping", "Y", "count", "percent", split.by))
         hover.df <- data[, hover.data]
         colnames(hover.df)[1:2] <- c(group.by, var)
         # Make hover strings, "data.type: data" \n "data.type: data"
@@ -297,4 +297,211 @@
     }
 
     data
+}
+
+.calc_stats <- function(
+    data_frame,
+    var,
+    group.by, group.setups,
+    split.by,
+    split.for.calc.only = NULL,
+    sample.by = NULL,
+    sample.summary = "mean",
+    test.method = "wilcox.test",
+    test.adjust = list(),
+    p.symbols = FALSE,
+    p.round.digits = 4,
+    do.adjust = TRUE,
+    p.adjust.method = "fdr",
+    do.fc = TRUE,
+    fc.pseudocount = 0,
+    offset.first = 0.1,
+    offset.between = 0.2,
+    outermost = TRUE
+) {
+
+    if (!is.function(get(test.method))) {
+        stop("'get()' of pvalues 'test.method' does not retrieve a function.")
+    }
+    if (!identical(sample.by, NULL) && !is.function(get(sample.summary))) {
+        stop("'get()' of pvalues 'sample.summary' does not retrieve a function.")
+    }
+
+    description <- ''
+
+    # Data coming in should be pre-trimmed
+
+    # Recursion for split.by
+    # Ensure that within-facet split.by cols are innermost
+    split.by <- split.by[order(!split.by %in% split.for.calc.only)]
+    if (!is.null(split.by)) {
+        split_col <- split.by[length(split.by)]
+        if (length(split.by)>1) {
+            out <- do.call(rbind, lapply(
+                unique(data_frame[[split_col]]),
+                function(split_val) {
+                    new <- .calc_stats(
+                        data_frame[data_frame[[split.by[2]]]==split_val,],
+                        var, group.by, group.setups,
+                        split.by = split.by[-1*length(split.by)],
+                        sample.by = sample.by, sample.summary = sample.summary,
+                        test.method = test.method, test.adjust = test.adjust,
+                        do.adjust = do.adjust,
+                        do.fc = do.fc, fc.pseudocount = fc.pseudocount,
+                        outermost = FALSE)
+                    new[[split_col]] <- split_val
+                    new
+                })
+            )
+        } else if (length(split.by)==1) {
+            out <- do.call(rbind, lapply(
+                unique(data_frame[[split.by[1]]]),
+                function(split_val) {
+                    new <- .calc_stats(
+                        data_frame[data_frame[[split.by[1]]]==split_val,],
+                        var, group.by, group.setups,
+                        split.by = NULL,
+                        sample.by = sample.by, sample.summary = sample.summary,
+                        test.method = test.method, test.adjust = test.adjust,
+                        do.adjust = do.adjust,
+                        do.fc = do.fc, fc.pseudocount = fc.pseudocount,
+                        outermost = FALSE)
+                    new[[split_col]] <- split_val
+                    new
+                })
+            )
+        }
+        if (split_col %in% split.for.calc.only) {
+            out$max_data <- max(out$max_data)
+        }
+    } else {
+        # Standard / single actual iteration:
+        stats <- list()
+        offset <- 1 + offset.first
+        # Loop though comparison setups
+        for (ind in seq_along(group.setups)) {
+            group.1 <- group.setups[[ind]][1]
+            group.2 <- group.setups[[ind]][2]
+            g1s <- as.vector(data_frame[[group.by]]==group.1)
+            g2s <- as.vector(data_frame[[group.by]]==group.2)
+
+            if (sum(g1s)==0 || sum(g2s)==0) {
+                warning("No data for a given data grouping in stats calculation.")
+                next
+            }
+
+            new <- data.frame(
+                group1 = group.1,
+                group2 = group.2,
+                max_data = max(data_frame[,var], na.rm = TRUE),
+                min_data = min(data_frame[,var], na.rm = TRUE),
+                stringsAsFactors = FALSE
+            )
+
+            if (!identical(sample.by, NULL)) {
+                samples <- ._col(sample.by, data_frame, add.names = FALSE)
+                .summarize_vals_per_sample <- function(set_logical) {
+                    vapply(
+                        colLevels(sample.by, data_frame[set_logical, , drop = FALSE]),
+                        function(samp) {
+                            get(sample.summary)(data_frame[set_logical & samples==samp, var], na.rm = TRUE)
+                        },
+                        numeric(1)
+                    )
+                }
+                g1_vals <- .summarize_vals_per_sample(g1s)
+                g2_vals <- .summarize_vals_per_sample(g2s)
+            } else {
+                g1_vals <- data_frame[g1s, var]
+                g2_vals <- data_frame[g2s, var]
+            }
+
+            if (do.fc) {
+                new$median_g1 <- median(g1_vals, na.rm = TRUE)
+                new$median_g2 <- median(g2_vals, na.rm = TRUE)
+                if (new$median_g2==0 && fc.pseudocount==0) {
+                    warning("Looks like a pseudocount will be needed to avoid division by zero errors. Try adding 'fc.pseudocount = 0.000001' to your call and see the '?freq_stats' documentation for details.")
+                }
+                new$median_fold_change <- (new$median_g1 + fc.pseudocount) / (new$median_g2 + fc.pseudocount)
+                new$median_log2_fold_change <- log2(new$median_fold_change)
+            }
+
+            test.adjust_this <- test.adjust
+            test.adjust_this$x <- g1_vals
+            test.adjust_this$y <- g2_vals
+            new$p <- do.call(get(test.method), test.adjust_this)$p.value
+
+            new$offset <- offset
+            offset <- offset + offset.between
+
+            stats[[length(stats)+1]] <- new
+        }
+        out <- do.call(rbind, stats)
+        out[[group.by]] <- group.1 # Needed to avoid ggplot2 complaint per ggpubr implementation
+    }
+
+    if (outermost) {
+        # Multiple Hypothesis Correction
+        p_use <- "p"
+        if (do.adjust) {
+            out$padj <- p.adjust(out$p, method = p.adjust.method)
+            p_use <- "padj"
+        }
+        # Symbolize or round p-values
+        if (identical(p.symbols, TRUE)) {
+            p.symbolize <- function(p) {
+                ifelse(p > 0.05, "ns",
+                       ifelse(p > 0.01, "*",
+                              ifelse(p > 0.001, "**",
+                                     ifelse(p > 0.0001, "***",
+                                            "****"))))
+            }
+            out$p_show <- p.symbolize(out[,p_use])
+        } else if (is.function(p.symbols)) {
+            out$p_show <- p.symbols(out[,p_use])
+        } else {
+            # Round shown p-values when p.symbols not 'on'
+            out$p_show <- round(out[,p_use], p.round.digits)
+        }
+        # ToDo: Add description in first row of the data frame
+        # out$stat_calc_method_description <- NA
+        # out$stat_calc_method_description[1] <- description
+    }
+
+    # Output
+    out
+}
+
+#' @noRd
+#' @importFrom stats setNames
+add_x_pos <- function(stats, data, group.by, p.by, dodge) {
+    stats$x  <- as.numeric(as.factor(stats[,group.by]))
+
+    # ggpubr::stat_pvalue_manual looks to group1 and group2 columns except if
+    # xmin and xmax columns exist.  Then, these are used instead.
+    if (p.by != group.by) {
+        dodge_steps <- list()
+        dodge_vals <- list()
+        for (this_group in colLevels(group.by, data)) {
+            these_levs <- colLevels(p.by, data[data[,group.by]==this_group,])
+            # x dodge distance between groups
+            dodge_steps[[this_group]] <- dodge / length(these_levs)
+            # centered unit locations of groups
+            dodge_vals[[this_group]] <- setNames(
+                as.vector(scale(seq_along(these_levs), center = TRUE, scale = FALSE)),
+                these_levs
+            )
+        }
+        stats$xmin <- sapply(seq_len(nrow(stats)), function(i) {
+            stats[i,"x"] + dodge_vals[[stats[i,group.by]]][stats[i,"group1"]] * dodge_steps[[stats[i,group.by]]]
+        })
+        stats$xmax <- sapply(seq_len(nrow(stats)), function(i) {
+            stats[i,"x"] + dodge_vals[[stats[i,group.by]]][stats[i,"group2"]] * dodge_steps[[stats[i,group.by]]]
+        })
+    } else {
+        stats$xmin <- stats$group1
+        stats$xmax <- stats$group2
+    }
+
+    stats
 }
