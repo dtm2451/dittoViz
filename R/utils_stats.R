@@ -43,25 +43,21 @@
 }
 
 .calc_stats <- function(
-        data_frame,
-        var,
-        comp.by, comp.setups,
-        split.by,
-        split.for.calc.only = NULL,
-        sample.by = NULL,
-        sample.summary = "mean",
-        test.method = "wilcox.test",
-        test.adjust = list(),
-        p.symbols = FALSE,
-        p.round.digits = 4,
-        do.adjust = TRUE,
-        p.adjust.method = "fdr",
-        do.fc = TRUE,
-        fc.pseudocount = 0,
-        offset.first = 0.1,
-        offset.between = 0.2,
-        outermost = TRUE,
-        split.completed = NULL
+    data_frame,
+    var,
+    comp.by, comp.setups,
+    split.by,
+    sample.by = NULL,
+    sample.summary = "mean",
+    test.method = "wilcox.test",
+    test.adjust = list(),
+    p.symbols = FALSE,
+    p.round.digits = 4,
+    do.adjust = TRUE,
+    p.adjust.method = "fdr",
+    do.fc = TRUE,
+    fc.pseudocount = 0,
+    outermost = TRUE
 ) {
 
     if (!is.function(get(test.method))) {
@@ -77,38 +73,32 @@
 
     # Recursion for split.by
     # Ensure that within-facet split.by cols are innermost
-    split.by <- unique(c(split.for.calc.only, split.by))
-    split.by <- split.by[!split.by %in% split.completed]
     if (!is.null(split.by) && length(split.by)>0) {
         split_col <- split.by[length(split.by)]
-        split.completed <- c(split.completed, split_col)
         out_list <- list()
-        for (split_val in unique(data_frame[[split_col]])) {
-            this_split <- data_frame[[split.by[length(split.by)]]]==split_val
+        for (split_val in colLevels(split_col, data_frame)) {
+            in_this_split <- data_frame[,split_col]==split_val
             next_split.by <- split.by[-1*length(split.by)]
             new <- .calc_stats(
-                data_frame[this_split,],
+                data_frame[in_this_split,],
                 var, comp.by, comp.setups,
-                split.by = next_split.by, split.for.calc.only = split.for.calc.only,
+                split.by = next_split.by,
                 sample.by = sample.by, sample.summary = sample.summary,
                 test.method = test.method, test.adjust = test.adjust,
                 do.adjust = do.adjust,
                 do.fc = do.fc, fc.pseudocount = fc.pseudocount,
-                outermost = FALSE, split.completed = split.completed)
-            print(new)
+                outermost = FALSE)
+            # Only use if at least one stats calculation could be performed for the facet-set
             if (!is.null(new) && nrow(new) > 0) {
                 new[[split_col]] <- split_val
                 out_list[[length(out_list)+1]] <- new
             }
         }
         out <- do.call(rbind, out_list)
-        if (split_col %in% split.for.calc.only) {
-            out$max_data <- max(out$max_data)
-        }
     } else {
         # Standard / single actual iteration:
         stats <- list()
-        offset <- 1 + offset.first
+
         # Loop though comparison setups
         for (ind in seq_along(comp.setups)) {
             group.1 <- comp.setups[[ind]][1]
@@ -117,7 +107,7 @@
             g2s <- as.vector(data_frame[[comp.by]]==group.2)
 
             if (sum(g1s)==0 || sum(g2s)==0) {
-                warning("No data for a given data grouping in stats calculation.")
+                # warning("No data for a given data grouping in stats calculation.")
                 next
             }
 
@@ -162,13 +152,10 @@
             test.adjust_this$y <- g2_vals
             new$p <- do.call(get(test.method), test.adjust_this)$p.value
 
-            new$offset <- offset
-            offset <- offset + offset.between
-
             stats[[length(stats)+1]] <- new
         }
         out <- do.call(rbind, stats)
-        # Needed to avoid ggplot2 complaint per ggpubr implementation
+        # Needed to avoid a ggplot2 complaint
         if (length(stats) > 0) {
             out[[comp.by]] <- group.1
         }
@@ -208,16 +195,24 @@
 
 #' @noRd
 #' @importFrom stats setNames
-add_x_pos <- function(stats, data, primary.by, p.by, secondary.by, dodge) {
+.add_x_pos <- function(
+    stats,
+    data,
+    primary.by,
+    p.by,
+    secondary.by,
+    dodge,
+    split.by,
+    split.adjust
+) {
     # ggpubr::stat_pvalue_manual looks to group1 and group2 columns except if
     # xmin and xmax columns exist.  Then, these are used instead.
-
-    primary <- setNames(as.numeric(as.factor(stats[,primary.by])), stats[,primary.by])
 
     if (p.by != primary.by) {
         # Case: btwn subgroups, within groups
         dodge_steps <- list()
         dodge_vals <- list()
+        primary <- setNames(as.numeric(as.factor(stats[,primary.by])), stats[,primary.by])
         for (this_group in colLevels(primary.by, data)) {
             these_levs <- colLevels(p.by, data[data[,primary.by]==this_group,])
             # x dodge distance between groups
@@ -263,6 +258,96 @@ add_x_pos <- function(stats, data, primary.by, p.by, secondary.by, dodge) {
             stats$xmax <- stats$group2
         }
     }
+
+    stats
+}
+
+.add_y_offset <- function(
+    stats,
+    p.by,
+    group.by,
+    secondary.by,
+    offset.first,
+    offset.between,
+    split.by,
+    split.adjust,
+    stats_all = stats,
+    split.by.internal = split.by
+) {
+
+    # Goal of 'outer' function:
+    #   Identify p-values with potential be shown over the same x-locations within the same facet
+    # To do so:
+    #   1. Split / iterate per facet
+    #   2. If p.by is across primary grouping yet performed within subgrouping sets, skip directly to 4, else...
+    #   3. Split / iterate per primary grouping, BUT ensuring y-positions can calculated similarly as these will still share the same facet
+    #   4. Use inner function to perform height increases per p-value in each iteration set
+
+    # 1. Iterate for faceting
+    if (!is.null(split.by.internal) && length(split.by.internal)>0) {
+        # Check for splitting, here allowing for NULL or c() as the "nope"
+        split_col <- split.by.internal[length(split.by.internal)]
+        out_list <- list()
+        for (split_val in colLevels(split_col, stats)) {
+            in_this_split <- stats[,split_col]==split_val
+            next_split.by <- split.by.internal[-1*length(split.by.internal)]
+            out_list[[length(out_list)+1]] <- .add_y_offset(
+                stats[in_this_split,],
+                p.by, group.by, secondary.by,
+                offset.first, offset.between,
+                split.by, split.adjust,
+                stats_all = stats_all,
+                split.by.internal = next_split.by)
+        }
+        do.call(rbind, out_list)
+    } else {
+        # Add position now (should end up being per secondary / color.by set)
+        if (p.by==group.by && !identical(secondary.by, NULL)) {
+            .add_y_offset_per_set(
+                stats, offset.first, offset.between,
+                split.by, split.adjust, stats_all)
+        } else {
+            # Iterate per primary grouping, but allow heights same as same facet
+            stats$max_data <- max(stats$max_data)
+            stats$min_data <- min(stats$min_data)
+            out_list <- list()
+            for (grp_val in colLevels(group.by, stats)) {
+                this_split <- stats[,group.by]==grp_val
+                out_list[[length(out_list)+1]] <- .add_y_offset_per_set(
+                    stats[this_split,],
+                    offset.first, offset.between,
+                    split.by, split.adjust, stats_all)
+            }
+            do.call(rbind, out_list)
+        }
+    }
+}
+
+.add_y_offset_per_set <- function(
+    stats,
+    offset.first,
+    offset.between,
+    split.by,
+    split.adjust,
+    stats_all
+) {
+    # stats given here represent p-values that might overlap in x location
+    # Goal: Determine y positions that increases by offset.between per each next p-value, to not overlap in the plot
+    scale_free_y <- "scale" %in% names(split.adjust) && split.adjust$scale %in% c("free", "free_y")
+    scales_free_y <- "scales" %in% names(split.adjust) && split.adjust$scales %in% c("free", "free_y")
+    free_y <- scale_free_y || scale_free_y
+    if (identical(split.by, NULL) || !free_y) {
+        max <- max(stats_all$max_data)
+        min <- min(stats_all$min_data)
+    } else {
+        max <- max(stats$max_data)
+        min <- min(stats$min_data)
+    }
+
+    range <- max-min
+    first <- max + range*offset.first
+    stats$plot_y_pos <- first + (seq_len(nrow(stats))-1)*range*offset.between
+    stats$plot_y_range <- range
 
     stats
 }

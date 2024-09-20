@@ -70,6 +70,7 @@ yPlot(
   line.linetype = "dashed",
   line.color = "black",
   add.pvalues = NULL,
+  pvalues.subgroup.method = c("color", "group", "ignore"),
   pvalues.round.digits = 4,
   pvalues.sample.by = NULL,
   pvalues.sample.summary = "mean",

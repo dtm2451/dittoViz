@@ -459,16 +459,16 @@ yPlot <- function(
         rel <- .determine_color_to_group_relation(
             Target_data, cols_use$group.by, cols_use$color.by)
         secondary.offset <- NULL
+        p.split.by <- split.by
         if (rel %in% c("same","super") || pvalues.subgroup.method == "ignore") {
             cols_use$p.by <- cols_use$group.by
-            p.split.for.calc.only <- NULL
         } else {
             if (pvalues.subgroup.method == "color") {
                 cols_use$p.by <- cols_use$color.by
-                p.split.for.calc.only <- cols_use$group.by
+                p.split.by <- c(cols_use$group.by, split.by)
             } else { # "group"
                 cols_use$p.by <- cols_use$group.by
-                p.split.for.calc.only <- cols_use$color.by
+                p.split.by <- c(cols_use$color.by, split.by)
                 secondary.offset <- cols_use$color.by
             }
         }
@@ -476,21 +476,26 @@ yPlot <- function(
         comps <- .validate_comparison_sets(
             add.pvalues, cols_use$p.by, Target_data)
 
-        stats <- add_x_pos(
-            .calc_stats(
-                Target_data,
-                cols_use$var, cols_use$p.by, comps,
-                sample.by = pvalues.sample.by, sample.summary = pvalues.sample.summary,
-                split.by = split.by, split.for.calc.only = p.split.for.calc.only,
-                test.method = pvalues.test.method, test.adjust = pvalues.test.adjust,
-                p.symbols = pvalues.plot.symbols,
-                p.round.digits = pvalues.round.digits,
-                do.adjust = pvalues.adjust, p.adjust.method = pvalues.adjust.method,
-                do.fc = pvalues.do.fc, fc.pseudocount = pvalues.fc.pseudocount,
-                offset.first = pvalues.offset.first,
-                offset.between = pvalues.offset.between),
+        stats <- .calc_stats(
+            Target_data,
+            cols_use$var, cols_use$p.by, comps,
+            sample.by = pvalues.sample.by, sample.summary = pvalues.sample.summary,
+            split.by = p.split.by,
+            test.method = pvalues.test.method, test.adjust = pvalues.test.adjust,
+            p.symbols = pvalues.plot.symbols,
+            p.round.digits = pvalues.round.digits,
+            do.adjust = pvalues.adjust, p.adjust.method = pvalues.adjust.method,
+            do.fc = pvalues.do.fc, fc.pseudocount = pvalues.fc.pseudocount)
+
+        stats_plot <- .add_x_pos(
+            stats,
             Target_data, cols_use$group.by, cols_use$p.by,
             secondary.offset, boxplot.position.dodge
+        )
+
+        stats_plot <- .add_y_offset(
+            stats_plot, cols_use$p.by, cols_use$group.by, secondary.offset,
+            pvalues.offset.first, pvalues.offset.between, split.by, split.adjust
         )
     }
 
@@ -513,7 +518,7 @@ yPlot <- function(
             vlnplot.quantiles, add.line, line.linetype, line.color,
             x.labels.rotate, do.hover, y.breaks, min, max, data_frame,
             cols_use$group.aes,
-            stats, cols_use$p.by, pvalues.offset.above, pvalues.plot.adjust)
+            stats_plot, cols_use$p.by, pvalues.offset.above, pvalues.plot.adjust)
     } else {
         p <- .yPlot_add_data_x_direction(
             p, Target_data, cols_use$var, cols_use$group.by,
@@ -523,7 +528,7 @@ yPlot <- function(
             ridgeplot.shape, ridgeplot.bins, ridgeplot.binwidth, add.line,
             line.linetype, line.color, x.labels.rotate, do.hover, color.panel,
             colors, y.breaks, min, max,
-            stats, cols_use$p.by, pvalues.offset.above, pvalues.plot.adjust)
+            stats_plot, cols_use$p.by, pvalues.offset.above, pvalues.plot.adjust)
     }
     # Extra tweaks
     if (!is.null(cols_use$split.by)) {
@@ -682,7 +687,7 @@ yPlot <- function(
         pvalues.plot.adjust$data <- stats
         pvalues.plot.adjust$mapping <- aes(group = .data[[p.by]])
         pvalues.plot.adjust$label <- "p_show"
-        pvalues.plot.adjust$y.position <- stats$max_data*stats$offset
+        pvalues.plot.adjust$y.position <- "plot_y_pos"
         pvalues.plot.adjust$position <- "identity"
         p <- p + do.call(
             ggpubr::stat_pvalue_manual,
@@ -690,7 +695,7 @@ yPlot <- function(
         ) + geom_text(
             data = stats, aes(
                 x = .data[[group.by]],
-                y = .data$max_data * (.data$offset + pvalues.offset.above)
+                y = .data$plot_y_pos + pvalues.offset.above*.data$plot_y_range
             ), label = ""
         )
     }
@@ -707,7 +712,7 @@ yPlot <- function(
     ridgeplot.ymax.expansion, ridgeplot.shape, ridgeplot.bins,
     ridgeplot.binwidth, add.line, line.linetype, line.color,
     x.labels.rotate, do.hover, color.panel, colors, y.breaks, min, max,
-    stats = NULL, p.by, pvalues.offset.above, pvalues.plot.adjust) {
+    stats = stats, p.by, pvalues.offset.above, pvalues.plot.adjust) {
     #This function takes in a partial yPlot ggplot object without any data overlay, and parses adding the main data visualizations.
 
     # Now that we know the plot's direction, set direction & "y"-axis limits
@@ -762,26 +767,7 @@ yPlot <- function(
     }
 
     if (!is.null(stats)) {
-        stats$y <- stats$x
-        stats$x <- NULL
-        stats$ymin <- stats$xmin
-        stats$ymax <- stats$xmax
-        # Plot (with empty string geom_text to ensure visibility)
-        pvalues.plot.adjust$data <- stats
-        pvalues.plot.adjust$mapping <- aes(group = .data[[p.by]])
-        pvalues.plot.adjust$label <- "p_show"
-        pvalues.plot.adjust$y.position <- stats$max_data*stats$offset
-        pvalues.plot.adjust$position <- "identity"
-        pvalues.plot.adjust$coord.flip <- TRUE
-        p <- p + do.call(
-            ggpubr::stat_pvalue_manual,
-            pvalues.plot.adjust
-        ) + geom_text(
-            data = stats, aes(
-                y = .data[[group.by]],
-                x = .data$max_data * (.data$offset + pvalues.offset.above)
-            ), label = ""
-        )
+        warning("stats calculated, but plotting with ridgeplots is not implemented")
     }
 
     p
