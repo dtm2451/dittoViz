@@ -69,6 +69,12 @@ NULL
     }
 }
 
+.error_if_no_ggpubr <- function() {
+    if (!requireNamespace("ggpubr", quietly = TRUE)) {
+        stop("ggpubrs installation required for plotting pvalues using 'add.pvalues'.")
+    }
+}
+
 .leave_default_or_null <- function(
     target, default, null.if = FALSE, default.when = "make") {
     # Handles much of dittoViz's defaulting process
