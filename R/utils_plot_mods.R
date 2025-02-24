@@ -311,35 +311,32 @@
     p
 }
 
+
+# Checks wrapper for .add_*line functions
+._ensure_lengths_and_adjust_for_panels <- function(
+        add.line, add.line.name,
+        line.param, line.param.name,
+        num.panels
+) {
+    if (length(line.param) != length(add.line) & length(line.param) != 1) {
+        warning("'", line.param.name, "' must be length 1 or the same length as '", add.line.name, "', using only the first provided value.")
+        line.param[1]
+    } else if (length(line.param) != 1) {
+        rep(line.param, num.panels)
+    } else {
+        line.param
+    }
+}
+
 .add_xline <- function(p, add.xline, xline.linetype, xline.color, xline.linewidth, xline.opacity, num.panels) {
-    
-    if (length(xline.linetype) != length(add.xline) & length(xline.linetype) != 1) {
-        warning("xline.linetype must be length 1 or the same length as add.xline, setting to first provided value")
-        xline.linetype <- xline.linetype[1]
-    } else if (length(xline.linetype) != 1) {
-        xline.linetype <- rep(xline.linetype, num.panels)
-    }
 
-    if (length(xline.color) != length(add.xline) & length(xline.color) != 1) {
-        warning("xline.color must be length 1 or the same length as add.xline, setting to first provided value")
-        xline.color <- xline.color[1]
-    } else if (length(xline.color) != 1) {
-        xline.color <- rep(xline.color, num.panels)
+    ._elafp <- function(l.p, l.p.n) {
+        ._ensure_lengths_and_adjust_for_panels(add.xline, "add.xline", l.p, l.p.n, num.panels)
     }
-
-    if (length(xline.linewidth) != length(add.xline) & length(xline.linewidth) != 1) {
-        warning("xline.linewidth must be length 1 or the same length as add.xline, setting to first provided value")
-        xline.linewidth <- xline.linewidth[1]
-    } else if (length(xline.linewidth) != 1) {
-        xline.linewidth <- rep(xline.linewidth, num.panels)
-    }
-
-    if (length(xline.opacity) != length(add.xline) & length(xline.opacity) != 1) {
-        warning("xline.opacity must be length 1 or the same length as add.xline, setting to first provided value")
-        xline.opacity <- xline.opacity[1]
-    } else if (length(xline.opacity) != 1) {
-        xline.opacity <- rep(xline.opacity, num.panels)
-    }
+    xline.linetype <- ._elafp(xline.linetype, "xline.linetype")
+    xline.color <- ._elafp(xline.color, "xline.color")
+    xline.linewidth <- ._elafp(xline.linewidth, "xline.linewidth")
+    xline.opacity <- ._elafp(xline.opacity, "xline.opacity")
 
     p + geom_vline(
         xintercept = add.xline, linetype = xline.linetype, color = xline.color,
@@ -348,33 +345,14 @@
 }
 
 .add_yline <- function(p, add.yline, yline.linetype, yline.color, yline.linewidth, yline.opacity, num.panels) {
-    if (length(yline.linetype) != length(add.yline) & length(yline.linetype) != 1) {
-        warning("yline.linetype must be length 1 or the same length as add.yline, setting to first provided value")
-        yline.linetype <- yline.linetype[1]
-    } else if (length(yline.linetype) != 1) {
-        yline.linetype <- rep(yline.linetype, num.panels)
-    }
 
-    if (length(yline.color) != length(add.yline) & length(yline.color) != 1) {
-        warning("yline.color must be length 1 or the same length as add.yline, setting to first provided value")
-        yline.color <- yline.color[1]
-    } else if (length(yline.color) != 1) {
-        yline.color <- rep(yline.color, num.panels)
+    ._elafp <- function(l.p, l.p.n) {
+        ._ensure_lengths_and_adjust_for_panels(add.yline, "add.yline", l.p, l.p.n, num.panels)
     }
-
-    if (length(yline.linewidth) != length(add.yline) & length(yline.linewidth) != 1) {
-        warning("yline.linewidth must be length 1 or the same length as add.yline, setting to first provided value")
-        yline.linewidth <- yline.linewidth[1]
-    } else if (length(yline.linewidth) != 1) {
-        yline.linewidth <- rep(yline.linewidth, num.panels)
-    }
-
-    if (length(yline.opacity) != length(add.yline) & length(yline.opacity) != 1) {
-        warning("yline.opacity must be length 1 or the same length as add.yline, setting to first provided value")
-        yline.opacity <- yline.opacity[1]
-    } else if (length(yline.opacity) != 1) {
-        yline.opacity <- rep(yline.opacity, num.panels)
-    }
+    yline.linetype <- ._elafp(yline.linetype, "yline.linetype")
+    yline.color <- ._elafp(yline.color, "yline.color")
+    yline.linewidth <- ._elafp(yline.linewidth, "yline.linewidth")
+    yline.opacity <- ._elafp(yline.opacity, "yline.opacity")
 
     p + geom_hline(
         yintercept = add.yline, linetype = yline.linetype, color = yline.color,
@@ -383,37 +361,17 @@
 }
 
 .add_abline <- function(p, add.abline, abline.slope, abline.linetype, abline.color, abline.linewidth, abline.opacity, num.panels) {
+
+    ._elafp <- function(l.p, l.p.n) {
+        ._ensure_lengths_and_adjust_for_panels(add.abline, "add.abline", l.p, l.p.n, num.panels)
+    }
+    abline.linetype <- ._elafp(abline.linetype, "abline.linetype")
+    abline.color <- ._elafp(abline.color, "abline.color")
+    abline.linewidth <- ._elafp(abline.linewidth, "abline.linewidth")
+    abline.opacity <- ._elafp(abline.opacity, "abline.opacity")
     if (length(abline.slope) != length(add.abline) & length(abline.slope) != 1) {
-        warning("abline.slope must be length 1 or the same length as add.abline, setting to first provided value")
+        warning("'abline.slope' must be length 1 or the same length as 'add.abline', using only the first provided value.")
         abline.slope <- abline.slope[1]
-    } 
-    
-    if (length(abline.linetype) != length(add.abline) & length(abline.linetype) != 1) {
-        warning("abline.linetype must be length 1 or the same length as add.abline, setting to first provided value")
-        abline.linetype <- abline.linetype[1]
-    } else if (length(abline.linetype) != 1) {
-        abline.linetype <- rep(abline.linetype, num.panels)
-    }
-
-    if (length(abline.color) != length(add.abline) & length(abline.color) != 1) {
-        warning("abline.color must be length 1 or the same length as add.abline, setting to first provided value")
-        abline.color <- abline.color[1]
-    } else if (length(abline.color) != 1) {
-        abline.color <- rep(abline.color, num.panels)
-    }
-
-    if (length(abline.linewidth) != length(add.abline) & length(abline.linewidth) != 1) {
-        warning("abline.linewidth must be length 1 or the same length as add.abline, setting to first provided value")
-        abline.linewidth <- abline.linewidth[1]
-    } else if (length(abline.linewidth) != 1) {
-        abline.linewidth <- rep(abline.linewidth, num.panels)
-    }
-
-    if (length(abline.opacity) != length(add.abline) & length(abline.opacity) != 1) {
-        warning("abline.opacity must be length 1 or the same length as add.abline, setting to first provided value")
-        abline.opacity <- abline.opacity[1]
-    } else if (length(abline.opacity) != 1) {
-        abline.opacity <- rep(abline.opacity, num.panels)
     }
 
     p + geom_abline(

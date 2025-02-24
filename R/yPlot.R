@@ -72,7 +72,7 @@
 #' is to make the target data into a factor, and to put its levels in the desired order: \code{factor(data, levels = c("level1", "level2", ...))}.
 #' @param x.labels.rotate Logical which sets whether the labels should be rotated.
 #' Default: \code{TRUE} for violin and box plots, but \code{FALSE} for ridgeplots.
-#' @param add.line Numeric value(s) where one or multiple line(s) should be added.
+#' @param add.line Numeric value(s), denoting y-axis value(s), where one or multiple horizonal line(s) should be added.
 #' @param line.linetype String which sets the type of line for \code{add.line}.
 #' Defaults to "dashed", but any ggplot linetype will work.
 #' @param line.color String that sets the color(s) of the \code{add.line} line(s). Default = "black".

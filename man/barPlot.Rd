@@ -141,7 +141,7 @@ Default = "make" and if left as make, a title will be automatically generated.}
 
 \item{legend.title}{String which adds a title to the legend.}
 
-\item{add.line}{Numeric value(s) where one or multiple line(s) should be added.}
+\item{add.line}{Numeric value(s), denoting y-axis value(s), where one or multiple horizonal line(s) should be added.}
 
 \item{line.linetype}{String which sets the type of line for \code{add.line}.
 Defaults to "dashed", but any ggplot linetype will work.}

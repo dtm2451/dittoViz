@@ -676,7 +676,8 @@ test_that("scatterPlot data adjustments applied", {
 test_that("scatterPlot added arbitrary horizontal, vertical, and diagonal lines work", {
     expect_s3_class(
         scatterPlot(df, "PC1", "PC2", disc,
-                    add.yline = c(-1, 1), add.xline = c(2)),
+                    add.yline = c(-1, 1), add.xline = c(2),
+                    add.abline = c(5, 1.5), abline.slope = c(0.02, -0.03)),
         "ggplot")
 
     ### Manual Check:
@@ -689,12 +690,41 @@ test_that("scatterPlot added arbitrary horizontal, vertical, and diagonal lines 
 
     ### Manual Check:
     # split.by works with lines and ablines work
+    # Diagonal lines blue & green,
+    #   with blue thicker than green
+    #   and blue-only see-through
     expect_s3_class(
         scatterPlot(df, "PC3", "PC2", disc, split.by = "groups",
             add.yline = c(-5, 5), add.xline = c(2),
             yline.color = "red", xline.linetype = "dotted",
-            add.abline = c(5, 1.5), abline.slope = c(2, -3), 
-            abline.linetype = "solid", abline.opacity = c(1, 0.5), abline.linewidth = c(1, 2), 
+            add.abline = c(5, 1.5), abline.slope = c(2, -3),
+            abline.linetype = "solid", abline.opacity = c(1, 0.5), abline.linewidth = c(1, 2),
             abline.color = c("green", "blue")),
         "ggplot")
+
+    # Errors and warnings
+    expect_warning(
+        scatterPlot(df, "PC3", "PC2", disc, split.by = "groups",
+                    add.yline = -1, yline.linewidth = 1:2),
+        "'yline.linewidth' must be length 1 or the same length as 'add.yline', using only the first provided value.",
+        fixed = TRUE
+    )
+    expect_warning(
+        scatterPlot(df, "PC3", "PC2", disc, split.by = "groups",
+                    add.xline = -1, xline.linewidth = 1:2),
+        "using only the first provided value",
+        fixed = TRUE
+    )
+    expect_warning(
+        scatterPlot(df, "PC3", "PC2", disc, split.by = "groups",
+                    add.abline = -1, abline.linewidth = 1:2),
+        "using only the first provided value",
+        fixed = TRUE
+    )
+    expect_warning(
+        scatterPlot(df, "PC3", "PC2", disc, split.by = "groups",
+                    add.abline = -1, abline.slope = 1:2),
+        "using only the first provided value",
+        fixed = TRUE
+    )
 })

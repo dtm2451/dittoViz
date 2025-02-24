@@ -239,7 +239,7 @@ Overridden by \code{ridgeplot.binwidth} when that input is provided.}
 \item{ridgeplot.binwidth}{Integer which sets the width of chunks to break the x-axis into when \code{ridgeplot.shape = "hist"}.
 Takes precedence over \code{ridgeplot.bins} when provided.}
 
-\item{add.line}{Numeric value(s) where one or multiple line(s) should be added.}
+\item{add.line}{Numeric value(s), denoting y-axis value(s), where one or multiple horizonal line(s) should be added.}
 
 \item{line.linetype}{String which sets the type of line for \code{add.line}.
 Defaults to "dashed", but any ggplot linetype will work.}

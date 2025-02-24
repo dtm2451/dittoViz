@@ -105,7 +105,7 @@
 #' @param trajectory.group.by String denoting the name of a column of \code{data_frame} to use for generating trajectories from data point groups.
 #' @param trajectory.arrow.size Number representing the size of trajectory arrows, in inches.  Default = 0.15.
 #' @param add.trajectory.curves List of matrices, each representing coordinates for a trajectory path, from start to end, where matrix columns represent x and y coordinates of the paths.
-#' @param add.xline Numeric value(s) where one or multiple vertical line(s) should be added.
+#' @param add.xline Numeric value(s), denoting x-axis value(s), where one or more vertical line(s) should be added.
 #' @param xline.linetype String which sets the type of line for \code{add.xline}.
 #' Defaults to "dashed", but any ggplot linetype will work.
 #' @param xline.color String that sets the color(s) of the \code{add.xline} line(s). Default = "black".
@@ -114,7 +114,7 @@
 #' Alternatively, a vector of numbers of the same length as \code{add.xline} can be given to set the linewidth of each line individually.
 #' @param xline.opacity Number that sets the opacity of the \code{add.xline} line(s). Default = 1.
 #' Alternatively, a vector of numbers of the same length as \code{add.xline} can be given to set the opacity of each line individually.
-#' @param add.yline Numeric value(s) where one or multiple vertical line(s) should be added.
+#' @param add.yline Numeric value(s), denoting y-axis value(s), where one or multiple horizonal line(s) should be added.
 #' @param yline.linetype String which sets the type of line for \code{add.yline}.
 #' Defaults to "dashed", but any ggplot linetype will work.
 #' @param yline.color String that sets the color(s) of the \code{add.yline} line(s). Default = "black".
@@ -123,7 +123,8 @@
 #' Alternatively, a vector of numbers of the same length as \code{add.yline} can be given to set the linewidth of each line individually.
 #' @param yline.opacity Number that sets the opacity of the \code{add.yline} line(s). Default = 1.
 #' Alternatively, a vector of numbers of the same length as \code{add.yline} can be given to set the opacity of each line individually.
-#' @param add.abline Numeric value(s) where one or multiple diagonal line(s) should be added.
+#' @param add.abline Numeric value(s), denoting y-axis intercept(s), where one or multiple diagonal line(s) should be added.
+#' Use \code{abline.slope} to set slope(s).
 #' @param abline.slope Number that sets the slope of the \code{add.abline} line(s). Default = 1.
 #' Alternatively, a vector of numbers of the same length as \code{add.abline} can be given to set the slope of each line individually.
 #' @param abline.linetype String which sets the type of line for \code{add.abline}.

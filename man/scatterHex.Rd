@@ -213,7 +213,7 @@ List elements should be valid inputs to the \code{\link[ggrepel]{geom_label_repe
 
 \item{trajectory.arrow.size}{Number representing the size of trajectory arrows, in inches.  Default = 0.15.}
 
-\item{add.xline}{Numeric value(s) where one or multiple vertical line(s) should be added.}
+\item{add.xline}{Numeric value(s), denoting x-axis value(s), where one or more vertical line(s) should be added.}
 
 \item{xline.linetype}{String which sets the type of line for \code{add.xline}.
 Defaults to "dashed", but any ggplot linetype will work.}
@@ -227,7 +227,7 @@ Alternatively, a vector of numbers of the same length as \code{add.xline} can be
 \item{xline.opacity}{Number that sets the opacity of the \code{add.xline} line(s). Default = 1.
 Alternatively, a vector of numbers of the same length as \code{add.xline} can be given to set the opacity of each line individually.}
 
-\item{add.yline}{Numeric value(s) where one or multiple vertical line(s) should be added.}
+\item{add.yline}{Numeric value(s), denoting y-axis value(s), where one or multiple horizonal line(s) should be added.}
 
 \item{yline.linetype}{String which sets the type of line for \code{add.yline}.
 Defaults to "dashed", but any ggplot linetype will work.}
@@ -241,7 +241,8 @@ Alternatively, a vector of numbers of the same length as \code{add.yline} can be
 \item{yline.opacity}{Number that sets the opacity of the \code{add.yline} line(s). Default = 1.
 Alternatively, a vector of numbers of the same length as \code{add.yline} can be given to set the opacity of each line individually.}
 
-\item{add.abline}{Numeric value(s) where one or multiple diagonal line(s) should be added.}
+\item{add.abline}{Numeric value(s), denoting y-axis intercept(s), where one or multiple diagonal line(s) should be added.
+Use \code{abline.slope} to set slope(s).}
 
 \item{abline.slope}{Number that sets the slope of the \code{add.abline} line(s). Default = 1.
 Alternatively, a vector of numbers of the same length as \code{add.abline} can be given to set the slope of each line individually.}
