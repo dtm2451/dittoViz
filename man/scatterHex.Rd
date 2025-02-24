@@ -58,9 +58,19 @@ scatterHex(
   add.xline = NULL,
   xline.linetype = "dashed",
   xline.color = "black",
+  xline.linewidth = 0.5,
+  xline.opacity = 1,
   add.yline = NULL,
   yline.linetype = "dashed",
   yline.color = "black",
+  yline.linewidth = 0.5,
+  yline.opacity = 1,
+  add.abline = NULL,
+  abline.slope = 1,
+  abline.linetype = "solid",
+  abline.color = "black",
+  abline.linewidth = 0.5,
+  abline.opacity = 1,
   legend.show = TRUE,
   legend.color.title = "make",
   legend.color.breaks = waiver(),
@@ -203,19 +213,50 @@ List elements should be valid inputs to the \code{\link[ggrepel]{geom_label_repe
 
 \item{trajectory.arrow.size}{Number representing the size of trajectory arrows, in inches.  Default = 0.15.}
 
-\item{add.xline}{numeric value(s) where one or multiple vertical line(s) should be added.}
+\item{add.xline}{Numeric value(s) where one or multiple vertical line(s) should be added.}
 
 \item{xline.linetype}{String which sets the type of line for \code{add.xline}.
 Defaults to "dashed", but any ggplot linetype will work.}
 
-\item{xline.color}{String that sets the color(s) of the \code{add.xline} line(s).}
+\item{xline.color}{String that sets the color(s) of the \code{add.xline} line(s). Default = "black".
+Alternatively, a vector of strings of the same length as \code{add.xline} can be given to set the color of each line individually.}
 
-\item{add.yline}{numeric value(s) where one or multiple vertical line(s) should be added.}
+\item{xline.linewidth}{Number that sets the linewidth of the \code{add.xline} line(s). Default = 0.5.
+Alternatively, a vector of numbers of the same length as \code{add.xline} can be given to set the linewidth of each line individually.}
+
+\item{xline.opacity}{Number that sets the opacity of the \code{add.xline} line(s). Default = 1.
+Alternatively, a vector of numbers of the same length as \code{add.xline} can be given to set the opacity of each line individually.}
+
+\item{add.yline}{Numeric value(s) where one or multiple vertical line(s) should be added.}
 
 \item{yline.linetype}{String which sets the type of line for \code{add.yline}.
 Defaults to "dashed", but any ggplot linetype will work.}
 
-\item{yline.color}{String that sets the color(s) of the \code{add.yline} line(s).}
+\item{yline.color}{String that sets the color(s) of the \code{add.yline} line(s). Default = "black".
+Alternatively, a vector of strings of the same length as \code{add.yline} can be given to set the color of each line individually.}
+
+\item{yline.linewidth}{Number that sets the linewidth of the \code{add.yline} line(s). Default = 0.5.
+Alternatively, a vector of numbers of the same length as \code{add.yline} can be given to set the linewidth of each line individually.}
+
+\item{yline.opacity}{Number that sets the opacity of the \code{add.yline} line(s). Default = 1.
+Alternatively, a vector of numbers of the same length as \code{add.yline} can be given to set the opacity of each line individually.}
+
+\item{add.abline}{Numeric value(s) where one or multiple diagonal line(s) should be added.}
+
+\item{abline.slope}{Number that sets the slope of the \code{add.abline} line(s). Default = 1.
+Alternatively, a vector of numbers of the same length as \code{add.abline} can be given to set the slope of each line individually.}
+
+\item{abline.linetype}{String which sets the type of line for \code{add.abline}.
+Defaults to "dashed", but any ggplot linetype will work.}
+
+\item{abline.color}{String that sets the color(s) of the \code{add.abline} line(s). Default = "black".
+Alternatively, a vector of strings of the same length as \code{add.abline} can be given to set the color of each line individually.}
+
+\item{abline.linewidth}{Number that sets the linewidth of the \code{add.abline} line(s). Default = 0.5.
+Alternatively, a vector of numbers of the same length as \code{add.abline} can be given to set the linewidth of each line individually.}
+
+\item{abline.opacity}{Number that sets the opacity of the \code{add.abline} line(s). Default = 1.
+Alternatively, a vector of numbers of the same length as \code{add.abline} can be given to set the opacity of each line individually.}
 
 \item{legend.show}{Logical. Whether any legend should be displayed. Default = \code{TRUE}.}
 
@@ -423,5 +464,5 @@ out$cols_use
 It is often best to investigate your data with both the individual and hex-bin methods, then pick whichever is the best representation for your particular goal.
 }
 \author{
-Daniel Bunis with some code adapted from Giuseppe D'Agostino
+Daniel Bunis, Jared Andrews with some code adapted from Giuseppe D'Agostino
 }

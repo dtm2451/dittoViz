@@ -244,3 +244,23 @@ test_that("barPlot, 'retain.factor.level' can be used to respect factor levels",
             rows.use = df[,"grp_factor"]!="C" & df[,"var_factor"]!="Dream"),
         "ggplot")
 })
+
+test_that("barPlot arbitrary horizontal lines work", {
+    # Manual Check:
+    # Multiple lines can be added and their parameters individually adjusted
+    expect_s3_class(
+        barPlot(
+            df, grp2, group.by = grp3, add.line = c(0.25, 0.5), 
+            line.color = c("purple", "cyan"), line.linewidth = 2, 
+            line.opacity = 0.6),
+        "ggplot")
+
+    # Manual Check:
+    # Same lines applied across all panels
+    expect_s3_class(
+        barPlot(
+            df, grp2, group.by = grp3, add.line = c(0.25, 0.5), 
+            line.color = c("purple", "cyan"), line.linewidth = 2, 
+            line.opacity = 0.6, split.by = grp3),
+        "ggplot")
+})
