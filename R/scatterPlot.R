@@ -69,7 +69,7 @@
 #' @param do.label  Logical. Whether to add text labels near the center (median) of \code{color.by} groups.
 #' @param labels.size Number which sets the size of labels text when \code{do.label = TRUE}.
 #' @param labels.highlight Logical. Whether labels should have a box behind them when \code{do.label = TRUE}.
-#' @param labels.repel Logical, that sets whether the labels' placements will be adjusted with \link{ggrepel} to avoid intersections between labels and plot bounds when \code{do.label = TRUE}.
+#' @param labels.repel Logical, that sets whether the labels' placements will be adjusted with \link[ggrepel]{ggrepel} to avoid intersections between labels and plot bounds when \code{do.label = TRUE}.
 #' TRUE by default.
 #' @param labels.split.by String of one or two column names which controls the facet-split calculations for label placements.
 #' Defaults to \code{split.by}, so generally there is no need to adjust this except when if you plan to apply faceting externally.

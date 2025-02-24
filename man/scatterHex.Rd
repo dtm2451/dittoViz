@@ -196,7 +196,7 @@ When turned on, so number to value mapping can be known, these numbers are added
 
 \item{labels.numbers.spacer}{String. When \code{do.label = TRUE} and \code{labels.use.numbers}, this string is used in the legend between the numbers and their associated data values.}
 
-\item{labels.repel}{Logical, that sets whether the labels' placements will be adjusted with \link{ggrepel} to avoid intersections between labels and plot bounds when \code{do.label = TRUE}.
+\item{labels.repel}{Logical, that sets whether the labels' placements will be adjusted with \link[ggrepel]{ggrepel} to avoid intersections between labels and plot bounds when \code{do.label = TRUE}.
 TRUE by default.}
 
 \item{labels.split.by}{String of one or two column names which controls the facet-split calculations for label placements.
