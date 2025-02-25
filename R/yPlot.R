@@ -215,6 +215,9 @@
 #'     main = "CD3E",
 #'     legend.show = FALSE)
 #'
+#' \dontrun{
+#' # (Due to unfortunate CRAN submission constraints)
+#'
 #' # Data can also be split in other ways with 'shape.by' or 'split.by'
 #' yPlot(data_frame = example_df, var = "gene1", group.by = "timepoint",
 #'     plots = c("vlnplot", "boxplot", "jitter"),
@@ -236,6 +239,8 @@
 #' yPlot(data_frame = example_df, group.by = "timepoint",
 #'     var = c("gene1", "gene2"),
 #'     multivar.aes = "color")
+#'
+#' }
 #'
 #' @author Daniel Bunis, Jared Andrews
 #' @export
