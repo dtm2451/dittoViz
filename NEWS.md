@@ -1,3 +1,7 @@
+# dittoViz 1.0.3
+
+* Expanded flexibility when adding lines to plots: Adds ability to place sloped lines with scatterPlot() and scatterHex() via new 'add.abline' and 'abline.*' inputs, as well as previously unavailable opacity and lineweight control inputs for all existing 'add.line' variants.
+
 # dittoViz 1.0.2
 
 * For scatterPlot() and scatterHex(), added the ability to use numbers as data labels instead of the data-values themselves, because sometimes data-values are quite long. Controlled with new inputs 'labels.use.numbers' and 'labels.numbers.spacer'.
