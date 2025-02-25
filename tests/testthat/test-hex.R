@@ -394,7 +394,7 @@ test_that("scatterPlot data adjustments applied", {
         max(p$data[[p$cols_used$y.by]]), 1)
 })
 
-test_that("scatterPlot added arbitrary horizontal and vertical lines work", {
+test_that("scatterHex added arbitrary horizontal, vertical, and diagonal lines work", {
     expect_s3_class(
         scatterHex(df, "PC1", "PC2", disc,
                     add.yline = c(-1, 1), add.xline = c(2)),
@@ -406,6 +406,17 @@ test_that("scatterPlot added arbitrary horizontal and vertical lines work", {
         scatterHex(df, "PC1", "PC2", disc,
                     add.yline = c(-1, 1), add.xline = c(2),
                     yline.color = "red", xline.linetype = "dotted"),
+        "ggplot")
+
+    ### Manual Check:
+    # split.by works with lines and ablines work
+    expect_s3_class(
+        scatterHex(df, "PC3", "PC2", disc, split.by = "groups",
+            add.yline = c(-5, 5), add.xline = c(2),
+            yline.color = "red", xline.linetype = "dotted",
+            add.abline = c(5, 1.5), abline.slope = c(2, -3), 
+            abline.linetype = "solid", abline.opacity = c(1, 0.5), abline.linewidth = c(1, 2), 
+            abline.color = c("green", "blue")),
         "ggplot")
 })
 

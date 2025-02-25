@@ -63,6 +63,8 @@ freqPlot(
   add.line = NULL,
   line.linetype = "dashed",
   line.color = "black",
+  line.linewidth = 0.5,
+  line.opacity = 1,
   legend.show = TRUE,
   legend.title = color.by
 )
@@ -214,7 +216,7 @@ By default, this input actually controls the value of \code{jitter.position.dodg
 
 \item{vlnplot.scaling}{String which sets how the widths of the of violin plots are set in relation to each other.
 Options are "area", "count", and "width". If the default is not right for your data, I recommend trying "width".
-For an explanation of each, see \code{\link{geom_violin}}.}
+For an explanation of each, see \code{\link[ggplot2]{geom_violin}}.}
 
 \item{vlnplot.quantiles}{Single number or numeric vector of values in [0,1] naming quantiles at which to draw a horizontal line within each violin plot. Example: \code{c(0.1, 0.5, 0.9)}}
 
@@ -237,12 +239,19 @@ Overridden by \code{ridgeplot.binwidth} when that input is provided.}
 \item{ridgeplot.binwidth}{Integer which sets the width of chunks to break the x-axis into when \code{ridgeplot.shape = "hist"}.
 Takes precedence over \code{ridgeplot.bins} when provided.}
 
-\item{add.line}{numeric value(s) where one or multiple line(s) should be added}
+\item{add.line}{Numeric value(s), denoting y-axis value(s), where one or multiple horizonal line(s) should be added.}
 
 \item{line.linetype}{String which sets the type of line for \code{add.line}.
 Defaults to "dashed", but any ggplot linetype will work.}
 
-\item{line.color}{String that sets the color(s) of the \code{add.line} line(s)}
+\item{line.color}{String that sets the color(s) of the \code{add.line} line(s). Default = "black".
+Alternatively, a vector of strings of the same length as \code{add.line} can be given to set the color of each line individually.}
+
+\item{line.linewidth}{Number that sets the linewidth of the \code{add.line} line(s). Default = 0.5.
+Alternatively, a vector of numbers of the same length as \code{add.line} can be given to set the linewidth of each line individually.}
+
+\item{line.opacity}{Number that sets the opacity of the \code{add.line} line(s). Default = 1.
+Alternatively, a vector of numbers of the same length as \code{add.line} can be given to set the opacity of each line individually.}
 
 \item{legend.show}{Logical. Whether the legend should be displayed. Default = \code{TRUE}.}
 

@@ -56,9 +56,19 @@ scatterPlot(
   add.xline = NULL,
   xline.linetype = "dashed",
   xline.color = "black",
+  xline.linewidth = 0.5,
+  xline.opacity = 1,
   add.yline = NULL,
   yline.linetype = "dashed",
   yline.color = "black",
+  yline.linewidth = 0.5,
+  yline.opacity = 1,
+  add.abline = NULL,
+  abline.slope = 1,
+  abline.linetype = "solid",
+  abline.color = "black",
+  abline.linewidth = 0.5,
+  abline.opacity = 1,
   do.letter = FALSE,
   do.ellipse = FALSE,
   do.label = FALSE,
@@ -205,19 +215,51 @@ Defaults to "solid", but see \code{\link[ggplot2]{linetype}} for other options.}
 
 \item{trajectory.arrow.size}{Number representing the size of trajectory arrows, in inches.  Default = 0.15.}
 
-\item{add.xline}{numeric value(s) where one or multiple vertical line(s) should be added.}
+\item{add.xline}{Numeric value(s), denoting x-axis value(s), where one or more vertical line(s) should be added.}
 
 \item{xline.linetype}{String which sets the type of line for \code{add.xline}.
 Defaults to "dashed", but any ggplot linetype will work.}
 
-\item{xline.color}{String that sets the color(s) of the \code{add.xline} line(s).}
+\item{xline.color}{String that sets the color(s) of the \code{add.xline} line(s). Default = "black".
+Alternatively, a vector of strings of the same length as \code{add.xline} can be given to set the color of each line individually.}
 
-\item{add.yline}{numeric value(s) where one or multiple vertical line(s) should be added.}
+\item{xline.linewidth}{Number that sets the linewidth of the \code{add.xline} line(s). Default = 0.5.
+Alternatively, a vector of numbers of the same length as \code{add.xline} can be given to set the linewidth of each line individually.}
+
+\item{xline.opacity}{Number that sets the opacity of the \code{add.xline} line(s). Default = 1.
+Alternatively, a vector of numbers of the same length as \code{add.xline} can be given to set the opacity of each line individually.}
+
+\item{add.yline}{Numeric value(s), denoting y-axis value(s), where one or multiple horizonal line(s) should be added.}
 
 \item{yline.linetype}{String which sets the type of line for \code{add.yline}.
 Defaults to "dashed", but any ggplot linetype will work.}
 
-\item{yline.color}{String that sets the color(s) of the \code{add.yline} line(s).}
+\item{yline.color}{String that sets the color(s) of the \code{add.yline} line(s). Default = "black".
+Alternatively, a vector of strings of the same length as \code{add.yline} can be given to set the color of each line individually.}
+
+\item{yline.linewidth}{Number that sets the linewidth of the \code{add.yline} line(s). Default = 0.5.
+Alternatively, a vector of numbers of the same length as \code{add.yline} can be given to set the linewidth of each line individually.}
+
+\item{yline.opacity}{Number that sets the opacity of the \code{add.yline} line(s). Default = 1.
+Alternatively, a vector of numbers of the same length as \code{add.yline} can be given to set the opacity of each line individually.}
+
+\item{add.abline}{Numeric value(s), denoting y-axis intercept(s), where one or multiple diagonal line(s) should be added.
+Use \code{abline.slope} to set slope(s).}
+
+\item{abline.slope}{Number that sets the slope of the \code{add.abline} line(s). Default = 1.
+Alternatively, a vector of numbers of the same length as \code{add.abline} can be given to set the slope of each line individually.}
+
+\item{abline.linetype}{String which sets the type of line for \code{add.abline}.
+Defaults to "dashed", but any ggplot linetype will work.}
+
+\item{abline.color}{String that sets the color(s) of the \code{add.abline} line(s). Default = "black".
+Alternatively, a vector of strings of the same length as \code{add.abline} can be given to set the color of each line individually.}
+
+\item{abline.linewidth}{Number that sets the linewidth of the \code{add.abline} line(s). Default = 0.5.
+Alternatively, a vector of numbers of the same length as \code{add.abline} can be given to set the linewidth of each line individually.}
+
+\item{abline.opacity}{Number that sets the opacity of the \code{add.abline} line(s). Default = 1.
+Alternatively, a vector of numbers of the same length as \code{add.abline} can be given to set the opacity of each line individually.}
 
 \item{do.letter}{Logical which sets whether letters should be added on top of the colored dots.
 For extended colorblindness compatibility.
@@ -236,7 +278,7 @@ When turned on, so number to value mapping can be known, these numbers are added
 
 \item{labels.numbers.spacer}{String. When \code{do.label = TRUE} and \code{labels.use.numbers}, this string is used in the legend between the numbers and their associated data values.}
 
-\item{labels.repel}{Logical, that sets whether the labels' placements will be adjusted with \link{ggrepel} to avoid intersections between labels and plot bounds when \code{do.label = TRUE}.
+\item{labels.repel}{Logical, that sets whether the labels' placements will be adjusted with \link[ggrepel]{ggrepel} to avoid intersections between labels and plot bounds when \code{do.label = TRUE}.
 TRUE by default.}
 
 \item{labels.repel.adjust}{A named list which allows extra parameters to be pushed through to ggrepel function calls.
@@ -410,5 +452,5 @@ out$cols_used
 \code{\link{scatterHex}} for a hex-binned version that can be useful when points are very dense.
 }
 \author{
-Daniel Bunis
+Daniel Bunis, Jared Andrews
 }

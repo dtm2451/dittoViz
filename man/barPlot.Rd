@@ -35,7 +35,12 @@ barPlot(
   main = "make",
   sub = NULL,
   legend.show = TRUE,
-  legend.title = NULL
+  legend.title = NULL,
+  add.line = NULL,
+  line.linetype = "dashed",
+  line.color = "black",
+  line.linewidth = 0.5,
+  line.opacity = 1
 )
 }
 \arguments{
@@ -135,6 +140,20 @@ Default = "make" and if left as make, a title will be automatically generated.}
 \item{legend.show}{Logical. Whether the legend should be displayed. Default = \code{TRUE}.}
 
 \item{legend.title}{String which adds a title to the legend.}
+
+\item{add.line}{Numeric value(s), denoting y-axis value(s), where one or multiple horizonal line(s) should be added.}
+
+\item{line.linetype}{String which sets the type of line for \code{add.line}.
+Defaults to "dashed", but any ggplot linetype will work.}
+
+\item{line.color}{String that sets the color(s) of the \code{add.line} line(s). Default = "black".
+Alternatively, a vector of strings of the same length as \code{add.line} can be given to set the color of each line individually.}
+
+\item{line.linewidth}{Number that sets the linewidth of the \code{add.line} line(s). Default = 0.5.
+Alternatively, a vector of numbers of the same length as \code{add.line} can be given to set the linewidth of each line individually.}
+
+\item{line.opacity}{Number that sets the opacity of the \code{add.line} line(s). Default = 1.
+Alternatively, a vector of numbers of the same length as \code{add.line} can be given to set the opacity of each line individually.}
 }
 \value{
 A ggplot plot where discrete data, grouped by sample, condition, cluster, etc. on the x-axis, is shown on the y-axis as either counts or percent-of-total-per-grouping in a stacked barplot.
