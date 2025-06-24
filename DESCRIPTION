@@ -26,7 +26,8 @@ Suggests:
     testthat (>= 3.0.0),
     ggplot.multistats,
     palmerpenguins,
-    ggrastr (>= 0.2.0)
+    ggrastr (>= 0.2.0),
+    MASS
 RoxygenNote: 7.3.1
 Config/testthat/edition: 3
 URL: https://github.com/dtm2451/dittoViz
