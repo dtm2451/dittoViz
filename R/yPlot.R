@@ -479,6 +479,16 @@ yPlot <- function(
         p <- p + coord_cartesian(ylim=c(min,max))
     }
 
+    geom_violin <- function(..., quantiles) {
+        if (is.null(quantiles)) {
+            ggplot2::geom_violin(...)
+        } else if ("quantile.linetype" %in% names(formals(ggplot2::geom_violin))) {
+            ggplot2::geom_violin(..., quantiles = quantiles)
+        } else {
+            ggplot2::geom_violin(..., draw_quantiles = quantiles)
+        }
+    }
+
     # Add Plots
     for (i in seq_along(plots)) {
         if (plots[i] == "vlnplot") {
@@ -486,7 +496,7 @@ yPlot <- function(
                 linewidth = vlnplot.lineweight,
                 width = vlnplot.width,
                 scale = vlnplot.scaling,
-                draw_quantiles = vlnplot.quantiles,
+                quantiles = vlnplot.quantiles,
                 na.rm = TRUE)
         }
 
