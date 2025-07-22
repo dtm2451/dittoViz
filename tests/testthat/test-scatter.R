@@ -7,6 +7,8 @@ cont2 <- "bill_length_mm"
 disc <- "species"
 disc2 <- "island"
 
+mass_installed <- requireNamespace("MASS", quietly = TRUE)
+
 test_that("scatterPlot can plot continuous or discrete data", {
     expect_s3_class(
         scatterPlot(
@@ -444,6 +446,7 @@ test_that("scatterPlot plotting order can be ordered by the data, or have order 
 })
 
 test_that("scatterPlot adding contours", {
+    skip_if_not(mass_installed, message = "No MASS")
     expect_s3_class(
         scatterPlot(df, "PC1", "PC2", disc,
                     do.contour = TRUE),
@@ -482,6 +485,7 @@ test_that("scatterPlot ignores do.letter/do.label/do.ellipse for continuous data
                                 do.ellipse = TRUE),
                    "do.ellipse was/were ignored for non-discrete data", fixed = TRUE)
 
+    skip_if_not(mass_installed, message = "No MASS")
     # No message for discrete data && MANUAL CHECK: ellipse is drawn
     expect_message(scatterPlot(df, "PC1", "PC2", disc,
                                 do.ellipse = TRUE),
@@ -561,21 +565,7 @@ test_that("scatterPlot added features work with single-column faceting", {
         print(scatterPlot(
             df, "PC1", "PC2", disc,
             split.by = disc2,
-            do.ellipse = TRUE,
-            split.show.all.others = FALSE)),
-        NA)
-    expect_error(
-        print(scatterPlot(
-            df, "PC1", "PC2", disc,
-            split.by = disc2,
             do.letter = TRUE,
-            split.show.all.others = FALSE)),
-        NA)
-    expect_error(
-        print(scatterPlot(
-            df, "PC1", "PC2", disc,
-            split.by = disc2,
-            do.contour = TRUE,
             split.show.all.others = FALSE)),
         NA)
     expect_error(
@@ -598,6 +588,22 @@ test_that("scatterPlot added features work with single-column faceting", {
                 data.frame(
                     c(5:20),
                     c(5:10,9:5,6:10))),
+            split.show.all.others = FALSE)),
+        NA)
+
+    skip_if_not(mass_installed, message = "No MASS")
+    expect_error(
+        print(scatterPlot(
+            df, "PC1", "PC2", disc,
+            split.by = disc2,
+            do.ellipse = TRUE,
+            split.show.all.others = FALSE)),
+        NA)
+    expect_error(
+        print(scatterPlot(
+            df, "PC1", "PC2", disc,
+            split.by = disc2,
+            do.contour = TRUE,
             split.show.all.others = FALSE)),
         NA)
 })
@@ -614,13 +620,6 @@ test_that("scatterPlot added features work with double-column faceting", {
         print(scatterPlot(
             df, "PC1", "PC2", disc,
             split.by = c(disc2,disc),
-            do.ellipse = TRUE,
-            split.show.all.others = FALSE)),
-        NA)
-    expect_error(
-        print(scatterPlot(
-            df, "PC1", "PC2", disc,
-            split.by = c(disc2,disc),
             do.letter = TRUE,
             split.show.all.others = FALSE)),
         NA)
@@ -644,6 +643,15 @@ test_that("scatterPlot added features work with double-column faceting", {
                 data.frame(
                     c(5:20),
                     c(5:10,9:5,6:10))),
+            split.show.all.others = FALSE)),
+        NA)
+
+    skip_if_not(mass_installed, message = "No MASS")
+    expect_error(
+        print(scatterPlot(
+            df, "PC1", "PC2", disc,
+            split.by = c(disc2,disc),
+            do.ellipse = TRUE,
             split.show.all.others = FALSE)),
         NA)
 })

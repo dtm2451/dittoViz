@@ -57,6 +57,12 @@ NULL
     }
 }
 
+.error_if_no_mass_because <- function(case) {
+    if (!requireNamespace("MASS", quietly = TRUE)) {
+        stop(paste0("MASS installation required for adding ", case, "."))
+    }
+}
+
 .error_if_no_ggrastr <- function() {
     if (!requireNamespace("ggrastr", quietly = TRUE)) {
         stop("ggrastr installation required for using rasterization with dittoScatterPlot plotters.")
