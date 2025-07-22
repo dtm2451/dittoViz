@@ -45,6 +45,7 @@
         }
 
         if (do.ellipse) {
+            .error_if_no_mass_ellipses()
             p <- p + stat_ellipse(
                 data = data,
                 aes(x = .data[[x.by]], y = .data[[y.by]], colour = .data[[color.by]]),

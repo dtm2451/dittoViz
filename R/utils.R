@@ -57,6 +57,17 @@ NULL
     }
 }
 
+.error_if_no_mass_quantiles <- function() {
+    if (!requireNamespace("plotly", quietly = TRUE)) {
+        stop("MASS installation required for drawing quantiles on violins")
+    }
+}
+.error_if_no_mass_ellipses <- function() {
+    if (!requireNamespace("plotly", quietly = TRUE)) {
+        stop("MASS installation required for adding ellipses")
+    }
+}
+
 .error_if_no_ggrastr <- function() {
     if (!requireNamespace("ggrastr", quietly = TRUE)) {
         stop("ggrastr installation required for using rasterization with dittoScatterPlot plotters.")
