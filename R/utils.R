@@ -57,14 +57,9 @@ NULL
     }
 }
 
-.error_if_no_mass_quantiles <- function() {
-    if (!requireNamespace("plotly", quietly = TRUE)) {
-        stop("MASS installation required for drawing quantiles on violins")
-    }
-}
-.error_if_no_mass_ellipses <- function() {
-    if (!requireNamespace("plotly", quietly = TRUE)) {
-        stop("MASS installation required for adding ellipses")
+.error_if_no_mass_because <- function(case) {
+    if (!requireNamespace("MASS", quietly = TRUE)) {
+        stop(paste0("MASS installation required for adding ", case, "."))
     }
 }
 

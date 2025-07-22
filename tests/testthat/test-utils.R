@@ -114,3 +114,23 @@ test_that(".rename_and_or_reorder can rename & reorder",{
         .rename_and_or_reorder(as.character(1:4), reorder = 3:1),
         "incorrect number of indices provided to 'reorder' input", fixed = TRUE)
 })
+
+mass_installed <- requireNamespace("MASS", quietly = TRUE)
+test_that("error messages appear properly for missing MASS package", {
+    skip_if(mass_installed, message = "MASS available")
+    expect_error(
+        scatterPlot(
+            df, "PC1", "PC2", "groups",
+            do.ellipse = TRUE),
+        "MASS installation required for adding ellipses.", fixed = TRUE)
+    expect_error(
+        scatterPlot(
+            df, "PC1", "PC2", "groups",
+            do.contour = TRUE),
+        "MASS installation required for adding contours.", fixed = TRUE)
+    expect_error(
+        yPlot(
+            df, "PC1", "groups",
+            vlnplot.quantiles = 0.55),
+        "MASS installation required for adding quantiles to violins.", fixed = TRUE)
+})

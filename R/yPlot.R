@@ -489,7 +489,7 @@ yPlot <- function(
                 na.rm = TRUE
             )
             if (!identical(vlnplot.quantiles, NULL)) {
-                .error_if_no_mass_quantiles()
+                .error_if_no_mass_because("quantiles to violins")
                 if ("quantile.linetype" %in% names(formals(ggplot2::geom_violin))) {
                     violin.args$quantiles <- vlnplot.quantiles
                 } else {
