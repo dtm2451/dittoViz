@@ -75,6 +75,12 @@ NULL
     }
 }
 
+.error_if_no_mass_because <- function(case) {
+    if (!requireNamespace("MASS", quietly = TRUE)) {
+        stop(paste0("MASS installation required for adding ", case, "."))
+    }
+}
+
 .leave_default_or_null <- function(
     target, default, null.if = FALSE, default.when = "make") {
     # Handles much of dittoViz's defaulting process
