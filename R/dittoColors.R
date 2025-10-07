@@ -2,7 +2,7 @@
 #' @author Daniel Bunis
 #' @param reps Integer which sets how many times the original set of colors should be repeated
 #' @param get.names Logical, whether only the names of the default dittoViz color panel should be returned instead
-#' @return A string vector with length = 24.
+#' @return A string vector.
 #' @description Creates a string vector of 40 unique colors, in hexadecimal form, repeated 100 times.
 #' Or, if \code{get.names} is set to \code{TRUE}, outputs the names of the colors which can be helpful as reference when adjusting how colors get used.
 #'

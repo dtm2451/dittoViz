@@ -67,7 +67,7 @@
     } else {
         if (length(split.by)>1) {
             warning(
-                "Multi-feature display is prioiritized for faceting;",
+                "Multi-feature display is prioiritized for faceting; ",
                 "'split.by' element, '",
                 split.by[2],
                 "', will be ignored.")
@@ -102,7 +102,7 @@
     )
 
     if (any(unlist(lapply(each_data, function(x) { !is.numeric(x$data_use[, multivar.col.data]) })))) {
-        stop("Only numeric columns are currently supported for plotting multiple data columns with the same aesthetic")
+        stop("Only numeric data are currently supported for plotting multiple data targets with the same aesthetic")
     }
 
     list(
