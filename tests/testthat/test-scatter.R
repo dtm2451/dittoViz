@@ -319,6 +319,13 @@ test_that("scatterPlot labeling with numbers", {
             labels.use.numbers = TRUE,
             labels.numbers.spacer = "_"),
         "ggplot")
+    # Robust to legend title removal
+    expect_s3_class(
+        scatterPlot(
+            df, "PC1", "PC2", disc, do.label = TRUE,
+            labels.use.numbers = TRUE,
+            legend.color.title = NULL),
+        "ggplot")
     # Colors should match with this original
     expect_s3_class(
         scatterPlot(
