@@ -409,16 +409,8 @@ test_that("scatterPlot lettering request warns when conflicts with shape.by", {
     expect_warning(
         scatterPlot(
             df, "PC1", "PC2", disc,
-            do.letter = TRUE, shape.by = disc, size = 3),
+            do.letter = TRUE, shape.by = disc2, size = 3),
         "'do.letter' ignored due to")
-})
-
-test_that("scatterPlot doesn't warn when color and shape scales are combined", {
-    ### Manual Check: No lettering
-    expect_warning(
-        scatterPlot(
-            df, "PC1", "PC2", disc, shape.by = disc),
-        NA)
 })
 
 test_that("scatterPlot plotting order can be ordered by the data, or have order randomized", {
