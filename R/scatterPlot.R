@@ -442,6 +442,7 @@ scatterPlot <- function(
         p <- .add_contours(p, Target_data, cols_use$x.by, cols_use$y.by, contour.color, contour.linetype)
     }
 
+    do.letter <- .warn_if_letters_conflict(do.letter, cols_use$shape.by, do.hover)
     p <- .add_letters_ellipses_labels_if_discrete(
         p, Target_data, cols_use$x.by, cols_use$y.by, cols_use$color.by,
         do.letter, do.ellipse, do.label,

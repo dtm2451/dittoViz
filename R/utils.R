@@ -100,6 +100,16 @@ NULL
     target
 }
 
+.warn_if_letters_conflict <- function(
+    do.letter, shape.by, do.hover) {
+    # Handles when do.letter is used alongside shape.by or do.hover
+    if (do.letter && !identical(c(shape.by, do.hover), FALSE)) {
+            warning("'do.letter' ignored due to incompatibility with 'do.hover' or 'shape.by'")
+        return(FALSE)
+    }
+    do.letter
+}
+
 .all_rows <- function(df) {
     rownames(df)
 }

@@ -134,3 +134,51 @@ test_that("error messages appear properly for missing MASS package", {
             vlnplot.quantiles = 0.55),
         "MASS installation required for adding quantiles to violins.", fixed = TRUE)
 })
+
+test_that(".warn_if_letters_conflict properly checks for conflicts", {
+    expect_warning(
+        .warn_if_letters_conflict(
+            TRUE, NULL, FALSE
+        ),
+        NA
+    )
+    expect_warning(
+        .warn_if_letters_conflict(
+            TRUE, NULL, TRUE
+        ),
+        "'do.letter' ignored due to"
+    )
+    expect_warning(
+        .warn_if_letters_conflict(
+            TRUE, 1:10, FALSE
+        ),
+        "'do.letter' ignored due to"
+    )
+    expect_warning(
+        .warn_if_letters_conflict(
+            TRUE, 1:10, TRUE
+        ),
+        "'do.letter' ignored due to"
+    )
+    expect_warning(
+        .warn_if_letters_conflict(
+            FALSE, 1:10, TRUE
+        ),
+        NA
+    )
+})
+
+test_that(".warn_if_letters_conflict will alo return 'do.letter' NULL", {
+    expect_equal(
+        .warn_if_letters_conflict(
+            TRUE, NULL, FALSE
+        ),
+        TRUE
+    )
+    expect_equal(
+        suppressWarnings(.warn_if_letters_conflict(
+            TRUE, NULL, TRUE
+        )),
+        FALSE
+    )
+})
