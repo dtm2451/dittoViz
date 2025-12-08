@@ -561,8 +561,10 @@ scatterPlot <- function(
         p <- p +
             scale_shape_manual(
                 values = shape.panel[seq_along(levels(as.factor(Target_data[,shape.by])))],
-                name = legend.shape.title) +
-            guides(shape = guide_legend(override.aes = list(size=legend.shape.size)))
+                name = legend.shape.title)
+        if (!identical(shape.by, color.by)) {
+            p <- p + guides(shape = guide_legend(override.aes = list(size=legend.shape.size)))
+        }
 
     } else {
         geom.args$shape <- shape.panel[1]
