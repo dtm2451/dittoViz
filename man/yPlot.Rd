@@ -280,8 +280,8 @@ Defaults to "dashed", but any ggplot linetype will work.}
 \item{line.color}{String that sets the color(s) of the \code{add.line} line(s). Default = "black".
 Alternatively, a vector of strings of the same length as \code{add.line} can be given to set the color of each line individually.}
 
-\item{line.linewidth}{Number that sets the linewidth of the \code{add.line} line(s). Default = 0.5.
-Alternatively, a vector of numbers of the same length as \code{add.line} can be given to set the linewidth of each line individually.}
+\item{line.linewidth}{Number that sets the thickness of the \code{add.line} line(s). Default = 0.5.
+Alternatively, a vector of numbers of the same length as \code{add.line} can be given to set the thickness of each line individually.}
 
 \item{line.opacity}{Number that sets the opacity of the \code{add.line} line(s). Default = 1.
 Alternatively, a vector of numbers of the same length as \code{add.line} can be given to set the opacity of each line individually.}
