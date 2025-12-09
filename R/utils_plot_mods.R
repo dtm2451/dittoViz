@@ -154,10 +154,10 @@
     }
 
     if (labels.use.numbers) {
-        # Determine which scale will need to be updated
+        # Determine which scale to update
         which_scale <- NULL
         for (i in (seq_along(p$scales$scales))) {
-            if (p$scales$scales[[i]]$name==legend.color.title &&
+            if (identical(p$scales$scales[[i]]$name, legend.color.title) &&
                 p$scales$scales[[i]]$aesthetics %in% c("colour", "fill")) {
                 which_scale <- i
                 break

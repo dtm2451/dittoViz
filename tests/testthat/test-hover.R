@@ -127,6 +127,17 @@ test_that("scatterPlot hover.round.digits rounds numeric data", {
     expect_gt(length2, length1)
 })
 
+test_that("scatterPlot lettering request warns when conflicts with do.hover", {
+    skip_if_not(plotly_installed, message = "No plotly")
+
+    ### Manual Check: plotly
+    expect_warning(
+        scatterPlot(
+            df, cont1, cont2, do.hover = TRUE,
+            do.letter = TRUE),
+        "'do.letter' ignored due to")
+})
+
 ### yPlot
 test_that("Showing hover.data works for yPlot, with rows.use", {
     if (plotly_installed) {

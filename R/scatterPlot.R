@@ -75,8 +75,7 @@
 #' Defaults to \code{split.by}, so generally there is no need to adjust this except when if you plan to apply faceting externally.
 #' @param labels.repel.adjust A named list which allows extra parameters to be pushed through to ggrepel function calls.
 #' List elements should be valid inputs to the \code{\link[ggrepel]{geom_label_repel}} by default, or \code{\link[ggrepel]{geom_text_repel}} when \code{labels.highlight = FALSE}.
-#' @param labels.use.numbers Logical which controls whether numbers will be used in place of original data-values.
-#' When turned on, so number to value mapping can be known, these numbers are added to the legend.
+#' @param labels.use.numbers Logical which controls swapping of data-value-labels for number-labels and adjustment of the legend to provide the mapping.
 #' @param labels.numbers.spacer String. When \code{do.label = TRUE} and \code{labels.use.numbers}, this string is used in the legend between the numbers and their associated data values.
 #' @param rename.color.groups String vector which sets new names for the identities of \code{color.by} groups.
 #' @param rename.shape.groups String vector which sets new names for the identities of \code{shape.by} groups.
@@ -110,8 +109,8 @@
 #' Defaults to "dashed", but any ggplot linetype will work.
 #' @param xline.color String that sets the color(s) of the \code{add.xline} line(s). Default = "black".
 #' Alternatively, a vector of strings of the same length as \code{add.xline} can be given to set the color of each line individually.
-#' @param xline.linewidth Number that sets the linewidth of the \code{add.xline} line(s). Default = 0.5.
-#' Alternatively, a vector of numbers of the same length as \code{add.xline} can be given to set the linewidth of each line individually.
+#' @param xline.linewidth Number that sets the thickness of the \code{add.xline} line(s). Default = 0.5.
+#' Alternatively, a vector of numbers of the same length as \code{add.xline} can be given to set the thickness of each line individually.
 #' @param xline.opacity Number that sets the opacity of the \code{add.xline} line(s). Default = 1.
 #' Alternatively, a vector of numbers of the same length as \code{add.xline} can be given to set the opacity of each line individually.
 #' @param add.yline Numeric value(s), denoting y-axis value(s), where one or multiple horizonal line(s) should be added.
@@ -119,8 +118,8 @@
 #' Defaults to "dashed", but any ggplot linetype will work.
 #' @param yline.color String that sets the color(s) of the \code{add.yline} line(s). Default = "black".
 #' Alternatively, a vector of strings of the same length as \code{add.yline} can be given to set the color of each line individually.
-#' @param yline.linewidth Number that sets the linewidth of the \code{add.yline} line(s). Default = 0.5.
-#' Alternatively, a vector of numbers of the same length as \code{add.yline} can be given to set the linewidth of each line individually.
+#' @param yline.linewidth Number that sets the thickness of the \code{add.yline} line(s). Default = 0.5.
+#' Alternatively, a vector of numbers of the same length as \code{add.yline} can be given to set the thickness of each line individually.
 #' @param yline.opacity Number that sets the opacity of the \code{add.yline} line(s). Default = 1.
 #' Alternatively, a vector of numbers of the same length as \code{add.yline} can be given to set the opacity of each line individually.
 #' @param add.abline Numeric value(s), denoting y-axis intercept(s), where one or multiple diagonal line(s) should be added.
@@ -131,8 +130,8 @@
 #' Defaults to "dashed", but any ggplot linetype will work.
 #' @param abline.color String that sets the color(s) of the \code{add.abline} line(s). Default = "black".
 #' Alternatively, a vector of strings of the same length as \code{add.abline} can be given to set the color of each line individually.
-#' @param abline.linewidth Number that sets the linewidth of the \code{add.abline} line(s). Default = 0.5.
-#' Alternatively, a vector of numbers of the same length as \code{add.abline} can be given to set the linewidth of each line individually.
+#' @param abline.linewidth Number that sets the thickness of the \code{add.abline} line(s). Default = 0.5.
+#' Alternatively, a vector of numbers of the same length as \code{add.abline} can be given to set the thickness of each line individually.
 #' @param abline.opacity Number that sets the opacity of the \code{add.abline} line(s). Default = 1.
 #' Alternatively, a vector of numbers of the same length as \code{add.abline} can be given to set the opacity of each line individually.
 #' @param theme A ggplot theme which will be applied before internal adjustments.
@@ -443,6 +442,7 @@ scatterPlot <- function(
         p <- .add_contours(p, Target_data, cols_use$x.by, cols_use$y.by, contour.color, contour.linetype)
     }
 
+    do.letter <- .warn_if_letters_conflict(do.letter, cols_use$shape.by, do.hover)
     p <- .add_letters_ellipses_labels_if_discrete(
         p, Target_data, cols_use$x.by, cols_use$y.by, cols_use$color.by,
         do.letter, do.ellipse, do.label,
