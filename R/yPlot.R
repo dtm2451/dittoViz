@@ -144,6 +144,11 @@
 #' }
 #' @param pvalues.test.adjust named list providing any desired additional inputs for the p-value calculation with \code{\link[stats]{wilcox.test}}.
 #' \code{x} and \code{y} inputs are filled internally, but all others can be adjusted if desired.
+#' @param pvalues.subgroup.usage "within", "across", or "ignore". Sets which data groupings to compare when \code{color.by} establishes subgroups of \code{group.by} groups:\itemize{
+#' \item "within": Compare color-subgroups to each other, within each grouping.
+#' \item "across": Compare each color-subgroup across the larger groupings.
+#' \item "ignore": Ignore subgroupings entirely. Compare larger groupings as if no \code{color.by} subgroups were established.
+#' }
 #' @param pvalues.plot.symbols Logical which controls whether pvalues will be replaced with the below symbol representations
 #' OR a custom function that inputs a numeric vector of p-values and outputs vector of desired labels, where the output is the same length as the input.
 #'
@@ -361,7 +366,7 @@ yPlot <- function(
     line.linewidth = 0.5,
     line.opacity = 1,
     add.pvalues = NULL,
-    pvalues.subgroup.method = c("color", "group", "ignore"),
+    pvalues.subgroup.usage = c("within", "across", "ignore"),
     pvalues.round.digits = 4,
     pvalues.sample.by = NULL,
     pvalues.sample.summary = "mean",
@@ -383,7 +388,7 @@ yPlot <- function(
     ridgeplot.shape <- match.arg(ridgeplot.shape)
     multivar.aes <- match.arg(multivar.aes)
     multivar.split.dir <- match.arg(multivar.split.dir)
-    pvalues.subgroup.method <- match.arg(pvalues.subgroup.method)
+    pvalues.subgroup.usage <- match.arg(pvalues.subgroup.usage)
 
     #Populate rows.use with a list of names if it was given anything else.
     rows.use <- .which_rows(rows.use, data_frame)
@@ -456,15 +461,14 @@ yPlot <- function(
 
     # Stats prep
     stats_calcd <- FALSE
-    stats <- NULL
+    stats_plot <- NULL
     if (!identical(add.pvalues, NULL)) {
         .error_if_no_ggpubr()
-        stats_calcd <- TRUE
 
         ### Directionality Options
         # group only or group and color (same), btwn groups
-        # group and color (sub), btwn colors within groups == "color"
-        # group and color (sub), btwn groups within colors == "group"
+        # group and color (sub), btwn colors within groups == "within"
+        # group and color (sub), btwn groups within colors == "across"
         # group and color (sub), btwn groups ignoring colors == "ignore"
         # group and color (super), btwn groups
         # group and color (super), btwn colors **Unsupported**
@@ -472,13 +476,13 @@ yPlot <- function(
             Target_data, cols_use$group.by, cols_use$color.by)
         secondary.offset <- NULL
         p.split.by <- split.by
-        if (rel %in% c("same","super") || pvalues.subgroup.method == "ignore") {
+        if (rel %in% c("same","super") || pvalues.subgroup.usage == "ignore") {
             cols_use$p.by <- cols_use$group.by
         } else {
-            if (pvalues.subgroup.method == "color") {
+            if (pvalues.subgroup.usage == "within") {
                 cols_use$p.by <- cols_use$color.by
                 p.split.by <- c(cols_use$group.by, split.by)
-            } else { # "group"
+            } else { # "across"
                 cols_use$p.by <- cols_use$group.by
                 p.split.by <- c(cols_use$color.by, split.by)
                 secondary.offset <- cols_use$color.by
@@ -490,7 +494,7 @@ yPlot <- function(
 
         stats <- .calc_stats(
             Target_data,
-            cols_use$var, cols_use$p.by, comps,
+            cols_use$var, cols_use$p.by, comps, color.by = cols_use$color.by,
             sample.by = pvalues.sample.by, sample.summary = pvalues.sample.summary,
             split.by = p.split.by,
             test.method = pvalues.test.method, test.adjust = pvalues.test.adjust,
@@ -499,16 +503,21 @@ yPlot <- function(
             do.adjust = pvalues.adjust, p.adjust.method = pvalues.adjust.method,
             do.fc = pvalues.do.fc, fc.pseudocount = pvalues.fc.pseudocount)
 
-        stats_plot <- .add_x_pos(
-            stats,
-            Target_data, cols_use$group.by, cols_use$p.by,
-            secondary.offset, boxplot.position.dodge
-        )
+        if (is.null(stats)) {
+            warning("'add.pvalues' skipped: Comparisons setup did not yield any valid comparisons.")
+        } else {
+            stats_calcd <- TRUE
+            stats_plot <- .add_x_pos(
+                stats,
+                Target_data, cols_use$group.by, cols_use$p.by,
+                secondary.offset, boxplot.position.dodge, split.by, split.adjust
+            )
 
-        stats_plot <- .add_y_offset(
-            stats_plot, cols_use$p.by, cols_use$group.by, secondary.offset,
-            pvalues.offset.first, pvalues.offset.between, split.by, split.adjust
-        )
+            stats_plot <- .add_y_offset(
+                stats_plot, cols_use$p.by, cols_use$group.by, secondary.offset,
+                pvalues.offset.first, pvalues.offset.between, split.by, split.adjust
+            )
+        }
     }
 
     # Make the plot

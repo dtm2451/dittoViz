@@ -72,7 +72,7 @@ yPlot(
   line.linewidth = 0.5,
   line.opacity = 1,
   add.pvalues = NULL,
-  pvalues.subgroup.method = c("color", "group", "ignore"),
+  pvalues.subgroup.usage = c("within", "across", "ignore"),
   pvalues.round.digits = 4,
   pvalues.sample.by = NULL,
   pvalues.sample.summary = "mean",
@@ -304,6 +304,12 @@ Alternatively, a vector of numbers of the same length as \code{add.line} can be 
 
 \item{add.pvalues}{NULL (off), "all", or a list of length 2 string vectors which each name a pairwise set of 2 \code{group.by}-values to compare between.
 Giving "all" will determine, and run comparisons for, all possible pairwise combinations of \code{group.by}-values.}
+
+\item{pvalues.subgroup.usage}{"within", "across", or "ignore". Sets which data groupings to compare when \code{color.by} establishes subgroups of \code{group.by} groups:\itemize{
+\item "within": Compare color-subgroups to each other, within each grouping.
+\item "across": Compare each color-subgroup across the larger groupings.
+\item "ignore": Ignore subgroupings entirely. Compare larger groupings as if no \code{color.by} subgroups were established.
+}}
 
 \item{pvalues.round.digits}{Integer number which sets how many decimal digits to round to,}
 

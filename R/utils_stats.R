@@ -46,6 +46,7 @@
     data_frame,
     var,
     comp.by, comp.setups,
+    color.by,
     split.by,
     sample.by = NULL,
     sample.summary = "mean",
@@ -60,6 +61,9 @@
     outermost = TRUE
 ) {
 
+    if (comp.by %in% split.by) {
+        stop("Cannot calculate p-values when planning to also facet by the comparison data")
+    }
     if (!is.function(get(test.method))) {
         stop("'get()' of pvalues 'test.method' does not retrieve a function.")
     }
@@ -81,7 +85,7 @@
             next_split.by <- split.by[-1*length(split.by)]
             new <- .calc_stats(
                 data_frame[in_this_split,],
-                var, comp.by, comp.setups,
+                var, comp.by, comp.setups, color.by,
                 split.by = next_split.by,
                 sample.by = sample.by, sample.summary = sample.summary,
                 test.method = test.method, test.adjust = test.adjust,
@@ -157,11 +161,16 @@
         out <- do.call(rbind, stats)
         # Needed to avoid a ggplot2 complaint
         if (length(stats) > 0) {
-            out[[comp.by]] <- group.1
+            out[,comp.by] <- group.1
+            if (!color.by %in% colnames(out)) {
+                match(out[,comp.by], data_frame[,color.by])
+                out[,color.by] <- data_frame[match(out[,comp.by], data_frame[,color.by]), color.by]
+            }
         }
     }
 
-    if (outermost) {
+    # If no valid statistical comparisons, out will be NULL
+    if (outermost && !is.null(out)) {
         # Multiple Hypothesis Correction
         p_use <- "p"
         if (do.adjust) {
@@ -203,11 +212,54 @@
     secondary.by,
     dodge,
     split.by,
-    split.adjust
+    split.adjust,
+    data_all = data,
+    split.by.internal = split.by
+) {
+
+    # Overall Goal: Determine x-position of bracket left and right sides
+    # Primary goal of 'outer' function:
+    #   Identify observations within the same plot so that positions can be accurately determinged in inner-function
+    # To do so:
+    #   If faceting and groups can explicitly change per facet, iterate per facet
+    #   Otherwise, just pass through.
+
+    scale_free_x <- "scale" %in% names(split.adjust) && split.adjust$scale %in% c("free", "free_x")
+    scales_free_x <- "scales" %in% names(split.adjust) && split.adjust$scales %in% c("free", "free_x")
+    free_x <- scale_free_x || scale_free_x
+
+    if (free_x && !is.null(split.by.internal) && length(split.by.internal)>0) {
+        # Check for splitting, here allowing for NULL or c() as the "nope"
+        split_col <- split.by.internal[length(split.by.internal)]
+        out_list <- list()
+        for (split_val in colLevels(split_col, data)) {
+            in_this_split_data <- data[,split_col]==split_val
+            in_this_split_stats <- stats[,split_col]==split_val
+            next_split.by <- split.by.internal[-1*length(split.by.internal)]
+            out_list[[length(out_list)+1]] <- .add_x_pos(
+                stats[in_this_split_stats,],
+                data[in_this_split_data,],
+                primary.by, p.by, secondary.by, dodge,
+                split.by, split.adjust,
+                data_all = data_all,
+                split.by.internal = next_split.by)
+        }
+        do.call(rbind, out_list)
+    } else {
+        .add_x_pos_per_set(stats, data, primary.by, p.by, secondary.by, dodge)
+    }
+}
+
+.add_x_pos_per_set <- function(
+    stats,
+    data,
+    primary.by,
+    p.by,
+    secondary.by,
+    dodge
 ) {
     # ggpubr::stat_pvalue_manual looks to group1 and group2 columns except if
     # xmin and xmax columns exist.  Then, these are used instead.
-
     if (p.by != primary.by) {
         # Case: btwn subgroups, within groups
         dodge_steps <- list()
@@ -275,7 +327,8 @@
     split.by.internal = split.by
 ) {
 
-    # Goal of 'outer' function:
+    # Overall Goal: Add y-position offsets to have brackets not overlap
+    # Primary goal of 'outer' function:
     #   Identify p-values with potential be shown over the same x-locations within the same facet
     # To do so:
     #   1. Split / iterate per facet

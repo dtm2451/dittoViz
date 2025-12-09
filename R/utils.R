@@ -38,6 +38,7 @@ NULL
 #'         subcategory = rep(as.character(rep(1:3,4)), each = nobs/12),
 #'         row.names = paste0("obs", 1:nobs)
 #'         )
+#' example_df$supergroups <- ifelse(example_df$groups %in% c("A","B"), "set1", "set2")
 #'
 #' # cleanup
 #' rm(example_pca, nobs)
