@@ -1,3 +1,10 @@
+# dittoViz 1.0.5
+
+(All relating to integrating dittoViz functions with dittoSeq)
+* Minor warning and documentation adjustments.
+* BugFix: ignore 'do.letter' when conflicts with 'shape.by' or 'do.hover' use
+* BugFix: Allow 'labels.use.numbers = TRUE' to work alongside of 'legend.color.title = NULL'
+
 # dittoViz 1.0.4
 
 * Minor changes to ensure compatibility with ggplot2 version 4.0.0 changes. Notably, the 'MASS' package is now added as a suggested companion package, and error messages suggesting its installation were added for features which rely on functionality from this package. This change is concurrent with ggplot2 itself downgrading the tool from an imported requirement to a suggested addition.
