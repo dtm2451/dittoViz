@@ -166,7 +166,7 @@ barPlot <- function(
     #Build Plot
     p <- ggplot(
         data=data,
-        aes(x = .data$grouping, y=.data[[scale]], fill = .data$label)) +
+        aes(x = .data$grouping, y=.data[[scale]], fill = .data$Y)) +
         theme + xlab(xlab) + ylab(ylab) + ggtitle(main, subtitle = sub) +
         scale_fill_manual(name = legend.title, values = color.panel[colors]) +
         if (x.labels.rotate) {
@@ -188,7 +188,7 @@ barPlot <- function(
         p <- p + scale_y_continuous(breaks = y.breaks)
     }
     if (is.null(max)) {
-        max <- ifelse(scale == "percent", 1, max(data$label.count.total))
+        max <- ifelse(scale == "percent", 1, max(data$Y.count.total))
     }
     p <- p + coord_cartesian(ylim=c(min,max))
 
