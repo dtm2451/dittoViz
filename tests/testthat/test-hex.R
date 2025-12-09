@@ -10,6 +10,8 @@ disc2 <- "island"
 rows.names <- rownames(df)[1:40]
 rows.logical <- c(rep(TRUE, 40), rep(FALSE,nrow(df)-40))
 
+mass_installed <- requireNamespace("MASS", quietly = TRUE)
+
 test_that("scatterHex can plot density only, and continuous or discrete color.by data", {
     expect_s3_class(scatterHex(data_frame=df, x.by=cont1, y.by=cont2), "ggplot")
     expect_s3_class(scatterHex(data_frame=df, x.by=cont1, y.by=cont2, disc), "ggplot")
@@ -309,6 +311,7 @@ test_that("scatterHex trajectory adding works", {
 })
 
 test_that("scatterHex adding contours", {
+    skip_if_not(mass_installed, message = "No MASS")
     expect_s3_class(scatterHex(data_frame=df, x.by=cont1, y.by=cont2, disc,
                                 do.contour = TRUE),
                     "ggplot")
@@ -326,6 +329,8 @@ test_that("scatterHex do.label/do.ellipse", {
             disc, data_frame=df, x.by=cont1, y.by=cont2,
             do.label = TRUE),
         "ggplot")
+
+    skip_if_not(mass_installed, message = "No MASS")
     expect_s3_class(
         scatterHex(
             disc, data_frame=df, x.by=cont1, y.by=cont2,
@@ -341,6 +346,7 @@ test_that("scatterHex ignores do.label/do.ellipse for continuous data", {
                                do.ellipse = TRUE),
                    "do.ellipse was/were ignored for non-discrete data", fixed = TRUE)
 
+    skip_if_not(mass_installed, message = "No MASS")
     # No message for discrete data && MANUAAL CHECK: ellipse is drawn
     expect_message(scatterHex(data_frame=df, x.by=cont1, y.by=cont2, disc,
                                do.ellipse = TRUE),
@@ -394,7 +400,7 @@ test_that("scatterPlot data adjustments applied", {
         max(p$data[[p$cols_used$y.by]]), 1)
 })
 
-test_that("scatterPlot added arbitrary horizontal and vertical lines work", {
+test_that("scatterHex added arbitrary horizontal, vertical, and diagonal lines work", {
     expect_s3_class(
         scatterHex(df, "PC1", "PC2", disc,
                     add.yline = c(-1, 1), add.xline = c(2)),
@@ -406,6 +412,17 @@ test_that("scatterPlot added arbitrary horizontal and vertical lines work", {
         scatterHex(df, "PC1", "PC2", disc,
                     add.yline = c(-1, 1), add.xline = c(2),
                     yline.color = "red", xline.linetype = "dotted"),
+        "ggplot")
+
+    ### Manual Check:
+    # split.by works with lines and ablines work
+    expect_s3_class(
+        scatterHex(df, "PC3", "PC2", disc, split.by = "groups",
+            add.yline = c(-5, 5), add.xline = c(2),
+            yline.color = "red", xline.linetype = "dotted",
+            add.abline = c(5, 1.5), abline.slope = c(2, -3),
+            abline.linetype = "solid", abline.opacity = c(1, 0.5), abline.linewidth = c(1, 2),
+            abline.color = c("green", "blue")),
         "ggplot")
 })
 

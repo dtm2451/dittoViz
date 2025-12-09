@@ -57,6 +57,12 @@ NULL
     }
 }
 
+.error_if_no_mass_because <- function(case) {
+    if (!requireNamespace("MASS", quietly = TRUE)) {
+        stop(paste0("MASS installation required for adding ", case, "."))
+    }
+}
+
 .error_if_no_ggrastr <- function() {
     if (!requireNamespace("ggrastr", quietly = TRUE)) {
         stop("ggrastr installation required for using rasterization with dittoScatterPlot plotters.")
@@ -72,6 +78,12 @@ NULL
 .error_if_no_ggpubr <- function() {
     if (!requireNamespace("ggpubr", quietly = TRUE)) {
         stop("ggpubrs installation required for plotting pvalues using 'add.pvalues'.")
+    }
+}
+
+.error_if_no_mass_because <- function(case) {
+    if (!requireNamespace("MASS", quietly = TRUE)) {
+        stop(paste0("MASS installation required for adding ", case, "."))
     }
 }
 
@@ -92,6 +104,16 @@ NULL
         }
     }
     target
+}
+
+.warn_if_letters_conflict <- function(
+    do.letter, shape.by, do.hover) {
+    # Handles when do.letter is used alongside shape.by or do.hover
+    if (do.letter && !identical(c(shape.by, do.hover), FALSE)) {
+            warning("'do.letter' ignored due to incompatibility with 'do.hover' or 'shape.by'")
+        return(FALSE)
+    }
+    do.letter
 }
 
 .all_rows <- function(df) {

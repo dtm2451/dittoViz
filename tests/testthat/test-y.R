@@ -239,7 +239,7 @@ test_that("yPlots x-labels can be adjusted, (y for ridgeplots)", {
         "ggplot")
 })
 
-test_that("yPlot can have lines added", {
+test_that("yPlot can have lines added and adjusted individually", {
     expect_s3_class(
         yPlot(
             df, cont1, group.by = grp,
@@ -255,6 +255,32 @@ test_that("yPlot can have lines added", {
             df, cont1, group.by = grp,
             plots = "ridgeplot",
             add.line = 20, line.linetype = "solid", line.color = "green"),
+        "ggplot")
+    
+    # Manual Check:
+    # Multiple lines, one solid, one dashed, both green, first thick, second thin.
+    expect_s3_class(
+        yPlot(
+            df, cont1, group.by = grp,
+            add.line = c(20, 300), line.linetype = c("solid", "dotdash"), 
+            line.color = "green", line.linewidth = c(0.5, 2)),
+        "ggplot")
+
+    # Manual Check:
+    # Lines applied across panels properly for both ridgeplot and other plots
+    expect_s3_class(
+        yPlot(
+            df, cont1, group.by = grp, split.by = "species",
+            plots = "ridgeplot",
+            add.line = c(20, 300), line.linetype = c("solid", "dotdash"), 
+            line.color = "green", line.linewidth = c(0.5, 2)),
+        "ggplot")
+    
+    expect_s3_class(
+        yPlot(
+            df, cont1, group.by = grp, split.by = "species",
+            add.line = c(20, 300), line.linetype = c("solid", "dotdash"), 
+            line.color = "green", line.linewidth = c(0.5, 2)),
         "ggplot")
 })
 

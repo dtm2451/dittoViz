@@ -1,5 +1,4 @@
 .add_splitting <- function(p, split.by, nrow, ncol, split.args) {
-
     # Adds ggplot faceting to go with 'split.by' utilization.
 
     # When split.by is length 1, the shape is controlled with ncol & nrow
@@ -37,20 +36,21 @@
     labels.repel.adjust, labels.use.numbers, labels.numbers.spacer,
     legend.color.title,
     letter.size, letter.opacity, letter.legend.title, letter.legend.size) {
-
-    if (!is.numeric(data[,color.by])) {
-
+    if (!is.numeric(data[, color.by])) {
         if (do.letter) {
             p <- .add_letters(
                 p, data, x.by, y.by, color.by,
-                letter.size, letter.opacity, letter.legend.title, letter.legend.size)
+                letter.size, letter.opacity, letter.legend.title, letter.legend.size
+            )
         }
 
         if (do.ellipse) {
+            .error_if_no_mass_because("ellipses")
             p <- p + stat_ellipse(
-                data=data,
+                data = data,
                 aes(x = .data[[x.by]], y = .data[[y.by]], colour = .data[[color.by]]),
-                type = "t", linetype = 2, linewidth = 0.5, show.legend = FALSE, na.rm = TRUE)
+                type = "t", linetype = 2, linewidth = 0.5, show.legend = FALSE, na.rm = TRUE
+            )
         }
 
         if (do.label) {
@@ -60,16 +60,16 @@
                 labels.repel.adjust, labels.use.numbers, labels.numbers.spacer,
                 legend.color.title)
         }
-
     } else {
-
         # Data is incompatible, so message instead of adding.
         ignored.targs <- paste(
-            c("do.letter", "do.ellipse", "do.label")[c(do.letter,do.ellipse,do.label)],
-            collapse = ", ")
+            c("do.letter", "do.ellipse", "do.label")[c(do.letter, do.ellipse, do.label)],
+            collapse = ", "
+        )
         .msg_if(
             do.letter || do.ellipse || do.label,
-            ignored.targs, " was/were ignored for non-discrete data.")
+            ignored.targs, " was/were ignored for non-discrete data."
+        )
     }
 
     p
@@ -80,12 +80,14 @@
     # Add contours based on the density of data points
     # (Dim and Scatter plots)
 
+    .error_if_no_mass_because("contours")
     p + geom_density_2d(
         data = data,
         mapping = aes(x = .data[[x.by]], y = .data[[y.by]]),
         color = color,
         linetype = linetype,
-        na.rm = TRUE)
+        na.rm = TRUE
+    )
 }
 
 #' @importFrom stats setNames
@@ -100,16 +102,12 @@
 
     # Determine medians
     if (is.null(split.by)) {
-
         median.data <- .calc_xy_medians(Target_data, labels.by, x.by, y.by)
-
-    } else if (length(split.by)==1) {
-
+    } else if (length(split.by) == 1) {
         median.data <- NULL
 
-        for (level in levels(as.factor(as.character(Target_data[,split.by])))) {
-
-            level.dat <- Target_data[Target_data[,split.by]==level,]
+        for (level in levels(as.factor(as.character(Target_data[, split.by])))) {
+            level.dat <- Target_data[Target_data[, split.by] == level, ]
 
             level.med.dat <- .calc_xy_medians(level.dat, labels.by, x.by, y.by)
             # Add split.by columns
@@ -120,20 +118,19 @@
         }
 
         # Ensure retention of factor level ordering
-        median.data[,split.by] <- .retain_factor_level_order(
-            median.data[,split.by], possible_factor = Target_data[,split.by])
-
-    } else if (length(split.by)==2) {
-
+        median.data[, split.by] <- .retain_factor_level_order(
+            median.data[, split.by],
+            possible_factor = Target_data[, split.by]
+        )
+    } else if (length(split.by) == 2) {
         median.data <- NULL
 
-        for (level1 in levels(as.factor(as.character(Target_data[,split.by[1]])))) {
-            for (level2 in levels(as.factor(as.character(Target_data[,split.by[2]])))) {
+        for (level1 in levels(as.factor(as.character(Target_data[, split.by[1]])))) {
+            for (level2 in levels(as.factor(as.character(Target_data[, split.by[2]])))) {
+                level.dat <- Target_data[Target_data[, split.by[1]] == level1, ]
+                level.dat <- level.dat[level.dat[, split.by[2]] == level2, ]
 
-                level.dat <- Target_data[Target_data[,split.by[1]]==level1,]
-                level.dat <- level.dat[level.dat[,split.by[2]]==level2,]
-
-                if (nrow(level.dat)>0) {
+                if (nrow(level.dat) > 0) {
                     level.med.dat <- .calc_xy_medians(level.dat, labels.by, x.by, y.by)
                     # Add split.by columns
                     level.med.dat$split1 <- level1
@@ -146,17 +143,21 @@
         }
 
         # Ensure retention of factor level ordering
-        median.data[,split.by[1]] <- .retain_factor_level_order(
-            median.data[,split.by[1]], possible_factor = Target_data[,split.by[1]])
-        median.data[,split.by[2]] <- .retain_factor_level_order(
-            median.data[,split.by[2]], possible_factor = Target_data[,split.by[2]])
+        median.data[, split.by[1]] <- .retain_factor_level_order(
+            median.data[, split.by[1]],
+            possible_factor = Target_data[, split.by[1]]
+        )
+        median.data[, split.by[2]] <- .retain_factor_level_order(
+            median.data[, split.by[2]],
+            possible_factor = Target_data[, split.by[2]]
+        )
     }
 
     if (labels.use.numbers) {
-        # Determine which scale will need to be updated
+        # Determine which scale to update
         which_scale <- NULL
         for (i in (seq_along(p$scales$scales))) {
-            if (p$scales$scales[[i]]$name==legend.color.title &&
+            if (identical(p$scales$scales[[i]]$name, legend.color.title) &&
                 p$scales$scales[[i]]$aesthetics %in% c("colour", "fill")) {
                 which_scale <- i
                 break
@@ -183,7 +184,8 @@
     args <- list(
         data = median.data,
         mapping = aes(x = .data$cent.x, y = .data$cent.y, label = .data$label),
-        size = labels.size)
+        size = labels.size
+    )
     if (labels.repel) {
         if (is.list(labels.repel.adjust)) {
             args <- c(args, labels.repel.adjust)
@@ -213,19 +215,24 @@
 }
 
 .calc_xy_medians <- function(x.y.group.df, group.col, x.by, y.by) {
-    groups <- levels(as.factor(as.character(x.y.group.df[,group.col])))
+    groups <- levels(as.factor(as.character(x.y.group.df[, group.col])))
     data.frame(
         cent.x = vapply(
             groups,
             function(level) {
-                median(x.y.group.df[x.y.group.df[,group.col]==level, x.by], na.rm = TRUE)
-            }, FUN.VALUE = numeric(1)),
+                median(x.y.group.df[x.y.group.df[, group.col] == level, x.by], na.rm = TRUE)
+            },
+            FUN.VALUE = numeric(1)
+        ),
         cent.y = vapply(
             groups,
             function(level) {
-                median(x.y.group.df[x.y.group.df[,group.col]==level, y.by], na.rm = TRUE)
-            }, FUN.VALUE = numeric(1)),
-        label = groups)
+                median(x.y.group.df[x.y.group.df[, group.col] == level, y.by], na.rm = TRUE)
+            },
+            FUN.VALUE = numeric(1)
+        ),
+        label = groups
+    )
 }
 
 .add_trajectories_by_groups <- function(
@@ -243,13 +250,15 @@
     cluster.levels <- colLevels(group.by, data)
     group_medians <- .calc_xy_medians(data, group.by, x.by, y.by)
 
-    #Add trajectories
-    for (i in seq_along(trajectories)){
+    # Add trajectories
+    for (i in seq_along(trajectories)) {
         p <- p + geom_path(
-            data = group_medians[as.character(trajectories[[i]]),],
+            data = group_medians[as.character(trajectories[[i]]), ],
             aes(x = .data$cent.x, y = .data$cent.y),
             arrow = arrow(
-                angle = 20, type = "closed", length = unit(arrow.size, "inches")))
+                angle = 20, type = "closed", length = unit(arrow.size, "inches")
+            )
+        )
     }
     p
 }
@@ -271,7 +280,9 @@
             data = data,
             aes(x = .data$x, y = .data$y),
             arrow = arrow(
-                angle = 20, type = "closed", length = unit(arrow.size, "inches")))
+                angle = 20, type = "closed", length = unit(arrow.size, "inches")
+            )
+        )
     }
     p
 }
@@ -283,19 +294,90 @@
     # Color blindness aid
     # (Dim and Scatter plots)
 
-    letters.needed <- length(levels(as.factor(Target_data[,col.use])))
+    letters.needed <- length(levels(as.factor(Target_data[, col.use])))
     letter.labels <- c(
         LETTERS, letters, 0:9, "!", "@", "#", "$", "%", "^", "&", "*", "(",
         ")", "-", "+", "_", "=", ";", "/", "|", "{", "}", "~"
     )[seq_len(letters.needed)]
-    names(letter.labels) <- levels(as.factor(Target_data[,col.use]))
+    names(letter.labels) <- levels(as.factor(Target_data[, col.use]))
     p <- p +
         geom_point(
-            data=Target_data,
+            data = Target_data,
             aes(x = .data[[x.by]], y = .data[[y.by]], shape = .data[[col.use]]),
-            color = "black", size=size*3/4, alpha = opacity) +
+            color = "black", size = size * 3 / 4, alpha = opacity
+        ) +
         scale_shape_manual(
             name = legend.title,
-            values = letter.labels)
+            values = letter.labels
+        )
     p
+}
+
+
+# Checks wrapper for .add_*line functions
+._ensure_lengths_and_adjust_for_panels <- function(
+        add.line, add.line.name,
+        line.param, line.param.name,
+        num.panels
+) {
+    if (length(line.param) != length(add.line) & length(line.param) != 1) {
+        warning("'", line.param.name, "' must be length 1 or the same length as '", add.line.name, "', using only the first provided value.")
+        line.param[1]
+    } else if (length(line.param) != 1) {
+        rep(line.param, num.panels)
+    } else {
+        line.param
+    }
+}
+
+.add_xline <- function(p, add.xline, xline.linetype, xline.color, xline.linewidth, xline.opacity, num.panels) {
+
+    ._elafp <- function(l.p, l.p.n) {
+        ._ensure_lengths_and_adjust_for_panels(add.xline, "add.xline", l.p, l.p.n, num.panels)
+    }
+    xline.linetype <- ._elafp(xline.linetype, "xline.linetype")
+    xline.color <- ._elafp(xline.color, "xline.color")
+    xline.linewidth <- ._elafp(xline.linewidth, "xline.linewidth")
+    xline.opacity <- ._elafp(xline.opacity, "xline.opacity")
+
+    p + geom_vline(
+        xintercept = add.xline, linetype = xline.linetype, color = xline.color,
+        linewidth = xline.linewidth, alpha = xline.opacity
+    )
+}
+
+.add_yline <- function(p, add.yline, yline.linetype, yline.color, yline.linewidth, yline.opacity, num.panels) {
+
+    ._elafp <- function(l.p, l.p.n) {
+        ._ensure_lengths_and_adjust_for_panels(add.yline, "add.yline", l.p, l.p.n, num.panels)
+    }
+    yline.linetype <- ._elafp(yline.linetype, "yline.linetype")
+    yline.color <- ._elafp(yline.color, "yline.color")
+    yline.linewidth <- ._elafp(yline.linewidth, "yline.linewidth")
+    yline.opacity <- ._elafp(yline.opacity, "yline.opacity")
+
+    p + geom_hline(
+        yintercept = add.yline, linetype = yline.linetype, color = yline.color,
+        linewidth = yline.linewidth, alpha = yline.opacity
+    )
+}
+
+.add_abline <- function(p, add.abline, abline.slope, abline.linetype, abline.color, abline.linewidth, abline.opacity, num.panels) {
+
+    ._elafp <- function(l.p, l.p.n) {
+        ._ensure_lengths_and_adjust_for_panels(add.abline, "add.abline", l.p, l.p.n, num.panels)
+    }
+    abline.linetype <- ._elafp(abline.linetype, "abline.linetype")
+    abline.color <- ._elafp(abline.color, "abline.color")
+    abline.linewidth <- ._elafp(abline.linewidth, "abline.linewidth")
+    abline.opacity <- ._elafp(abline.opacity, "abline.opacity")
+    if (length(abline.slope) != length(add.abline) & length(abline.slope) != 1) {
+        warning("'abline.slope' must be length 1 or the same length as 'add.abline', using only the first provided value.")
+        abline.slope <- abline.slope[1]
+    }
+
+    p + geom_abline(
+        intercept = add.abline, slope = abline.slope, linetype = abline.linetype, color = abline.color,
+        linewidth = abline.linewidth, alpha = abline.opacity
+    )
 }
