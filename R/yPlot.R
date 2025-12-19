@@ -343,17 +343,15 @@ yPlot <- function(
         split.by = split.by,
         group.aes = group.by
     )
-    if (group.by != color.by) {
-        cols_use$group.aes <- "group.aes"
-        data_frame$`group.aes` <- paste0(
-            as.character(data_frame[,group.by]),
-            ".-.",
-            as.character(data_frame[,color.by])
-        )
-    }
-    # Relabel/reorder for groups
+    # Relabel/reorder and interpret groups
     data_frame[,group.by] <-
         .rename_and_or_reorder(data_frame[,group.by], x.reorder, x.labels)
+    if (group.by != color.by) {
+        cols_use$group.aes <- "__group.aes__"
+        data_frame$`__group.aes__` <- interaction(
+            data_frame[,group.by], data_frame[,color.by], sep = ".-."
+        )
+    }
     if (length(var) > 1) {
         # (Only numeric data supported, handles color adjustment and rows.use subsetting)
         multi_out <- .multi_var_restructure(
