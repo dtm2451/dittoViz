@@ -74,12 +74,14 @@
 #' @param do.label  Logical. Whether to add text labels near the center (median) of \code{color.by} groups.
 #' @param labels.size Number which sets the size of labels text when \code{do.label = TRUE}.
 #' @param labels.highlight Logical. Whether labels should have a box behind them when \code{do.label = TRUE}.
-#' @param labels.repel Logical, that sets whether the labels' placements will be adjusted with \link{ggrepel} to avoid intersections between labels and plot bounds when \code{do.label = TRUE}.
+#' @param labels.repel Logical, that sets whether the labels' placements will be adjusted with \link[ggrepel]{ggrepel} to avoid intersections between labels and plot bounds when \code{do.label = TRUE}.
 #' TRUE by default.
 #' @param labels.split.by String of one or two column names which controls the facet-split calculations for label placements.
 #' Defaults to \code{split.by}, so generally there is no need to adjust this except when if you plan to apply faceting externally.
 #' @param labels.repel.adjust A named list which allows extra parameters to be pushed through to ggrepel function calls.
 #' List elements should be valid inputs to the \code{\link[ggrepel]{geom_label_repel}} by default, or \code{\link[ggrepel]{geom_text_repel}} when \code{labels.highlight = FALSE}.
+#' @param labels.use.numbers Logical which controls swapping of data-value-labels for number-labels and adjustment of the legend to provide the mapping.
+#' @param labels.numbers.spacer String. When \code{do.label = TRUE} and \code{labels.use.numbers}, this string is used in the legend between the numbers and their associated data values.
 #' @param rename.color.groups String vector which sets new names for the identities of \code{color.by} groups.
 #' @param rename.shape.groups String vector which sets new names for the identities of \code{shape.by} groups.
 #' @param legend.show Logical. Whether any legend should be displayed. Default = \code{TRUE}.
@@ -107,14 +109,36 @@
 #' @param trajectory.group.by String denoting the name of a column of \code{data_frame} to use for generating trajectories from data point groups.
 #' @param trajectory.arrow.size Number representing the size of trajectory arrows, in inches.  Default = 0.15.
 #' @param add.trajectory.curves List of matrices, each representing coordinates for a trajectory path, from start to end, where matrix columns represent x and y coordinates of the paths.
-#' @param add.xline numeric value(s) where one or multiple vertical line(s) should be added.
+#' @param add.xline Numeric value(s), denoting x-axis value(s), where one or more vertical line(s) should be added.
 #' @param xline.linetype String which sets the type of line for \code{add.xline}.
 #' Defaults to "dashed", but any ggplot linetype will work.
-#' @param xline.color String that sets the color(s) of the \code{add.xline} line(s).
-#' @param add.yline numeric value(s) where one or multiple vertical line(s) should be added.
+#' @param xline.color String that sets the color(s) of the \code{add.xline} line(s). Default = "black".
+#' Alternatively, a vector of strings of the same length as \code{add.xline} can be given to set the color of each line individually.
+#' @param xline.linewidth Number that sets the thickness of the \code{add.xline} line(s). Default = 0.5.
+#' Alternatively, a vector of numbers of the same length as \code{add.xline} can be given to set the thickness of each line individually.
+#' @param xline.opacity Number that sets the opacity of the \code{add.xline} line(s). Default = 1.
+#' Alternatively, a vector of numbers of the same length as \code{add.xline} can be given to set the opacity of each line individually.
+#' @param add.yline Numeric value(s), denoting y-axis value(s), where one or multiple horizonal line(s) should be added.
 #' @param yline.linetype String which sets the type of line for \code{add.yline}.
 #' Defaults to "dashed", but any ggplot linetype will work.
-#' @param yline.color String that sets the color(s) of the \code{add.yline} line(s).
+#' @param yline.color String that sets the color(s) of the \code{add.yline} line(s). Default = "black".
+#' Alternatively, a vector of strings of the same length as \code{add.yline} can be given to set the color of each line individually.
+#' @param yline.linewidth Number that sets the thickness of the \code{add.yline} line(s). Default = 0.5.
+#' Alternatively, a vector of numbers of the same length as \code{add.yline} can be given to set the thickness of each line individually.
+#' @param yline.opacity Number that sets the opacity of the \code{add.yline} line(s). Default = 1.
+#' Alternatively, a vector of numbers of the same length as \code{add.yline} can be given to set the opacity of each line individually.
+#' @param add.abline Numeric value(s), denoting y-axis intercept(s), where one or multiple diagonal line(s) should be added.
+#' Use \code{abline.slope} to set slope(s).
+#' @param abline.slope Number that sets the slope of the \code{add.abline} line(s). Default = 1.
+#' Alternatively, a vector of numbers of the same length as \code{add.abline} can be given to set the slope of each line individually.
+#' @param abline.linetype String which sets the type of line for \code{add.abline}.
+#' Defaults to "dashed", but any ggplot linetype will work.
+#' @param abline.color String that sets the color(s) of the \code{add.abline} line(s). Default = "black".
+#' Alternatively, a vector of strings of the same length as \code{add.abline} can be given to set the color of each line individually.
+#' @param abline.linewidth Number that sets the thickness of the \code{add.abline} line(s). Default = 0.5.
+#' Alternatively, a vector of numbers of the same length as \code{add.abline} can be given to set the thickness of each line individually.
+#' @param abline.opacity Number that sets the opacity of the \code{add.abline} line(s). Default = 1.
+#' Alternatively, a vector of numbers of the same length as \code{add.abline} can be given to set the opacity of each line individually.
 #' @param theme A ggplot theme which will be applied before internal adjustments.
 #' Default = \code{theme_bw()}.
 #' See \url{https://ggplot2.tidyverse.org/reference/ggtheme.html} for other options and ideas.
@@ -164,7 +188,7 @@
 #' @seealso
 #' \code{\link{scatterHex}} for a hex-binned version that can be useful when points are very dense.
 #'
-#' @author Daniel Bunis
+#' @author Daniel Bunis, Jared Andrews
 #' @export
 #' @examples
 #' example("dittoExampleData", echo = FALSE)
@@ -231,10 +255,11 @@
 #'     do.label = TRUE)          # Turns on the labeling feature
 #' scatterPlot(example_df, x.by = "PC1", y.by = "PC2", color.by = "groups",
 #'     sub = "tweaked labeling",
-#'     do.label = TRUE,          # Turns on the labeling feature
-#'     labels.size = 8,          # Adjust the text size of labels
-#'     labels.highlight = FALSE, # Removes white background behind labels
-#'     labels.repel = FALSE)     # Turns off anti-overlap location adjustments
+#'     do.label = TRUE,            # Turns on the labeling feature
+#'     labels.size = 8,            # Adjust the text size of labels
+#'     labels.highlight = FALSE,   # Removes white background behind labels
+#'     # labels.use.numbers = TRUE,# Swap to number placeholders
+#'     labels.repel = FALSE)       # Turns off anti-overlap location adjustments
 #'
 #' # Faceting can also be used to show multiple continuous variables side-by-side
 #' #   by giving a vector of column names to 'color.by'.
@@ -318,14 +343,26 @@ scatterPlot <- function(
     add.xline = NULL,
     xline.linetype = "dashed",
     xline.color = "black",
+    xline.linewidth = 0.5,
+    xline.opacity = 1,
     add.yline = NULL,
     yline.linetype = "dashed",
     yline.color = "black",
+    yline.linewidth = 0.5,
+    yline.opacity = 1,
+    add.abline = NULL,
+    abline.slope = 1,
+    abline.linetype = "solid",
+    abline.color = "black",
+    abline.linewidth = 0.5,
+    abline.opacity = 1,
     do.letter = FALSE,
     do.ellipse = FALSE,
     do.label = FALSE,
     labels.size = 5,
     labels.highlight = TRUE,
+    labels.use.numbers = FALSE,
+    labels.numbers.spacer = ": ",
     labels.repel = TRUE,
     labels.repel.adjust = list(),
     labels.split.by = split.by,
@@ -382,9 +419,7 @@ scatterPlot <- function(
         legend.show, legend.color.title, legend.color.size,
         legend.color.breaks, legend.color.breaks.labels, legend.shape.title,
         legend.shape.size, do.raster, raster.dpi,
-        cols_use$split.by, split.show.all.others, show.grid.lines,
-        add.xline, xline.linetype, xline.color,
-        add.yline, yline.linetype, yline.color)
+        cols_use$split.by, split.show.all.others, show.grid.lines)
 
     ### Add extra features
     if (!is.null(cols_use$split.by)) {
@@ -392,15 +427,33 @@ scatterPlot <- function(
             p, cols_use$split.by, split.nrow, split.ncol, split.adjust)
     }
 
+    # Get number of panels so that replicates of aesthetics can be generated if supplied for each line.
+    pp <- ggplot_build(p)
+    num.panels <- length(levels(pp$data[[1]]$PANEL))
+
+    if (!is.null(add.xline)) {
+        p <- .add_xline(p, add.xline, xline.linetype, xline.color, xline.linewidth, xline.opacity, num.panels)
+    }
+
+    if (!is.null(add.yline)) {
+        p <- .add_yline(p, add.yline, yline.linetype, yline.color, yline.linewidth, yline.opacity, num.panels)
+    }
+
+    if (!is.null(add.abline)) {
+        p <- .add_abline(p, add.abline, abline.slope, abline.linetype, abline.color, abline.linewidth, abline.opacity, num.panels)
+    }
+
     if (do.contour) {
         p <- .add_contours(p, Target_data, cols_use$x.by, cols_use$y.by, contour.color, contour.linetype)
     }
 
+    do.letter <- .warn_if_letters_conflict(do.letter, cols_use$shape.by, do.hover)
     p <- .add_letters_ellipses_labels_if_discrete(
         p, Target_data, cols_use$x.by, cols_use$y.by, cols_use$color.by,
         do.letter, do.ellipse, do.label,
         labels.highlight, labels.size, labels.repel, labels.split.by,
-        labels.repel.adjust,
+        labels.repel.adjust, labels.use.numbers, labels.numbers.spacer,
+        legend.color.title,
         size, opacity, legend.color.title, legend.color.size)
 
     if (is.list(add.trajectory.by.groups)) {
@@ -465,13 +518,7 @@ scatterPlot <- function(
     raster.dpi,
     split.by,
     split.show.all.others,
-    show.grid.lines,
-    add.xline,
-    xline.linetype,
-    xline.color,
-    add.yline,
-    yline.linetype,
-    yline.color
+    show.grid.lines
 ) {
 
     ### Set up plotting
@@ -480,7 +527,7 @@ scatterPlot <- function(
             panel.grid.major = element_blank(),
             panel.grid.minor = element_blank())
     }
-    p <- ggplot() + ylab(ylab) + xlab(xlab) + ggtitle(main,sub) + theme
+    p <- ggplot() + ylab(ylab) + xlab(xlab) + ggtitle(main, sub) + theme
 
     # Determine how to add data while adding proper theming
     aes.use <- aes(x = .data[[x.by]], y = .data[[y.by]])
@@ -505,7 +552,7 @@ scatterPlot <- function(
         if (is.numeric(Target_data[,color.by])) {
             p <- p +
                 scale_colour_gradient(
-                    name = legend.color.title, low= min.color, high = max.color,
+                    name = legend.color.title, low = min.color, high = max.color,
                     limits = c(min.value, max.value),
                     breaks = legend.color.breaks,
                     labels = legend.color.breaks.labels)
@@ -566,14 +613,6 @@ scatterPlot <- function(
         } else {
             p <- p + do.call(geom_point, geom.args)
         }
-    }
-
-    if (!is.null(add.xline)) {
-        p <- p + geom_vline(xintercept = add.xline, linetype = xline.linetype, color = xline.color)
-    }
-
-    if (!is.null(add.yline)) {
-        p <- p + geom_hline(yintercept = add.yline, linetype = yline.linetype, color = yline.color)
     }
 
     if (!legend.show) {

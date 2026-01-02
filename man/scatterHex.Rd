@@ -46,6 +46,8 @@ scatterHex(
   do.label = FALSE,
   labels.size = 5,
   labels.highlight = TRUE,
+  labels.use.numbers = FALSE,
+  labels.numbers.spacer = ": ",
   labels.repel = TRUE,
   labels.split.by = split.by,
   labels.repel.adjust = list(),
@@ -56,9 +58,19 @@ scatterHex(
   add.xline = NULL,
   xline.linetype = "dashed",
   xline.color = "black",
+  xline.linewidth = 0.5,
+  xline.opacity = 1,
   add.yline = NULL,
   yline.linetype = "dashed",
   yline.color = "black",
+  yline.linewidth = 0.5,
+  yline.opacity = 1,
+  add.abline = NULL,
+  abline.slope = 1,
+  abline.linetype = "solid",
+  abline.color = "black",
+  abline.linewidth = 0.5,
+  abline.opacity = 1,
   legend.show = TRUE,
   legend.color.title = "make",
   legend.color.breaks = waiver(),
@@ -179,7 +191,11 @@ Defaults to "solid", but see \code{\link[ggplot2]{linetype}} for other options.}
 
 \item{labels.highlight}{Logical. Whether labels should have a box behind them when \code{do.label = TRUE}.}
 
-\item{labels.repel}{Logical, that sets whether the labels' placements will be adjusted with \link{ggrepel} to avoid intersections between labels and plot bounds when \code{do.label = TRUE}.
+\item{labels.use.numbers}{Logical which controls swapping of data-value-labels for number-labels and adjustment of the legend to provide the mapping.}
+
+\item{labels.numbers.spacer}{String. When \code{do.label = TRUE} and \code{labels.use.numbers}, this string is used in the legend between the numbers and their associated data values.}
+
+\item{labels.repel}{Logical, that sets whether the labels' placements will be adjusted with \link[ggrepel]{ggrepel} to avoid intersections between labels and plot bounds when \code{do.label = TRUE}.
 TRUE by default.}
 
 \item{labels.split.by}{String of one or two column names which controls the facet-split calculations for label placements.
@@ -196,19 +212,51 @@ List elements should be valid inputs to the \code{\link[ggrepel]{geom_label_repe
 
 \item{trajectory.arrow.size}{Number representing the size of trajectory arrows, in inches.  Default = 0.15.}
 
-\item{add.xline}{numeric value(s) where one or multiple vertical line(s) should be added.}
+\item{add.xline}{Numeric value(s), denoting x-axis value(s), where one or more vertical line(s) should be added.}
 
 \item{xline.linetype}{String which sets the type of line for \code{add.xline}.
 Defaults to "dashed", but any ggplot linetype will work.}
 
-\item{xline.color}{String that sets the color(s) of the \code{add.xline} line(s).}
+\item{xline.color}{String that sets the color(s) of the \code{add.xline} line(s). Default = "black".
+Alternatively, a vector of strings of the same length as \code{add.xline} can be given to set the color of each line individually.}
 
-\item{add.yline}{numeric value(s) where one or multiple vertical line(s) should be added.}
+\item{xline.linewidth}{Number that sets the thickness of the \code{add.xline} line(s). Default = 0.5.
+Alternatively, a vector of numbers of the same length as \code{add.xline} can be given to set the thickness of each line individually.}
+
+\item{xline.opacity}{Number that sets the opacity of the \code{add.xline} line(s). Default = 1.
+Alternatively, a vector of numbers of the same length as \code{add.xline} can be given to set the opacity of each line individually.}
+
+\item{add.yline}{Numeric value(s), denoting y-axis value(s), where one or multiple horizonal line(s) should be added.}
 
 \item{yline.linetype}{String which sets the type of line for \code{add.yline}.
 Defaults to "dashed", but any ggplot linetype will work.}
 
-\item{yline.color}{String that sets the color(s) of the \code{add.yline} line(s).}
+\item{yline.color}{String that sets the color(s) of the \code{add.yline} line(s). Default = "black".
+Alternatively, a vector of strings of the same length as \code{add.yline} can be given to set the color of each line individually.}
+
+\item{yline.linewidth}{Number that sets the thickness of the \code{add.yline} line(s). Default = 0.5.
+Alternatively, a vector of numbers of the same length as \code{add.yline} can be given to set the thickness of each line individually.}
+
+\item{yline.opacity}{Number that sets the opacity of the \code{add.yline} line(s). Default = 1.
+Alternatively, a vector of numbers of the same length as \code{add.yline} can be given to set the opacity of each line individually.}
+
+\item{add.abline}{Numeric value(s), denoting y-axis intercept(s), where one or multiple diagonal line(s) should be added.
+Use \code{abline.slope} to set slope(s).}
+
+\item{abline.slope}{Number that sets the slope of the \code{add.abline} line(s). Default = 1.
+Alternatively, a vector of numbers of the same length as \code{add.abline} can be given to set the slope of each line individually.}
+
+\item{abline.linetype}{String which sets the type of line for \code{add.abline}.
+Defaults to "dashed", but any ggplot linetype will work.}
+
+\item{abline.color}{String that sets the color(s) of the \code{add.abline} line(s). Default = "black".
+Alternatively, a vector of strings of the same length as \code{add.abline} can be given to set the color of each line individually.}
+
+\item{abline.linewidth}{Number that sets the thickness of the \code{add.abline} line(s). Default = 0.5.
+Alternatively, a vector of numbers of the same length as \code{add.abline} can be given to set the thickness of each line individually.}
+
+\item{abline.opacity}{Number that sets the opacity of the \code{add.abline} line(s). Default = 1.
+Alternatively, a vector of numbers of the same length as \code{add.abline} can be given to set the opacity of each line individually.}
 
 \item{legend.show}{Logical. Whether any legend should be displayed. Default = \code{TRUE}.}
 
@@ -375,6 +423,7 @@ if (requireNamespace("ggplot.multistats", quietly = TRUE)) {
         do.label = TRUE,          # Turns on the labeling feature
         labels.size = 8,          # Adjust the text size of labels
         labels.highlight = FALSE, # Removes white background behind labels
+        # labels.use.numbers = TRUE,# Swap to number placeholders
         labels.repel = FALSE)     # Turns off anti-overlap location adjustments
 }
 
@@ -415,5 +464,5 @@ out$cols_use
 It is often best to investigate your data with both the individual and hex-bin methods, then pick whichever is the best representation for your particular goal.
 }
 \author{
-Daniel Bunis with some code adapted from Giuseppe D'Agostino
+Daniel Bunis, Jared Andrews with some code adapted from Giuseppe D'Agostino
 }

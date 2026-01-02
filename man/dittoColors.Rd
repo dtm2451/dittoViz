@@ -12,7 +12,7 @@ dittoColors(reps = 100, get.names = FALSE)
 \item{get.names}{Logical, whether only the names of the default dittoViz color panel should be returned instead}
 }
 \value{
-A string vector with length = 24.
+A string vector.
 }
 \description{
 Creates a string vector of 40 unique colors, in hexadecimal form, repeated 100 times.

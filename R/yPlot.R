@@ -72,10 +72,15 @@
 #' is to make the target data into a factor, and to put its levels in the desired order: \code{factor(data, levels = c("level1", "level2", ...))}.
 #' @param x.labels.rotate Logical which sets whether the labels should be rotated.
 #' Default: \code{TRUE} for violin and box plots, but \code{FALSE} for ridgeplots.
-#' @param add.line numeric value(s) where one or multiple line(s) should be added
+#' @param add.line Numeric value(s), denoting y-axis value(s), where one or multiple horizonal line(s) should be added.
 #' @param line.linetype String which sets the type of line for \code{add.line}.
 #' Defaults to "dashed", but any ggplot linetype will work.
-#' @param line.color String that sets the color(s) of the \code{add.line} line(s)
+#' @param line.color String that sets the color(s) of the \code{add.line} line(s). Default = "black".
+#' Alternatively, a vector of strings of the same length as \code{add.line} can be given to set the color of each line individually.
+#' @param line.linewidth Number that sets the thickness of the \code{add.line} line(s). Default = 0.5.
+#' Alternatively, a vector of numbers of the same length as \code{add.line} can be given to set the thickness of each line individually.
+#' @param line.opacity Number that sets the opacity of the \code{add.line} line(s). Default = 1.
+#' Alternatively, a vector of numbers of the same length as \code{add.line} can be given to set the opacity of each line individually.
 #' @param jitter.size Scalar which sets the size of the jitter shapes.
 #' @param jitter.width Scalar that sets the width/spread of the jitter in the x direction. Ignored in ridgeplots.
 #'
@@ -104,7 +109,7 @@
 #' @param vlnplot.width Scalar which sets the width/spread of violin plots in the x direction
 #' @param vlnplot.scaling String which sets how the widths of the of violin plots are set in relation to each other.
 #' Options are "area", "count", and "width". If the default is not right for your data, I recommend trying "width".
-#' For an explanation of each, see \code{\link{geom_violin}}.
+#' For an explanation of each, see \code{\link[ggplot2]{geom_violin}}.
 #' @param vlnplot.quantiles Single number or numeric vector of values in [0,1] naming quantiles at which to draw a horizontal line within each violin plot. Example: \code{c(0.1, 0.5, 0.9)}
 #' @param ridgeplot.lineweight Scalar which sets the thickness of the ridgeplot outline.
 #' @param ridgeplot.scale Scalar which sets the distance/overlap between ridgeplots.
@@ -210,6 +215,9 @@
 #'     main = "CD3E",
 #'     legend.show = FALSE)
 #'
+#' \dontrun{
+#' # (Due to unfortunate CRAN submission constraints)
+#'
 #' # Data can also be split in other ways with 'shape.by' or 'split.by'
 #' yPlot(data_frame = example_df, var = "gene1", group.by = "timepoint",
 #'     plots = c("vlnplot", "boxplot", "jitter"),
@@ -232,7 +240,9 @@
 #'     var = c("gene1", "gene2"),
 #'     multivar.aes = "color")
 #'
-#' @author Daniel Bunis
+#' }
+#'
+#' @author Daniel Bunis, Jared Andrews
 #' @export
 
 yPlot <- function(
@@ -299,6 +309,8 @@ yPlot <- function(
     add.line = NULL,
     line.linetype = "dashed",
     line.color = "black",
+    line.linewidth = 0.5,
+    line.opacity = 1,
     legend.show = TRUE,
     legend.title = "make",
     data.out = FALSE) {
@@ -311,17 +323,6 @@ yPlot <- function(
     rows.use <- .which_rows(rows.use, data_frame)
     all.rows <- .all_rows(data_frame)
 
-    #Parse Title Defaults
-    main <- .leave_default_or_null(
-        main, default = paste0(unique(c(var, shape.by)), collapse = " and "))
-    xlab <- .leave_default_or_null(
-        xlab, default = group.by,
-        null.if = multivar.aes=="group" && length(var)>1)
-    ylab <- .leave_default_or_null(
-        ylab, default = var, null.if = identical(main,"var") || length(var)>1)
-    legend.title <- .leave_default_or_null(
-        legend.title, var, null.if = is.null(shape.by))
-
     ### Make data_frame and aesthetic target edits
     cols_use <- list(
         var = var,
@@ -331,17 +332,10 @@ yPlot <- function(
         split.by = split.by,
         group.aes = group.by
     )
-    if (group.by != color.by) {
-        cols_use$group.aes <- "group.aes"
-        data_frame$`group.aes` <- paste0(
-            as.character(data_frame[,group.by]),
-            ".-.",
-            as.character(data_frame[,color.by])
-        )
-    }
-    # Relabel/reorder for groups
+    # Relabel/reorder groups
     data_frame[,group.by] <-
         .rename_and_or_reorder(data_frame[,group.by], x.reorder, x.labels)
+    # Multivar adjustments
     if (length(var) > 1) {
         # (Only numeric data supported, handles color adjustment and rows.use subsetting)
         multi_out <- .multi_var_restructure(
@@ -368,6 +362,26 @@ yPlot <- function(
         # rows.use subsetting
         Target_data <- data_frame[rows.use,]
     }
+    # Interpret data groupings
+    if (cols_use$group.by != cols_use$color.by) {
+        cols_use$group.aes <- "__group.aes__"
+        Target_data$`__group.aes__` <- interaction(
+            Target_data[,cols_use$group.by], Target_data[,cols_use$color.by], sep = ".-."
+        )
+    }
+
+    # Parse Title Defaults
+    main <- .leave_default_or_null(
+        main, default = paste0(unique(var), collapse = " and "))
+    xlab <- .leave_default_or_null(
+        xlab, default = group.by,
+        null.if = multivar.aes=="group" && length(var)>1)
+    ylab <- .leave_default_or_null(
+        ylab, default = var, null.if = identical(main,"var") || length(var)>1)
+    legend.title <- .leave_default_or_null(
+        legend.title, color.by,
+        null.if = is.null(shape.by) || cols_use$color.by == "var.which")
+
     # Hover prep
     if (do.hover) {
         hover_exists <- hover.data[hover.data %in% colnames(Target_data)]
@@ -392,7 +406,7 @@ yPlot <- function(
             boxplot.outlier.size, boxplot.fill,
             boxplot.position.dodge, boxplot.lineweight,
             vlnplot.lineweight, vlnplot.width, vlnplot.scaling,
-            vlnplot.quantiles, add.line, line.linetype, line.color,
+            vlnplot.quantiles,
             x.labels.rotate, do.hover, y.breaks, min, max, data_frame,
             cols_use$group.aes)
     } else {
@@ -401,21 +415,34 @@ yPlot <- function(
             plots, xlab, ylab, jitter.size, jitter.color,
             jitter.shape.legend.size, jitter.shape.legend.show,
             ridgeplot.lineweight, ridgeplot.scale, ridgeplot.ymax.expansion,
-            ridgeplot.shape, ridgeplot.bins, ridgeplot.binwidth, add.line,
-            line.linetype, line.color, x.labels.rotate, do.hover, color.panel,
+            ridgeplot.shape, ridgeplot.bins, ridgeplot.binwidth,
+            x.labels.rotate, do.hover, color.panel,
             colors, y.breaks, min, max)
     }
+
     # Extra tweaks
     if (!is.null(cols_use$split.by)) {
         p <- .add_splitting(
             p, cols_use$split.by, split.nrow, split.ncol, split.adjust)
     }
+
+    # Get number of panels so that replicates of aesthetics can be generated if supplied for each line.
+    if (!is.null(add.line)) {
+        pp <- ggplot_build(p)
+        num.panels <- length(levels(pp$data[[1]]$PANEL))
+        if(!("ridgeplot" %in% plots)) {
+            p <- .add_yline(p, add.line, line.linetype, line.color, line.linewidth, line.opacity, num.panels)
+        } else {
+            p <- .add_xline(p, add.line, line.linetype, line.color, line.linewidth, line.opacity, num.panels)
+        }
+    }
+
     if (!legend.show) {
         p <- .remove_legend(p)
     }
 
     if (do.hover) {
-        p <- .warn_or_apply_plotly(p, plots)
+        p <- .apply_plotly(p, plots)
     }
 
     # DONE. Return the plot +/- data
@@ -438,7 +465,6 @@ yPlot <- function(
     boxplot.width, boxplot.color, boxplot.show.outliers, boxplot.outlier.size,
     boxplot.fill, boxplot.position.dodge, boxplot.lineweight,
     vlnplot.lineweight, vlnplot.width, vlnplot.scaling, vlnplot.quantiles,
-    add.line, line.linetype, line.color,
     x.labels.rotate, do.hover, y.breaks, min, max,
     data_frame, group.aes) {
     # This function takes in a partial yPlot ggplot data_frame without any data
@@ -458,12 +484,21 @@ yPlot <- function(
     # Add Plots
     for (i in seq_along(plots)) {
         if (plots[i] == "vlnplot") {
-            p <- p + geom_violin(
+            violin.args <- list(
                 linewidth = vlnplot.lineweight,
                 width = vlnplot.width,
                 scale = vlnplot.scaling,
-                draw_quantiles = vlnplot.quantiles,
-                na.rm = TRUE)
+                na.rm = TRUE
+            )
+            if (!identical(vlnplot.quantiles, NULL)) {
+                .error_if_no_mass_because("quantiles to violins")
+                if ("quantile.linetype" %in% names(formals(ggplot2::geom_violin))) {
+                    violin.args$quantiles <- vlnplot.quantiles
+                } else {
+                    violin.args$draw_quantiles <- vlnplot.quantiles
+                }
+            }
+            p <- p + do.call(geom_violin, violin.args)
         }
 
         if (plots[i] == "boxplot") {
@@ -546,9 +581,6 @@ yPlot <- function(
     if (is.na(x.labels.rotate) || x.labels.rotate) {
         p <- p + theme(axis.text.x= element_text(angle=45, hjust = 1, vjust = 1))
     }
-    if (!is.null(add.line)) {
-        p <- p + geom_hline(yintercept=add.line, linetype= line.linetype, color = line.color)
-    }
 
     p
 }
@@ -560,7 +592,7 @@ yPlot <- function(
     jitter.shape.legend.size, jitter.shape.legend.show,
     ridgeplot.lineweight, ridgeplot.scale,
     ridgeplot.ymax.expansion, ridgeplot.shape, ridgeplot.bins,
-    ridgeplot.binwidth, add.line, line.linetype, line.color,
+    ridgeplot.binwidth,
     x.labels.rotate, do.hover, color.panel, colors, y.breaks, min, max) {
     #This function takes in a partial yPlot ggplot object without any data overlay, and parses adding the main data visualizations.
 
@@ -611,9 +643,6 @@ yPlot <- function(
     if (!is.na(x.labels.rotate) && x.labels.rotate) {
         p <- p + theme(axis.text.y= element_text(angle=45, hjust = 1, vjust = 1))
     }
-    if (!is.null(add.line)) {
-        p <- p + geom_vline(xintercept=add.line, linetype= line.linetype, color = line.color)
-    }
 
     p
 }
@@ -631,17 +660,12 @@ ridgeJitter <- function(..., plots = c("ridgeplot", "jitter")){ yPlot(..., plots
 boxPlot <- function(..., plots = c("boxplot","jitter")){ yPlot(..., plots = plots) }
 
 
-.warn_or_apply_plotly <- function(p, plots) {
-    if ("ridgeplot" %in% plots) {
-        warning("'do.hover = TRUE' request ignored because plotly does not support ridgeplots.")
+.apply_plotly <- function(p, plots) {
+    .error_if_no_plotly()
+    # Add hover.text to jitter, else just convert.
+    if ("jitter" %in% plots) {
+        plotly::ggplotly(p, tooltip = "text")
     } else {
-        .error_if_no_plotly()
-        # Add hover.text to jitter, else just convert.
-        if ("jitter" %in% plots) {
-            p <- plotly::ggplotly(p, tooltip = "text")
-        } else {
-            p <- plotly::ggplotly(p)
-        }
+        plotly::ggplotly(p)
     }
-    p
 }

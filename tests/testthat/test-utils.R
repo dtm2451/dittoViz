@@ -114,3 +114,71 @@ test_that(".rename_and_or_reorder can rename & reorder",{
         .rename_and_or_reorder(as.character(1:4), reorder = 3:1),
         "incorrect number of indices provided to 'reorder' input", fixed = TRUE)
 })
+
+mass_installed <- requireNamespace("MASS", quietly = TRUE)
+test_that("error messages appear properly for missing MASS package", {
+    skip_if(mass_installed, message = "MASS available")
+    expect_error(
+        scatterPlot(
+            df, "PC1", "PC2", "groups",
+            do.ellipse = TRUE),
+        "MASS installation required for adding ellipses.", fixed = TRUE)
+    expect_error(
+        scatterPlot(
+            df, "PC1", "PC2", "groups",
+            do.contour = TRUE),
+        "MASS installation required for adding contours.", fixed = TRUE)
+    expect_error(
+        yPlot(
+            df, "PC1", "groups",
+            vlnplot.quantiles = 0.55),
+        "MASS installation required for adding quantiles to violins.", fixed = TRUE)
+})
+
+test_that(".warn_if_letters_conflict properly checks for conflicts", {
+    expect_warning(
+        .warn_if_letters_conflict(
+            TRUE, NULL, FALSE
+        ),
+        NA
+    )
+    expect_warning(
+        .warn_if_letters_conflict(
+            TRUE, NULL, TRUE
+        ),
+        "'do.letter' ignored due to"
+    )
+    expect_warning(
+        .warn_if_letters_conflict(
+            TRUE, 1:10, FALSE
+        ),
+        "'do.letter' ignored due to"
+    )
+    expect_warning(
+        .warn_if_letters_conflict(
+            TRUE, 1:10, TRUE
+        ),
+        "'do.letter' ignored due to"
+    )
+    expect_warning(
+        .warn_if_letters_conflict(
+            FALSE, 1:10, TRUE
+        ),
+        NA
+    )
+})
+
+test_that(".warn_if_letters_conflict will alo return 'do.letter' NULL", {
+    expect_equal(
+        .warn_if_letters_conflict(
+            TRUE, NULL, FALSE
+        ),
+        TRUE
+    )
+    expect_equal(
+        suppressWarnings(.warn_if_letters_conflict(
+            TRUE, NULL, TRUE
+        )),
+        FALSE
+    )
+})

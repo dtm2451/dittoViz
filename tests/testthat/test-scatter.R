@@ -7,6 +7,8 @@ cont2 <- "bill_length_mm"
 disc <- "species"
 disc2 <- "island"
 
+mass_installed <- requireNamespace("MASS", quietly = TRUE)
+
 test_that("scatterPlot can plot continuous or discrete data", {
     expect_s3_class(
         scatterPlot(
@@ -315,6 +317,35 @@ test_that("scatterPlot can be labeled or circled", {
         "ggplot")
 })
 
+test_that("scatterPlot labeling with numbers", {
+    ### Manual Check
+    # Number labels with matching legend
+    expect_s3_class(
+        scatterPlot(
+            df, "PC1", "PC2", disc, do.label = TRUE,
+            labels.use.numbers = TRUE),
+        "ggplot")
+    # _ instead of :
+    expect_s3_class(
+        scatterPlot(
+            df, "PC1", "PC2", disc, do.label = TRUE,
+            labels.use.numbers = TRUE,
+            labels.numbers.spacer = "_"),
+        "ggplot")
+    # Robust to legend title removal
+    expect_s3_class(
+        scatterPlot(
+            df, "PC1", "PC2", disc, do.label = TRUE,
+            labels.use.numbers = TRUE,
+            legend.color.title = NULL),
+        "ggplot")
+    # Colors should match with this original
+    expect_s3_class(
+        scatterPlot(
+            df, "PC1", "PC2", disc, do.label = TRUE),
+        "ggplot")
+})
+
 test_that("scatterPlot labeling is robust to NAs", {
 
     # In color data
@@ -406,6 +437,15 @@ test_that("scatterPlot lettering works", {
         "ggplot")
 })
 
+test_that("scatterPlot lettering request warns when conflicts with shape.by", {
+    ### Manual Check: No lettering, shaping instead
+    expect_warning(
+        scatterPlot(
+            df, "PC1", "PC2", disc,
+            do.letter = TRUE, shape.by = disc2, size = 3),
+        "'do.letter' ignored due to")
+})
+
 test_that("scatterPlot plotting order can be ordered by the data, or have order randomized", {
     un <- scatterPlot(df, "PC1", "PC2", disc, data.out = TRUE, size = 10, plot.order = "unordered")
     dec <- scatterPlot(df, "PC1", "PC2", disc, data.out = TRUE, size = 10, plot.order = "decreasing")
@@ -448,6 +488,7 @@ test_that("scatterPlot plotting order can be ordered by the data, or have order 
 })
 
 test_that("scatterPlot adding contours", {
+    skip_if_not(mass_installed, message = "No MASS")
     expect_s3_class(
         scatterPlot(df, "PC1", "PC2", disc,
                     do.contour = TRUE),
@@ -486,6 +527,7 @@ test_that("scatterPlot ignores do.letter/do.label/do.ellipse for continuous data
                                 do.ellipse = TRUE),
                    "do.ellipse was/were ignored for non-discrete data", fixed = TRUE)
 
+    skip_if_not(mass_installed, message = "No MASS")
     # No message for discrete data && MANUAL CHECK: ellipse is drawn
     expect_message(scatterPlot(df, "PC1", "PC2", disc,
                                 do.ellipse = TRUE),
@@ -565,21 +607,7 @@ test_that("scatterPlot added features work with single-column faceting", {
         print(scatterPlot(
             df, "PC1", "PC2", disc,
             split.by = disc2,
-            do.ellipse = TRUE,
-            split.show.all.others = FALSE)),
-        NA)
-    expect_error(
-        print(scatterPlot(
-            df, "PC1", "PC2", disc,
-            split.by = disc2,
             do.letter = TRUE,
-            split.show.all.others = FALSE)),
-        NA)
-    expect_error(
-        print(scatterPlot(
-            df, "PC1", "PC2", disc,
-            split.by = disc2,
-            do.contour = TRUE,
             split.show.all.others = FALSE)),
         NA)
     expect_error(
@@ -602,6 +630,22 @@ test_that("scatterPlot added features work with single-column faceting", {
                 data.frame(
                     c(5:20),
                     c(5:10,9:5,6:10))),
+            split.show.all.others = FALSE)),
+        NA)
+
+    skip_if_not(mass_installed, message = "No MASS")
+    expect_error(
+        print(scatterPlot(
+            df, "PC1", "PC2", disc,
+            split.by = disc2,
+            do.ellipse = TRUE,
+            split.show.all.others = FALSE)),
+        NA)
+    expect_error(
+        print(scatterPlot(
+            df, "PC1", "PC2", disc,
+            split.by = disc2,
+            do.contour = TRUE,
             split.show.all.others = FALSE)),
         NA)
 })
@@ -618,13 +662,6 @@ test_that("scatterPlot added features work with double-column faceting", {
         print(scatterPlot(
             df, "PC1", "PC2", disc,
             split.by = c(disc2,disc),
-            do.ellipse = TRUE,
-            split.show.all.others = FALSE)),
-        NA)
-    expect_error(
-        print(scatterPlot(
-            df, "PC1", "PC2", disc,
-            split.by = c(disc2,disc),
             do.letter = TRUE,
             split.show.all.others = FALSE)),
         NA)
@@ -648,6 +685,15 @@ test_that("scatterPlot added features work with double-column faceting", {
                 data.frame(
                     c(5:20),
                     c(5:10,9:5,6:10))),
+            split.show.all.others = FALSE)),
+        NA)
+
+    skip_if_not(mass_installed, message = "No MASS")
+    expect_error(
+        print(scatterPlot(
+            df, "PC1", "PC2", disc,
+            split.by = c(disc2,disc),
+            do.ellipse = TRUE,
             split.show.all.others = FALSE)),
         NA)
 })
@@ -677,10 +723,11 @@ test_that("scatterPlot data adjustments applied", {
         max(p$Target_data[[p$cols_used$y.by]]), 1)
 })
 
-test_that("scatterPlot added arbitrary horizontal and vertical lines work", {
+test_that("scatterPlot added arbitrary horizontal, vertical, and diagonal lines work", {
     expect_s3_class(
         scatterPlot(df, "PC1", "PC2", disc,
-                    add.yline = c(-1, 1), add.xline = c(2)),
+                    add.yline = c(-1, 1), add.xline = c(2),
+                    add.abline = c(5, 1.5), abline.slope = c(0.02, -0.03)),
         "ggplot")
 
     ### Manual Check:
@@ -690,4 +737,44 @@ test_that("scatterPlot added arbitrary horizontal and vertical lines work", {
                     add.yline = c(-1, 1), add.xline = c(2),
                     yline.color = "red", xline.linetype = "dotted"),
         "ggplot")
+
+    ### Manual Check:
+    # split.by works with lines and ablines work
+    # Diagonal lines blue & green,
+    #   with blue thicker than green
+    #   and blue-only see-through
+    expect_s3_class(
+        scatterPlot(df, "PC3", "PC2", disc, split.by = "groups",
+            add.yline = c(-5, 5), add.xline = c(2),
+            yline.color = "red", xline.linetype = "dotted",
+            add.abline = c(5, 1.5), abline.slope = c(2, -3),
+            abline.linetype = "solid", abline.opacity = c(1, 0.5), abline.linewidth = c(1, 2),
+            abline.color = c("green", "blue")),
+        "ggplot")
+
+    # Errors and warnings
+    expect_warning(
+        scatterPlot(df, "PC3", "PC2", disc, split.by = "groups",
+                    add.yline = -1, yline.linewidth = 1:2),
+        "'yline.linewidth' must be length 1 or the same length as 'add.yline', using only the first provided value.",
+        fixed = TRUE
+    )
+    expect_warning(
+        scatterPlot(df, "PC3", "PC2", disc, split.by = "groups",
+                    add.xline = -1, xline.linewidth = 1:2),
+        "using only the first provided value",
+        fixed = TRUE
+    )
+    expect_warning(
+        scatterPlot(df, "PC3", "PC2", disc, split.by = "groups",
+                    add.abline = -1, abline.linewidth = 1:2),
+        "using only the first provided value",
+        fixed = TRUE
+    )
+    expect_warning(
+        scatterPlot(df, "PC3", "PC2", disc, split.by = "groups",
+                    add.abline = -1, abline.slope = 1:2),
+        "using only the first provided value",
+        fixed = TRUE
+    )
 })
