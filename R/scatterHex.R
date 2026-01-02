@@ -23,7 +23,33 @@
 #' @param min.density,max.density Number which sets the min/max values used for the density scale.
 #' Used no matter whether density is represented through opacity or color.
 #' @param min.color,max.color color for the min/max values of the color scale.
+#' @param mid.color NULL (default), "ryb", "rwb", "rgb", or a color to use for the midpoint of a three-color color scale.
+#' \emph{This parameter acts a switch between using a 2-color scale or a 3-color scale}:\itemize{
+#' \item When left NULL, the 2-color scale runs from \code{min.color} to \code{max.color}, using \code{\link[ggplot2]{scale_fill_gradient}}.
+#' \item When given a color, the 3-color scale runs from \code{min.color} to \code{mid.color} to \code{max.color}, using \code{\link[ggplot2]{scale_fill_gradientn}}.
+#' \item{
+#' When given \emph{\code{"ryb"}, \code{"rwb"}, or \code{"rgb"} serves as a \strong{single-point, quick switch to a "standard" 3-color scale}} by also updating the \code{min.color} and \code{max.color}.
+#' Doing so sets:\itemize{
+#'     \item \code{max.color} to a red,
+#'     \item \code{min.color} to a blue,
+#'     \item and \code{mid.color} to either a yellow ("r\emph{y}b"), "white" ("r\emph{w}b"), or "gray97" ("r\emph{g}b", gray not green).
+#'     \item Actual colors used are inspired by \href{http://www.colorbrewer.org}{ColorBrewer} "RdYlBu" and "RdBu" palettes.
+#' }
+#' Thus, the 3-color scale runs from a blue to one of a yellow, "white", or "gray97" to a red, using \code{\link[ggplot2]{scale_fill_gradientn}}.
+#' }
+#' }
 #' @param min,max Number which sets the values associated with the minimum or maximum color for \code{color.by} data.
+#' @param mid Number which sets the value associated with the \code{mid.color} of the three-color scale.
+#' Ignored when \code{mid.color} is left as NULL.
+#' 
+#' Takes precedence over \code{mid.location} if both are provided.
+#' 
+#' When point density is plotted, \code{min.density} and \code{max.density} \strong{must} be set to use \code{mid}. 
+#' If not set, the midpoint will be set to the middle of the value range (equivalent to \code{mid.location=0.5}).
+#' @param mid.location Number between 0 and 1 which sets the relative location of the midpoint of the three-color scale.
+#' Ignored when \code{mid} is provided. Default is 0.5, the true midpoint between the min and max values.
+#' 
+#' This can be useful for adjusting the midpoint when transformations are applied such that providing the absolute midpoint value is not possible.
 #' @param main String, sets the plot title. The default title is either "Density", \code{color.by}, or NULL, depending on the identity of \code{color.by}.
 #' To remove, set to \code{NULL}.
 #' @param data.out Logical. When set to \code{TRUE}, changes the output from the plot alone to a list containing the plot ("plot"),
@@ -73,7 +99,7 @@
 #' \code{\link{scatterPlot}} for making non-hex-binned scatter plots showing each individual data point.
 #' It is often best to investigate your data with both the individual and hex-bin methods, then pick whichever is the best representation for your particular goal.
 #'
-#' @author Daniel Bunis with some code adapted from Giuseppe D'Agostino
+#' @author Daniel Bunis, Jared Andrews with some code adapted from Giuseppe D'Agostino
 #' @examples
 #' example("dittoExampleData", echo = FALSE)
 #'
@@ -237,11 +263,14 @@ scatterHex <- function(
         min.density = NA,
         max.density = NA,
         min.color = "#F0E442",
+        mid.color = NULL,
         max.color = "#0072B2",
         min.opacity = 0.2,
         max.opacity = 1,
         min = NA,
+        mid = NA,
         max = NA,
+        mid.location = 0.5,
         rename.color.groups = NULL,
         xlab = x.by,
         ylab = y.by,
@@ -341,8 +370,8 @@ scatterHex <- function(
     p <- .scatter_hex(
         data, cols_use$x.by, cols_use$y.by, cols_use$color.by,
         bins, color_by_var, discrete_disp, color.method, color.panel, colors,
-        min.density, max.density, min.color, max.color,
-        min.opacity, max.opacity, min, max,
+        min.density, max.density, min.color, mid.color, max.color,
+        min.opacity, max.opacity, min, mid, max, mid.location,
         xlab, ylab, main, sub, theme, legend.show,
         legend.color.title, legend.color.breaks, legend.color.breaks.labels,
         legend.density.title, legend.density.breaks, legend.density.breaks.labels,
@@ -399,11 +428,14 @@ scatterHex <- function(
         min.density,
         max.density,
         min.color,
+        mid.color,
         max.color,
         min.opacity,
         max.opacity,
         min,
+        mid,
         max,
+        mid.location,
         xlab,
         ylab,
         main,
@@ -431,6 +463,25 @@ scatterHex <- function(
             panel.grid.minor = element_blank())
     }
 
+    # Predefined color schemes
+    if (!identical(mid.color, NULL)) {
+        if (mid.color == "ryb") {
+            min.color <- "#4575B4"
+            mid.color <- "#FFFFBF"
+            max.color <- "#D73027"
+        }
+        if (mid.color == "rgb") {
+            min.color <- "#2166AC"
+            mid.color <- "gray97"
+            max.color <- "#B2182B"
+        }
+        if (mid.color == "rwb") {
+            min.color <- "#2166AC"
+            mid.color <- "white"
+            max.color <- "#B2182B"
+        }
+    }
+
     ### Set up plotting
     p <- ggplot() + ylab(ylab) + xlab(xlab) + ggtitle(main,sub) + theme
 
@@ -441,13 +492,41 @@ scatterHex <- function(
 
     if (!color_by_var) {
         ## Set color scale based on density for stat_bin_hex
-        p <- p + scale_fill_gradient(
-            name = legend.density.title,
-            low= min.color,
-            high = max.color,
-            limits = c(min.density, max.density),
-            breaks = legend.density.breaks,
-            labels = legend.density.breaks.labels)
+        if (!identical(mid, NA)) {
+            if (identical(min.density, NA) | identical(max.density, NA)) {
+                warning("min.density and max.density must be set to use mid parameter with no color.by parameter set, setting to default mid.location of 0.5")
+                mid <- 0.5
+            } else {
+                mid <- 1 - ((max.density - mid) / (max.density - min.density))
+            }
+        } else if (!identical(mid.location, NA)) {
+            mid <- mid.location
+        } else {
+            mid <- 0.5
+        }
+
+        if (mid <= 0 | mid >= 1) {
+            warning("mid must be between min.density and max.density, setting to default mid.location of 0.5")
+            mid <- 0.5
+        }
+
+        if (!identical(mid.color, NULL)) {
+            p <- p + scale_fill_gradientn(
+                        name = legend.density.title,
+                        values = c(0, mid, 1),
+                        colors = c(min.color, mid.color, max.color),
+                        limits = c(min.density, max.density),
+                        breaks = legend.density.breaks,
+                        labels = legend.density.breaks.labels)
+        } else {
+            p <- p + scale_fill_gradientn(
+                        name = legend.density.title,
+                        values = c(0, mid, 1),
+                        colors = c(min.color, mid.color, max.color),
+                        limits = c(min.density, max.density),
+                        breaks = legend.density.breaks,
+                        labels = legend.density.breaks.labels)
+        }
 
     } else {
         ## Setup for ggplot.multistats::stat_summaries_hex
@@ -496,14 +575,43 @@ scatterHex <- function(
                     color.method
                 }, fxn_d = length)
 
-            p <- p + scale_fill_gradient(
-                name = legend.color.title,
-                low= min.color,
-                high = max.color,
-                limits = c(min,max),
-                breaks = legend.color.breaks,
-                labels = legend.color.breaks.labels)
+            if (!identical(mid.color, NULL)) {
+                if (is.numeric(data[[color.by]])) {
+                    if (!identical(mid, NA)) {
+                        max.calc <- ifelse(identical(max, NA), max(data[[color.by]]), max)
+                        min.calc <- ifelse(identical(min, NA), min(data[[color.by]]), min)
+                        mid <- 1 - ((max.calc - mid) / (max.calc - min.calc))
+                    } else if (!identical(mid.location, NA)) {
+                        mid <- mid.location
+                    } else {
+                        mid <- 0.5
+                    }
 
+                    if (mid <= 0 | mid >= 1) {
+                        warning("mid must be between min and max, setting to default mid.location of 0.5")
+                        mid <- 0.5
+                    }
+                }
+            }
+
+            # Using do.call here with color.args list does not work, not entirely sure why
+            if (identical(mid.color, NULL)) {
+                p <- p + scale_fill_gradient(
+                    name = legend.color.title,
+                    low = min.color,
+                    high = max.color,
+                    limits = c(min, max),
+                    breaks = legend.color.breaks,
+                    labels = legend.color.breaks.labels)
+            } else {
+                p <- p + scale_fill_gradientn(
+                    name = legend.color.title,
+                    values = c(0, mid, 1),
+                    colors = c(min.color, mid.color, max.color),
+                    limits = c(min, max),
+                    breaks = legend.color.breaks,
+                    labels = legend.color.breaks.labels)
+            }
         }
     }
 

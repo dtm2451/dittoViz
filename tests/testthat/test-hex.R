@@ -112,6 +112,26 @@ test_that("scatterHex color scales can be adjusted for continuous color data", {
                                 min = -5, max = 150, min.color = "black", max.color = "orange"),
                     "ggplot")
 
+    ### Manual check: Legend range adjusted and built-in 3-color scale works
+    expect_s3_class(scatterHex(data_frame=df, x.by=cont1, y.by=cont2, cont2,
+                                min = -5, max = 150, mid.color = "ryb"),
+                    "ggplot")
+
+    ### Manual check: Changing midpoint of 3-color color scale works
+    expect_s3_class(scatterHex(data_frame=df, x.by=cont1, y.by=cont2, cont2,
+                                mid = 40, mid.color = "ryb"),
+                    "ggplot")
+
+    ### Manual check: Setting midpoint location by 0-1 range of total range works
+    expect_s3_class(scatterHex(data_frame=df, x.by=cont1, y.by=cont2, cont2,
+                                mid.location = 0.2, mid.color = "ryb"),
+                    "ggplot")
+
+    ### Manual check: Arbitrary midpoint color for 3-color color scale works
+    expect_s3_class(scatterHex(data_frame=df, x.by=cont1, y.by=cont2, cont2,
+                                mid.color = "green"),
+                    "ggplot")
+
     ### Manual check: Legend has breaks at all 50s in 50 to 300
     expect_s3_class(scatterHex(data_frame=df, x.by=cont1, y.by=cont2, cont2,
                                 legend.color.breaks = seq(50,300,50)),
@@ -129,6 +149,30 @@ test_that("scatterHex color scales can be adjusted for density (color)", {
     ### Manual check: Legend range adjusted and black to orange
     expect_s3_class(scatterHex(data_frame=df, x.by=cont1, y.by=cont2,
                                min.density = -2, max.density = 2, min.color = "black", max.color = "orange"),
+                    "ggplot")
+
+    ### Manual check: 3-color color scale works with density plotting
+    expect_s3_class(scatterHex(data_frame=df, x.by=cont1, y.by=cont2,
+                               min.density = -2, max.density = 2, min.color = "black", 
+                               mid.color = "blue", max.color = "orange"),
+                    "ggplot")
+
+    ### Manual check: 3-color color scale mid works when min and max.density are specified
+    expect_s3_class(scatterHex(data_frame=df, x.by=cont1, y.by=cont2,
+                               min.density = -2, max.density = 2, mid = -1, min.color = "black", 
+                               mid.color = "blue", max.color = "orange"),
+                    "ggplot")
+
+    ### Manual check: 3-color color scale mid.location works when min and max.density are specified
+    expect_s3_class(scatterHex(data_frame=df, x.by=cont1, y.by=cont2,
+                               min.density = -2, max.density = 2, mid.location = 0.2, min.color = "black", 
+                               mid.color = "blue", max.color = "orange"),
+                    "ggplot")
+
+    ### Manual check: 3-color color scale mid.location works when min and max.density are not specified
+    expect_s3_class(scatterHex(data_frame=df, x.by=cont1, y.by=cont2,
+                               mid.location = 0.2, min.color = "black", 
+                               mid.color = "blue", max.color = "orange"),
                     "ggplot")
 
     ### Manual check: Legend from 1:3
