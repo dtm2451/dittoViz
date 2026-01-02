@@ -438,7 +438,7 @@ yPlot <- function(
     }
 
     if (do.hover) {
-        p <- .warn_or_apply_plotly(p, plots)
+        p <- .apply_plotly(p, plots)
     }
 
     # DONE. Return the plot +/- data
@@ -656,17 +656,12 @@ ridgeJitter <- function(..., plots = c("ridgeplot", "jitter")){ yPlot(..., plots
 boxPlot <- function(..., plots = c("boxplot","jitter")){ yPlot(..., plots = plots) }
 
 
-.warn_or_apply_plotly <- function(p, plots) {
-    if ("ridgeplot" %in% plots) {
-        warning("'do.hover = TRUE' request ignored because plotly does not support ridgeplots.")
+.apply_plotly <- function(p, plots) {
+    .error_if_no_plotly()
+    # Add hover.text to jitter, else just convert.
+    if ("jitter" %in% plots) {
+        plotly::ggplotly(p, tooltip = "text")
     } else {
-        .error_if_no_plotly()
-        # Add hover.text to jitter, else just convert.
-        if ("jitter" %in% plots) {
-            p <- plotly::ggplotly(p, tooltip = "text")
-        } else {
-            p <- plotly::ggplotly(p)
-        }
+        plotly::ggplotly(p)
     }
-    p
 }
