@@ -139,7 +139,7 @@ test_that("scatterPlot lettering request warns when conflicts with do.hover", {
 })
 
 ### yPlot
-test_that("Showing hover.data works for yPlot, with rows.use", {
+test_that("Showing hover.data works for yPlot, with rows.use, and ridgeplotting", {
     if (plotly_installed) {
         expect_s3_class(
             yPlot(
@@ -151,6 +151,14 @@ test_that("Showing hover.data works for yPlot, with rows.use", {
             "plotly")
         expect_s3_class(
             yPlot(
+                df, cont1,
+                group.by = disc, color.by = disc,
+                do.hover = TRUE,
+                hover.data = c(cont1,disc2),
+                rows.use = rep(c(TRUE,FALSE), length.out = nrow(df))),
+            "plotly")
+        expect_s3_class(
+            ridgePlot(
                 df, cont1,
                 group.by = disc, color.by = disc,
                 do.hover = TRUE,
