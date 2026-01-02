@@ -1,4 +1,4 @@
-#' Show RNAseq data overlayed on a scatter plot
+#' Create a scatter plot of arbitrary data with flexible customization options
 #' @import ggplot2
 #'
 #' @param data_frame A data_frame where columns are features and rows are observations you might wish to visualize.
@@ -27,7 +27,6 @@
 #'
 #' Alternatively, a Logical vector, the same length as the number of rows in \code{data_frame}, where \code{TRUE} values indicate which rows to plot.
 #' @param show.others Logical. TRUE by default, whether rows not targeted by \code{rows.use} should be shown in the background in light gray.
-#' @param size Number which sets the size of data points. Default = 1.
 #' @param color.panel String vector which sets the colors to draw from when \code{color.by} indicates discrete data.
 #' \code{dittoColors()} by default, see \code{\link{dittoColors}} for contents.
 #'
@@ -62,9 +61,15 @@
 #' When nothing is supplied to \code{shape.by}, only the first value is used.
 #' Default is a set of 6, \code{c(16,15,17,23,25,8)}, the first being a simple, solid, circle.
 #' @param size Number which sets the size of data points. Default = 1.
+#' Alternatively, a single string denoting the name of a column of \code{data_frame} to use for setting the size of plotted points.
+#' 
+#' NOTE: When providing a column name and using \code{do.hover = TRUE}, the legend will not include meaningful size encoding information.
 #' @param opacity Number between 0 and 1.
 #' 1 = opaque. 0 = invisible. Default = 1.
 #' (In terms of typical ggplot variables, = alpha)
+#' Alternatively, a single string denoting the name of a column of \code{data_frame} to use for setting the opacity of plotted points.
+#' 
+#' NOTE: When providing a column name and using \code{do.hover = TRUE}, the legend will not include meaningful opacity encoding information.
 #' @param do.ellipse Logical. Whether \code{color.by} groups should be surrounded by median-centered ellipses.
 #' @param do.label  Logical. Whether to add text labels near the center (median) of \code{color.by} groups.
 #' @param labels.size Number which sets the size of labels text when \code{do.label = TRUE}.
@@ -172,7 +177,7 @@
 #'
 #' @section Many characteristics of the plot can be adjusted using discrete inputs:
 #' \itemize{
-#' \item \code{size} and \code{opacity} can be used to adjust the size and transparency of the data points. \strong{\code{size}} can be given a number, or a column name of \code{data_frame}.
+#' \item \code{size} and \code{opacity} can be used to adjust the size and transparency of the data points. \strong{\code{size}} and \strong{\code{opacity}} can be given a number, or a column name of \code{data_frame}.
 #' \item Colors used can be adjusted with \code{color.panel} and/or \code{colors} for discrete data, or \code{min}, \code{max}, \code{min.color}, and \code{max.color} for continuous data.
 #' \item Shapes used can be adjusted with \code{shape.panel}.
 #' \item Color and shape labels can be changed using \code{rename.color.groups} and \code{rename.shape.groups}.
@@ -526,12 +531,18 @@ scatterPlot <- function(
 
     # Determine how to add data while adding proper theming
     aes.use <- aes(x = .data[[x.by]], y = .data[[y.by]])
-    geom.args <- list(data = Target_data, alpha = opacity)
+    geom.args <- list(data = Target_data)
 
     if (is.character(size)) {
         aes.use <- modifyList(aes.use, aes(size = .data[[size]]))
     } else {
         geom.args$size <- size
+    }
+
+    if (is.character(opacity)) {
+        aes.use <- modifyList(aes.use, aes(alpha = .data[[opacity]]))
+    } else {
+        geom.args$alpha <- opacity
     }
 
     if (!is.null(color.by)) {
