@@ -204,6 +204,7 @@
 #'         do.label = TRUE,          # Turns on the labeling feature
 #'         labels.size = 8,          # Adjust the text size of labels
 #'         labels.highlight = FALSE, # Removes white background behind labels
+#'         # labels.use.numbers = TRUE,# Swap to number placeholders
 #'         labels.repel = FALSE)     # Turns off anti-overlap location adjustments
 #' }
 #'
@@ -284,6 +285,8 @@ scatterHex <- function(
         do.label = FALSE,
         labels.size = 5,
         labels.highlight = TRUE,
+        labels.use.numbers = FALSE,
+        labels.numbers.spacer = ": ",
         labels.repel = TRUE,
         labels.split.by = split.by,
         labels.repel.adjust = list(),
@@ -294,9 +297,19 @@ scatterHex <- function(
         add.xline = NULL,
         xline.linetype = "dashed",
         xline.color = "black",
+        xline.linewidth = 0.5,
+        xline.opacity = 1,
         add.yline = NULL,
         yline.linetype = "dashed",
         yline.color = "black",
+        yline.linewidth = 0.5,
+        yline.opacity = 1,
+        add.abline = NULL,
+        abline.slope = 1,
+        abline.linetype = "solid",
+        abline.color = "black",
+        abline.linewidth = 0.5,
+        abline.opacity = 1,
         legend.show = TRUE,
         legend.color.title = "make",
         legend.color.breaks = waiver(),
@@ -375,14 +388,28 @@ scatterHex <- function(
         xlab, ylab, main, sub, theme, legend.show,
         legend.color.title, legend.color.breaks, legend.color.breaks.labels,
         legend.density.title, legend.density.breaks, legend.density.breaks.labels,
-        show.grid.lines,
-        add.xline, xline.linetype, xline.color,
-        add.yline, yline.linetype, yline.color)
+        show.grid.lines)
 
     ### Add extra features
     if (!is.null(cols_use$split.by)) {
         p <- .add_splitting(
             p, cols_use$split.by, split.nrow, split.ncol, split.adjust)
+    }
+
+    # Get number of panels so that replicates of aesthetics can be generated if supplied for each line.
+    pp <- ggplot_build(p)
+    num.panels <- length(levels(pp$data[[1]]$PANEL))
+
+    if (!is.null(add.xline)) {
+        p <- .add_xline(p, add.xline, xline.linetype, xline.color, xline.linewidth, xline.opacity, num.panels)
+    }
+
+    if (!is.null(add.yline)) {
+        p <- .add_yline(p, add.yline, yline.linetype, yline.color, yline.linewidth, yline.opacity, num.panels)
+    }
+
+    if (!is.null(add.abline)) {
+        p <- .add_abline(p, add.abline, abline.slope, abline.linetype, abline.color, abline.linewidth, abline.opacity, num.panels)
     }
 
     if (do.contour) {
@@ -393,7 +420,8 @@ scatterHex <- function(
         p, data, cols_use$x.by, cols_use$y.by, cols_use$color.by,
         FALSE, do.ellipse, do.label,
         labels.highlight, labels.size, labels.repel, labels.split.by,
-        labels.repel.adjust)
+        labels.repel.adjust,
+        labels.use.numbers, labels.numbers.spacer, legend.color.title)
 
     if (is.list(add.trajectory.by.groups)) {
         p <- .add_trajectories_by_groups(
@@ -448,13 +476,7 @@ scatterHex <- function(
         legend.density.title,
         legend.density.breaks,
         legend.density.breaks.labels,
-        show.grid.lines,
-        add.xline,
-        xline.linetype,
-        xline.color,
-        add.yline,
-        yline.linetype,
-        yline.color
+        show.grid.lines
 ) {
 
     if (!show.grid.lines) {
@@ -621,14 +643,6 @@ scatterHex <- function(
         p <- p + do.call(ggplot.multistats::stat_summaries_hex, geom.args)
     } else {
         p <- p + do.call(stat_bin_hex, geom.args)
-    }
-
-    if (!is.null(add.xline)) {
-        p <- p + geom_vline(xintercept = add.xline, linetype = xline.linetype, color = xline.color)
-    }
-
-    if (!is.null(add.yline)) {
-        p <- p + geom_hline(yintercept = add.yline, linetype = yline.linetype, color = yline.color)
     }
 
     if (!legend.show) {
