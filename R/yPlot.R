@@ -343,15 +343,10 @@ yPlot <- function(
         split.by = split.by,
         group.aes = group.by
     )
-    # Relabel/reorder and interpret groups
+    # Relabel/reorder groups
     data_frame[,group.by] <-
         .rename_and_or_reorder(data_frame[,group.by], x.reorder, x.labels)
-    if (group.by != color.by) {
-        cols_use$group.aes <- "__group.aes__"
-        data_frame$`__group.aes__` <- interaction(
-            data_frame[,group.by], data_frame[,color.by], sep = ".-."
-        )
-    }
+    # Multivar adjustments
     if (length(var) > 1) {
         # (Only numeric data supported, handles color adjustment and rows.use subsetting)
         multi_out <- .multi_var_restructure(
@@ -367,6 +362,11 @@ yPlot <- function(
         }
         if (multivar.aes == "color") {
             cols_use$color.by <- "var.which"
+            # Interpret groups
+            cols_use$group.aes <- "__group.aes__"
+            Target_data$`__group.aes__` <- interaction(
+                Target_data[,group.by], Target_data[,"var.which"], sep = ".-."
+            )
         }
     } else {
         # color adjustments
@@ -374,6 +374,13 @@ yPlot <- function(
             cols_use$var <- paste0(var, ".adj")
             data_frame[,cols_use$var] <-
                 ._col(var, data_frame, var.adjustment, var.adj.fxn)
+        }
+        if (group.by != color.by) {
+            # Interpret groups
+            cols_use$group.aes <- "__group.aes__"
+            data_frame$`__group.aes__` <- interaction(
+                data_frame[,group.by], data_frame[,color.by], sep = ".-."
+            )
         }
         # rows.use subsetting
         Target_data <- data_frame[rows.use,]
