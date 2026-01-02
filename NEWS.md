@@ -1,6 +1,14 @@
+# dittoViz 1.0.6
+
+* 'do.hover' is now allowed for yPlot() ridge-plotting as plotly supports the ggridges geoms.
+* BugFix: yPlot() 'legend.title': default filled in from 'color.by' instead of 'var' and now also left blank when multivar-use would override 'color.by'.
+* BugFix: Respect factor level ordering of original data when setting the group aes of yPlot() 'jitter' representations. Previously, the ordering subgroups could become mismatched between jitter versus box and violin representations.
+* BugFix: Setting the group aes of yPlot() 'jitter' representations now properly adapts to multivar-use when 'multivar.aes' is 'group' or 'color'
+
 # dittoViz 1.0.5
 
 (All relating to integrating dittoViz functions with dittoSeq)
+
 * Minor warning and documentation adjustments.
 * BugFix: ignore 'do.letter' when conflicts with 'shape.by' or 'do.hover' use
 * BugFix: Allow 'labels.use.numbers = TRUE' to work alongside of 'legend.color.title = NULL'
