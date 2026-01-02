@@ -323,17 +323,6 @@ yPlot <- function(
     rows.use <- .which_rows(rows.use, data_frame)
     all.rows <- .all_rows(data_frame)
 
-    #Parse Title Defaults
-    main <- .leave_default_or_null(
-        main, default = paste0(unique(c(var, shape.by)), collapse = " and "))
-    xlab <- .leave_default_or_null(
-        xlab, default = group.by,
-        null.if = multivar.aes=="group" && length(var)>1)
-    ylab <- .leave_default_or_null(
-        ylab, default = var, null.if = identical(main,"var") || length(var)>1)
-    legend.title <- .leave_default_or_null(
-        legend.title, var, null.if = is.null(shape.by))
-
     ### Make data_frame and aesthetic target edits
     cols_use <- list(
         var = var,
@@ -381,6 +370,18 @@ yPlot <- function(
         )
     }
 
+    # Parse Title Defaults
+    main <- .leave_default_or_null(
+        main, default = paste0(unique(var), collapse = " and "))
+    xlab <- .leave_default_or_null(
+        xlab, default = group.by,
+        null.if = multivar.aes=="group" && length(var)>1)
+    ylab <- .leave_default_or_null(
+        ylab, default = var, null.if = identical(main,"var") || length(var)>1)
+    legend.title <- .leave_default_or_null(
+        legend.title, color.by,
+        null.if = is.null(shape.by) || cols_use$color.by == "var.which")
+
     # Hover prep
     if (do.hover) {
         hover_exists <- hover.data[hover.data %in% colnames(Target_data)]
@@ -418,6 +419,7 @@ yPlot <- function(
             x.labels.rotate, do.hover, color.panel,
             colors, y.breaks, min, max)
     }
+
     # Extra tweaks
     if (!is.null(cols_use$split.by)) {
         p <- .add_splitting(
@@ -425,10 +427,9 @@ yPlot <- function(
     }
 
     # Get number of panels so that replicates of aesthetics can be generated if supplied for each line.
-    pp <- ggplot_build(p)
-    num.panels <- length(levels(pp$data[[1]]$PANEL))
-
     if (!is.null(add.line)) {
+        pp <- ggplot_build(p)
+        num.panels <- length(levels(pp$data[[1]]$PANEL))
         if(!("ridgeplot" %in% plots)) {
             p <- .add_yline(p, add.line, line.linetype, line.color, line.linewidth, line.opacity, num.panels)
         } else {
