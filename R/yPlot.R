@@ -362,11 +362,6 @@ yPlot <- function(
         }
         if (multivar.aes == "color") {
             cols_use$color.by <- "var.which"
-            # Interpret groups
-            cols_use$group.aes <- "__group.aes__"
-            Target_data$`__group.aes__` <- interaction(
-                Target_data[,group.by], Target_data[,"var.which"], sep = ".-."
-            )
         }
     } else {
         # color adjustments
@@ -375,16 +370,17 @@ yPlot <- function(
             data_frame[,cols_use$var] <-
                 ._col(var, data_frame, var.adjustment, var.adj.fxn)
         }
-        if (group.by != color.by) {
-            # Interpret groups
-            cols_use$group.aes <- "__group.aes__"
-            data_frame$`__group.aes__` <- interaction(
-                data_frame[,group.by], data_frame[,color.by], sep = ".-."
-            )
-        }
         # rows.use subsetting
         Target_data <- data_frame[rows.use,]
     }
+    # Interpret data groupings
+    if (cols_use$group.by != cols_use$color.by) {
+        cols_use$group.aes <- "__group.aes__"
+        Target_data$`__group.aes__` <- interaction(
+            Target_data[,cols_use$group.by], Target_data[,cols_use$color.by], sep = ".-."
+        )
+    }
+
     # Hover prep
     if (do.hover) {
         hover_exists <- hover.data[hover.data %in% colnames(Target_data)]
