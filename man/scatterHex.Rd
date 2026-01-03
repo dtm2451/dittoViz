@@ -182,16 +182,18 @@ Thus, the 3-color scale runs from a blue to one of a yellow, "white", or "gray97
 
 \item{min, max}{Number which sets the values associated with the minimum or maximum color for \code{color.by} data.}
 
-\item{mid}{Number which sets the value associated with the \code{mid.color} of the three-color scale.
+\item{mid}{Number which sets the value (approximately, see note below) associated with the \code{mid.color} of the three-color scale.
 Ignored when \code{mid.color} is left as NULL.
 
 Takes precedence over \code{mid.location} if both are provided.
 
-When point density is plotted, \code{min.density} and \code{max.density} \strong{must} be set to use \code{mid}. 
-If not set, the midpoint will be set to the middle of the value range (equivalent to \code{mid.location=0.5}).}
+Note: When \code{color.by} is not given and point density is plotted, \strong{ignored} if \code{min.density} and \code{max.density} are not also set.
 
-\item{mid.location}{Number between 0 and 1 which sets the relative location of the midpoint of the three-color scale.
-Ignored when \code{mid} is provided. Default is 0.5, the true midpoint between the min and max values.
+Note: When \code{color.by} is given but \code{min} and \code{max} are not, the mid-color may not be exactly at \code{mid} because translation of \code{c(min, mid, max)} into the \code{c(0, mid.location, 1)} form used by \code{\link[ggplot2]{scale_fill_gradientn}} is performed based on the full range of \code{color.by}-data rather than on the range of binned \code{color.method} calculations.}
+
+\item{mid.location}{Number between 0 and 1 which sets the relative location of the mid-color in the three-color scale.
+Ignored when \code{mid} is provided.
+Default is 0.5, the true midpoint between the min and max values.
 
 This can be useful for adjusting the midpoint when transformations are applied such that providing the absolute midpoint value is not possible.}
 

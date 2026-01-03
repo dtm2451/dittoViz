@@ -39,16 +39,18 @@
 #' }
 #' }
 #' @param min,max Number which sets the values associated with the minimum or maximum color for \code{color.by} data.
-#' @param mid Number which sets the value associated with the \code{mid.color} of the three-color scale.
+#' @param mid Number which sets the value (approximately, see note below) associated with the \code{mid.color} of the three-color scale.
 #' Ignored when \code{mid.color} is left as NULL.
-#' 
+#'
 #' Takes precedence over \code{mid.location} if both are provided.
-#' 
-#' When point density is plotted, \code{min.density} and \code{max.density} \strong{must} be set to use \code{mid}. 
-#' If not set, the midpoint will be set to the middle of the value range (equivalent to \code{mid.location=0.5}).
-#' @param mid.location Number between 0 and 1 which sets the relative location of the midpoint of the three-color scale.
-#' Ignored when \code{mid} is provided. Default is 0.5, the true midpoint between the min and max values.
-#' 
+#'
+#' Note: When \code{color.by} is not given and point density is plotted, \strong{ignored} if \code{min.density} and \code{max.density} are not also set.
+#'
+#' Note: When \code{color.by} is given but \code{min} and \code{max} are not, the mid-color may not be exactly at \code{mid} because translation of \code{c(min, mid, max)} into the \code{c(0, mid.location, 1)} form used by \code{\link[ggplot2]{scale_fill_gradientn}} is performed based on the full range of \code{color.by}-data rather than on the range of binned \code{color.method} calculations.
+#' @param mid.location Number between 0 and 1 which sets the relative location of the mid-color in the three-color scale.
+#' Ignored when \code{mid} is provided.
+#' Default is 0.5, the true midpoint between the min and max values.
+#'
 #' This can be useful for adjusting the midpoint when transformations are applied such that providing the absolute midpoint value is not possible.
 #' @param main String, sets the plot title. The default title is either "Density", \code{color.by}, or NULL, depending on the identity of \code{color.by}.
 #' To remove, set to \code{NULL}.
@@ -514,40 +516,38 @@ scatterHex <- function(
 
     if (!color_by_var) {
         ## Set color scale based on density for stat_bin_hex
-        if (!identical(mid, NA)) {
-            if (identical(min.density, NA) | identical(max.density, NA)) {
-                warning("min.density and max.density must be set to use mid parameter with no color.by parameter set, setting to default mid.location of 0.5")
-                mid <- 0.5
-            } else {
-                mid <- 1 - ((max.density - mid) / (max.density - min.density))
+        if (identical(mid.color, NULL)) {
+            p <- p + scale_fill_gradient(
+                name = legend.density.title,
+                low= min.color,
+                high = max.color,
+                limits = c(min.density, max.density),
+                breaks = legend.density.breaks,
+                labels = legend.density.breaks.labels)
+        } else {
+            if (!identical(mid, NA)) {
+                # Substitute 'mid.location' with what 'mid' represents.
+                if (identical(min.density, NA) || identical(max.density, NA)) {
+                    warning("Ignoring 'mid' and defaulting to 'mid.location = 0.5': 'min.density' and 'max.density' must also be provided in order to use the 'mid' parameter with no 'color.by' parameter set.")
+                    mid.location <- 0.5
+                } else if (mid <= min.density || mid >= max.density) {
+                    warning("Ignoring 'mid' and defaulting to 'mid.location = 0.5': 'mid' must be between 'min.density' and 'max.density'")
+                    mid.location <- 0.5
+                } else {
+                    mid.location <- (mid - min.density) / (max.density - min.density)
+                }
+            } else if (mid.location <= 0 || mid.location >= 1) {
+                warning("Ignoring given 'mid.location' and defaulting to '0.5': 'mid.location' must be greater than 0 and less than 1.")
+                mid.location <- 0.5
             }
-        } else if (!identical(mid.location, NA)) {
-            mid <- mid.location
-        } else {
-            mid <- 0.5
-        }
 
-        if (mid <= 0 | mid >= 1) {
-            warning("mid must be between min.density and max.density, setting to default mid.location of 0.5")
-            mid <- 0.5
-        }
-
-        if (!identical(mid.color, NULL)) {
             p <- p + scale_fill_gradientn(
-                        name = legend.density.title,
-                        values = c(0, mid, 1),
-                        colors = c(min.color, mid.color, max.color),
-                        limits = c(min.density, max.density),
-                        breaks = legend.density.breaks,
-                        labels = legend.density.breaks.labels)
-        } else {
-            p <- p + scale_fill_gradientn(
-                        name = legend.density.title,
-                        values = c(0, mid, 1),
-                        colors = c(min.color, mid.color, max.color),
-                        limits = c(min.density, max.density),
-                        breaks = legend.density.breaks,
-                        labels = legend.density.breaks.labels)
+                name = legend.density.title,
+                values = c(0, mid.location, 1),
+                colors = c(min.color, mid.color, max.color),
+                limits = c(min.density, max.density),
+                breaks = legend.density.breaks,
+                labels = legend.density.breaks.labels)
         }
 
     } else {
@@ -597,25 +597,6 @@ scatterHex <- function(
                     color.method
                 }, fxn_d = length)
 
-            if (!identical(mid.color, NULL)) {
-                if (is.numeric(data[[color.by]])) {
-                    if (!identical(mid, NA)) {
-                        max.calc <- ifelse(identical(max, NA), max(data[[color.by]]), max)
-                        min.calc <- ifelse(identical(min, NA), min(data[[color.by]]), min)
-                        mid <- 1 - ((max.calc - mid) / (max.calc - min.calc))
-                    } else if (!identical(mid.location, NA)) {
-                        mid <- mid.location
-                    } else {
-                        mid <- 0.5
-                    }
-
-                    if (mid <= 0 | mid >= 1) {
-                        warning("mid must be between min and max, setting to default mid.location of 0.5")
-                        mid <- 0.5
-                    }
-                }
-            }
-
             # Using do.call here with color.args list does not work, not entirely sure why
             if (identical(mid.color, NULL)) {
                 p <- p + scale_fill_gradient(
@@ -626,9 +607,30 @@ scatterHex <- function(
                     breaks = legend.color.breaks,
                     labels = legend.color.breaks.labels)
             } else {
+                if (is.numeric(data[[color.by]]) && !identical(mid, NA)) {
+                    max.calc <- ifelse(identical(max, NA), max(data[[color.by]]), max)
+                    min.calc <- ifelse(identical(min, NA), min(data[[color.by]]), min)
+                    mid.location <- (mid - min.calc) / (max.calc - min.calc)
+                    if (identical(min, NA) || identical(max, NA)) {
+                        if (mid.location <= 0 || mid.location >= 1) {
+                            # This warning adds hint of setting min/max if color.method brings color range outside of the original range of color.by data
+                            warning("Ignoring 'mid' and defaulting to 'mid.location = 0.5': 'mid' must be within the range of 'color.by'-data unless 'min' and 'max' are also given.")
+                            mid.location <- 0.5
+                        } else {
+                            message("Approximation of 'mid' value into the color scale \"midpoint\" is not gauranteed to be exact without also setting 'min' and 'max'.")
+                        }
+                    } else if (mid.location <= 0 || mid.location >= 1) {
+                        warning("Ignoring 'mid' and defaulting to 'mid.location = 0.5': 'mid' must be greater than 'min' and less than 'max'.")
+                        mid.location <- 0.5
+                    }
+                }
+                if (mid.location <= 0 || mid.location >= 1) {
+                    warning("Ignoring given 'mid.location' and defaulting to '0.5': 'mid.location' must be greater than 0 and less than 1.")
+                    mid.location <- 0.5
+                }
                 p <- p + scale_fill_gradientn(
                     name = legend.color.title,
-                    values = c(0, mid, 1),
+                    values = c(0, mid.location, 1),
                     colors = c(min.color, mid.color, max.color),
                     limits = c(min, max),
                     breaks = legend.color.breaks,

@@ -62,13 +62,13 @@
 #' Default is a set of 6, \code{c(16,15,17,23,25,8)}, the first being a simple, solid, circle.
 #' @param size Number which sets the size of data points. Default = 1.
 #' Alternatively, a single string denoting the name of a column of \code{data_frame} to use for setting the size of plotted points.
-#' 
+#'
 #' NOTE: When providing a column name and using \code{do.hover = TRUE}, the legend will not include meaningful size encoding information.
 #' @param opacity Number between 0 and 1.
 #' 1 = opaque. 0 = invisible. Default = 1.
 #' (In terms of typical ggplot variables, = alpha)
 #' Alternatively, a single string denoting the name of a column of \code{data_frame} to use for setting the opacity of plotted points.
-#' 
+#'
 #' NOTE: When providing a column name and using \code{do.hover = TRUE}, the legend will not include meaningful opacity encoding information.
 #' @param do.ellipse Logical. Whether \code{color.by} groups should be surrounded by median-centered ellipses.
 #' @param do.label  Logical. Whether to add text labels near the center (median) of \code{color.by} groups.
@@ -570,37 +570,6 @@ scatterPlot <- function(
 
         aes.use <- modifyList(aes.use, aes(color = .data[[color.by]]))
 
-        if (!identical(mid.color, NULL)) {
-            if (mid.color == "ryb") {
-                min.color <- "#4575B4"
-                mid.color <- "#FFFFBF"
-                max.color <- "#D73027"
-            }
-            if (mid.color == "rgb") {
-                min.color <- "#2166AC"
-                mid.color <- "gray97"
-                max.color <- "#B2182B"
-            }
-            if (mid.color == "rwb") {
-                min.color <- "#2166AC"
-                mid.color <- "white"
-                max.color <- "#B2182B"
-            }
-
-            if (identical(mid.value, "make") & is.numeric(Target_data[,color.by])) {
-                mid.value <- 0.5
-            } else {
-                max.calc <- ifelse(identical(max.value, NA), max(Target_data[,color.by]), max.value)
-                min.calc <- ifelse(identical(min.value, NA), min(Target_data[,color.by]), min.value)
-                mid.value <- 1 - ((max.calc - mid.value) / (max.calc - min.calc))
-
-                if (mid.value <= 0 | mid.value >= 1) {
-                    warning("mid.value must be between min.value and max.value, setting to default midpoint")
-                    mid.value <- 0.5
-                }
-            }
-        }
-
         if (is.numeric(Target_data[,color.by])) {
 
             color.args <- list(
@@ -615,6 +584,35 @@ scatterPlot <- function(
                 color.args$high <- max.color
                 p <- p + do.call(scale_color_gradient, color.args)
             } else {
+                if (mid.color == "ryb") {
+                    min.color <- "#4575B4"
+                    mid.color <- "#FFFFBF"
+                    max.color <- "#D73027"
+                }
+                if (mid.color == "rgb") {
+                    min.color <- "#2166AC"
+                    mid.color <- "gray97"
+                    max.color <- "#B2182B"
+                }
+                if (mid.color == "rwb") {
+                    min.color <- "#2166AC"
+                    mid.color <- "white"
+                    max.color <- "#B2182B"
+                }
+
+                if (identical(mid.value, "make")) {
+                    mid.value <- 0.5
+                } else {
+                    max.calc <- ifelse(identical(max.value, NA), max(Target_data[,color.by]), max.value)
+                    min.calc <- ifelse(identical(min.value, NA), min(Target_data[,color.by]), min.value)
+                    mid.value <- (mid.value - min.calc) / (max.calc - min.calc)
+
+                    if (mid.value <= 0 | mid.value >= 1) {
+                        warning("Ignoring given 'mid.value' and defaulting to the middle of the color scale: 'mid.value' must be between 'min.value' and 'max.value' or inside the range of 'color.by'-data.")
+                        mid.value <- 0.5
+                    }
+                }
+
                 color.args$colors <- c(min.color, mid.color, max.color)
                 color.args$values <- c(0, mid.value, 1)
                 p <- p + do.call(scale_color_gradientn, color.args)
