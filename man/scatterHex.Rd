@@ -28,11 +28,14 @@ scatterHex(
   min.density = NA,
   max.density = NA,
   min.color = "#F0E442",
+  mid.color = NULL,
   max.color = "#0072B2",
   min.opacity = 0.2,
   max.opacity = 1,
   min = NA,
+  mid = NA,
   max = NA,
+  mid.location = 0.5,
   rename.color.groups = NULL,
   xlab = x.by,
   ylab = y.by,
@@ -159,9 +162,40 @@ Used no matter whether density is represented through opacity or color.}
 
 \item{min.color, max.color}{color for the min/max values of the color scale.}
 
+\item{mid.color}{NULL (default), "ryb", "rwb", "rgb", or a color to use for the midpoint of a three-color color scale.
+\emph{This parameter acts a switch between using a 2-color scale or a 3-color scale}:\itemize{
+\item When left NULL, the 2-color scale runs from \code{min.color} to \code{max.color}, using \code{\link[ggplot2]{scale_fill_gradient}}.
+\item When given a color, the 3-color scale runs from \code{min.color} to \code{mid.color} to \code{max.color}, using \code{\link[ggplot2]{scale_fill_gradientn}}.
+\item{
+When given \emph{\code{"ryb"}, \code{"rwb"}, or \code{"rgb"} serves as a \strong{single-point, quick switch to a "standard" 3-color scale}} by also updating the \code{min.color} and \code{max.color}.
+Doing so sets:\itemize{
+    \item \code{max.color} to a red,
+    \item \code{min.color} to a blue,
+    \item and \code{mid.color} to either a yellow ("r\emph{y}b"), "white" ("r\emph{w}b"), or "gray97" ("r\emph{g}b", gray not green).
+    \item Actual colors used are inspired by \href{http://www.colorbrewer.org}{ColorBrewer} "RdYlBu" and "RdBu" palettes.
+}
+Thus, the 3-color scale runs from a blue to one of a yellow, "white", or "gray97" to a red, using \code{\link[ggplot2]{scale_fill_gradientn}}.
+}
+}}
+
 \item{min.opacity, max.opacity}{Scalar between [0,1] which sets the minimum or maximum opacity used for the density legend (when color is used for \code{color.by} data and density is shown via opacity).}
 
 \item{min, max}{Number which sets the values associated with the minimum or maximum color for \code{color.by} data.}
+
+\item{mid}{Number which sets the value (approximately, see note below) associated with the \code{mid.color} of the three-color scale.
+Ignored when \code{mid.color} is left as NULL.
+
+Takes precedence over \code{mid.location} if both are provided.
+
+Note: When \code{color.by} is not given and point density is plotted, \strong{ignored} if \code{min.density} and \code{max.density} are not also set.
+
+Note: When \code{color.by} is given but \code{min} and \code{max} are not, the mid-color may not be exactly at \code{mid} because translation of \code{c(min, mid, max)} into the \code{c(0, mid.location, 1)} form used by \code{\link[ggplot2]{scale_fill_gradientn}} is performed based on the full range of \code{color.by}-data rather than on the range of binned \code{color.method} calculations.}
+
+\item{mid.location}{Number between 0 and 1 which sets the relative location of the mid-color in the three-color scale.
+Ignored when \code{mid} is provided.
+Default is 0.5, the true midpoint between the min and max values.
+
+This can be useful for adjusting the midpoint when transformations are applied such that providing the absolute midpoint value is not possible.}
 
 \item{rename.color.groups}{String vector which sets new names for the identities of \code{color.by} groups.}
 

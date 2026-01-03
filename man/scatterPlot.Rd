@@ -32,8 +32,10 @@ scatterPlot(
   rename.color.groups = NULL,
   rename.shape.groups = NULL,
   min.color = "#F0E442",
+  mid.color = NULL,
   max.color = "#0072B2",
   min.value = NA,
+  mid.value = "make",
   max.value = NA,
   plot.order = c("unordered", "increasing", "decreasing", "randomize"),
   xlab = x.by,
@@ -177,9 +179,28 @@ Default is a set of 6, \code{c(16,15,17,23,25,8)}, the first being a simple, sol
 
 \item{min.color}{color for \code{min} value of numeric \code{color.by}-data. Default = yellow}
 
+\item{mid.color}{NULL (default), "ryb", "rwb", "rgb", or a color to use for the midpoint of a three-color color scale.
+\emph{This parameter acts a switch between using a 2-color scale or a 3-color scale}:\itemize{
+\item When left NULL, the 2-color scale runs from \code{min.color} to \code{max.color}, using \code{\link[ggplot2]{scale_fill_gradient}}.
+\item When given a color, the 3-color scale runs from \code{min.color} to \code{mid.color} to \code{max.color}, using \code{\link[ggplot2]{scale_fill_gradientn}}.
+\item{
+When given \emph{\code{"ryb"}, \code{"rwb"}, or \code{"rgb"} serves as a \strong{single-point, quick switch to a "standard" 3-color scale}} by also updating the \code{min.color} and \code{max.color}.
+Doing so sets:\itemize{
+    \item \code{max.color} to a red,
+    \item \code{min.color} to a blue,
+    \item and \code{mid.color} to either a yellow ("r\emph{y}b"), "white" ("r\emph{w}b"), or "gray97" ("r\emph{g}b", gray not green).
+    \item Actual colors used are inspired by \href{http://www.colorbrewer.org}{ColorBrewer} "RdYlBu" and "RdBu" palettes.
+}
+Thus, the 3-color scale runs from a blue to one of a yellow, "white", or "gray97" to a red, using \code{\link[ggplot2]{scale_fill_gradientn}}.
+}
+}}
+
 \item{max.color}{color for \code{max} value of numeric \code{color.by}-data. Default = blue}
 
 \item{min.value, max.value}{Number which sets the \code{color.by}-data value associated with the minimum or maximum colors.}
+
+\item{mid.value}{Number or "make" (default) which sets the value associated with the \code{mid.color} of the three-color scale.
+Ignored when \code{mid.color} is left as NULL.}
 
 \item{plot.order}{String. If the data should be plotted based on the order of the color data, sets whether to plot in "increasing", "decreasing", or "randomize"d order.}
 
