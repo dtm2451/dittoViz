@@ -256,13 +256,13 @@ test_that("yPlot can have lines added and adjusted individually", {
             plots = "ridgeplot",
             add.line = 20, line.linetype = "solid", line.color = "green"),
         "ggplot")
-    
+
     # Manual Check:
     # Multiple lines, one solid, one dashed, both green, first thick, second thin.
     expect_s3_class(
         yPlot(
             df, cont1, group.by = grp,
-            add.line = c(20, 300), line.linetype = c("solid", "dotdash"), 
+            add.line = c(20, 300), line.linetype = c("solid", "dotdash"),
             line.color = "green", line.linewidth = c(0.5, 2)),
         "ggplot")
 
@@ -272,14 +272,14 @@ test_that("yPlot can have lines added and adjusted individually", {
         yPlot(
             df, cont1, group.by = grp, split.by = "species",
             plots = "ridgeplot",
-            add.line = c(20, 300), line.linetype = c("solid", "dotdash"), 
+            add.line = c(20, 300), line.linetype = c("solid", "dotdash"),
             line.color = "green", line.linewidth = c(0.5, 2)),
         "ggplot")
-    
+
     expect_s3_class(
         yPlot(
             df, cont1, group.by = grp, split.by = "species",
-            add.line = c(20, 300), line.linetype = c("solid", "dotdash"), 
+            add.line = c(20, 300), line.linetype = c("solid", "dotdash"),
             line.color = "green", line.linewidth = c(0.5, 2)),
         "ggplot")
 })
@@ -579,4 +579,46 @@ test_that("yPlot allows plotting of multiple vars, via group or color", {
             multivar.aes = "color",
             rows.use = rows.logical),
         "ggplot")
+})
+
+test_that("yPlot data-grouping interpretation respects facet level order", {
+    df2 <- df
+    df2$island <- factor(
+        as.character(df2$island),
+        levels = rev(levels(df2$island))
+    )
+    out_orig <- yPlot(df, cont1, grp, clr, data.out = TRUE)
+    out_rev <- yPlot(df2, cont1, grp, clr, data.out = TRUE)
+
+    expect_equal(
+        levels(out_orig$data$`__group.aes__`),
+        levels(out_rev$data$`__group.aes__`)[c(7:9, 4:6, 1:3)]
+    )
+
+    # MANUAL CHECK:
+    # Gentoo orange
+    print(out_orig$p)
+    # Gentoo green, with reverse order to data subgroups in Adelie grouping
+    print(out_rev$p)
+})
+
+test_that("yPlot data-grouping interpretation adapts for plotting of multiple vars", {
+    split <- levels(yPlot(
+        df, c(cont1, cont2), grp, clr, data.out = TRUE,
+        multivar.aes = "split")$data$`__group.aes__`)
+    group <- levels(yPlot(
+        df, c(cont1, cont2), grp, clr, data.out = TRUE,
+        multivar.aes = "group")$data$`__group.aes__`)
+    color <- levels(yPlot(
+        df, c(cont1, cont2), grp, clr, data.out = TRUE,
+        multivar.aes = "color")$data$`__group.aes__`)
+
+    # cont1 in grouping levels only when not using faceting
+    expect_false(length(grep(cont1, split))>0)
+    expect_true(length(grep(cont1, group))>0)
+    expect_true(length(grep(cont1, color))>0)
+    # left-side for group
+    expect_true(startsWith(group[grep(cont1, group)[1]], cont1))
+    # right-side for color
+    expect_true(endsWith(color[grep(cont1, color)[1]], cont1))
 })

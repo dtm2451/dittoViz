@@ -1,7 +1,7 @@
 Package: dittoViz
 Type: Package
 Title: User Friendly Data Visualization
-Version: 1.0.5
+Version: 1.0.6
 Authors@R: c(person("Daniel", "Bunis", email = "daniel.bunis@ucsf.edu",
     role=c("aut", "cre"), comment = c(ORCID = "0000-0002-0010-1616")))
 Description: A comprehensive visualization toolkit built with coders of all
