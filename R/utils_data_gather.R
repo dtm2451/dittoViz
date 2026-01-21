@@ -245,12 +245,12 @@
 
                 # Create data frame
                 new <- data.frame(table(y.var, x.var))
-                names(new) <- c("label", "grouping", "count")
+                names(new) <- c("Y", "grouping", "count")
 
-                new$label.count.total.per.facet <- rep(
+                new$Y.count.total.per.facet <- rep(
                     as.vector(table(x.var)),
                     each = length(levels(as.factor(y.var))))
-                new$percent <- new$count / new$label.count.total.per.facet
+                new$percent <- new$count / new$Y.count.total.per.facet
 
                 # Catch 0/0
                 new$percent[is.nan(new$percent)] <- 0
@@ -270,8 +270,8 @@
         data$count.norm <- 0
         data$percent.norm <- 0
 
-        for (i in unique(data$label)) {
-            this_lab <- data$label == i
+        for (i in unique(data$Y)) {
+            this_lab <- data$Y == i
             data$count.norm[this_lab] <-
                 data$count[this_lab]/max(data$count[this_lab])
             data$percent.norm[this_lab] <-
@@ -284,12 +284,12 @@
         data$grouping <- factor(data$grouping, levels = x.levs)
     }
     data$grouping <- .rename_and_or_reorder(data$grouping, x.reorder, x.labels)
-    data$label <- .rename_and_or_reorder(
-        data$label, var.labels.reorder, var.labels.rename)
+    data$Y <- .rename_and_or_reorder(
+        data$Y, var.labels.reorder, var.labels.rename)
 
     # Add hover info
     if (do.hover) {
-        hover.data <- unique(c("grouping", "label", "count", "percent", split.by))
+        hover.data <- unique(c("grouping", "Y", "count", "percent", split.by))
         hover.df <- data[, hover.data]
         colnames(hover.df)[1:2] <- c(group.by, var)
         # Make hover strings, "data.type: data" \n "data.type: data"

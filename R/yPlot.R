@@ -124,6 +124,60 @@
 #' Overridden by \code{ridgeplot.binwidth} when that input is provided.
 #' @param ridgeplot.binwidth Integer which sets the width of chunks to break the x-axis into when \code{ridgeplot.shape = "hist"}.
 #' Takes precedence over \code{ridgeplot.bins} when provided.
+#' @param add.pvalues NULL (off), "all", or a list of length 2 string vectors which each name a pairwise set of 2 \code{group.by}-values to compare between.
+#' Giving "all" will determine, and run comparisons for, all possible pairwise combinations of \code{group.by}-values.
+#' @param pvalues.round.digits Integer number which sets how many decimal digits to round to,
+#' @param pvalues.sample.by NULL (off), or Single string representing the name of a column of \code{data_frame} that contains an indicator of which sample each observation belongs to.
+#' When provided, data of each sample are summarized into a single data point per sample prior to statistical comparison.
+#' @param pvalues.sample.summary String naming a function for performing per sample summarization.
+#' Default is \code{"mean"}.
+#' The function must:\itemize{
+#' \item accept a vector or numeric values as input
+#' \item return a single numeric value as output
+#' }
+#' @param pvalues.test.method String naming a function for performing the desired statistical test.
+#' Base R stats functions or other functions that perform similarly should work.
+#' Default is \code{"wilcox.test"}.
+#' The function must:\itemize{
+#' \item accept comparison group data passed in as inputs \code{x} and \code{y}.
+#' \item have a \code{$p.value} element to its return, and this should be the single-test p-value, not one that is already multiple-hypothesis test corrected.
+#' }
+#' @param pvalues.test.adjust named list providing any desired additional inputs for the p-value calculation with \code{\link[stats]{wilcox.test}}.
+#' \code{x} and \code{y} inputs are filled internally, but all others can be adjusted if desired.
+#' @param pvalues.subgroup.usage "within", "across", or "ignore". Sets which data groupings to compare when \code{color.by} establishes subgroups of \code{group.by} groups:\itemize{
+#' \item "within": Compare color-subgroups to each other, within each grouping.
+#' \item "across": Compare each color-subgroup across the larger groupings.
+#' \item "ignore": Ignore subgroupings entirely. Compare larger groupings as if no \code{color.by} subgroups were established.
+#' }
+#' @param pvalues.plot.symbols Logical which controls whether pvalues will be replaced with the below symbol representations
+#' OR a custom function that inputs a numeric vector of p-values and outputs vector of desired labels, where the output is the same length as the input.
+#'
+#' When set to \code{TRUE}, symbols will be used which represent:\itemize{
+#' \item \code{ns}: non significant, p-value > 0.05
+#' \item \code{*}: 0.01 < p-value <= 0.05
+#' \item \code{**}: 0.001 < p-value <= 0.01
+#' \item \code{***}: 0.0001 < p-value <= 0.001
+#' \item \code{****}: pvalue <= 0.00001
+#' }
+#' @param pvalues.plot.adjust named list providing additional inputs, to pass to \code{\link[ggpubr]{stat_pvalue_manual}}, for adjustment of how pvalue brackets and labels are plotted
+#' @param pvalues.adjust Logical stating whether to perform multiple hypothesis test correction and plot the corrected p-values.
+#' Highly recommended, but if you are performing multiple iterations of this function,
+#' proper correction requires running this correction once on all p-values.
+#' See \code{\link[stats]{p.adjust}}.
+#' @param pvalues.adjust.method String used only when \code{pvalues.adjust = TRUE}, and "fdr" by default.
+#' Passed along to the \code{method} input of \code{\link[stats]{p.adjust}}.
+#' Any valid option for that input will work.
+#' @param pvalues.offset.first,pvalues.offset.between,pvalues.offset.above Numbers which set the heights at which pvalue brackets will be plotted, in fractions of y-data values:
+#' \itemize{
+#' \item \code{pvalues.offset.first}: the height between the highest data point and the first p-value bracket plotted.
+#' \item \code{pvalues.offset.between}: if multiple comparisons are to be run, the additional offset to add between them.
+#' \item \code{pvalues.offset.above}: the additional height, above all brackets, to add to the plot in order to ensure p-values are visible. (This is accomplished using a geom_text layer of empty strings, and only required because the ggpubr package does not ensure visibility on its own!)
+#' }
+#' @param pvalues.do.fc Logical stating whether to calculate medians and the fold-changes between them, alongside of p-value calculations.
+#' Only helpful when also using \code{data.out = TRUE}.
+#' @param pvalues.fc.pseudocount Number, zero by default. A value to add within fold_change calculations only, to both \code{group.1} and \code{group.2} median frequencies in order to avoid division by zero errors.
+#' When needed, we recommend something small relative to the lowest expected cell frequencies of the data, 0.000001 perhaps.
+#' Although a relatively small value like this can lead to heavily inflated log fold change values in the extreme cases where \code{group.1} or \code{group.2} frequencies are 0 or near 0, a tiny pseudocount leaves all other fold change values only minimally affected.
 #' @param legend.show Logical. Whether the legend should be displayed. Default = \code{TRUE}.
 #' @param legend.title String or \code{NULL}, sets the title for the main legend which includes colors and data representations.
 #' @param data.out Logical. When set to \code{TRUE}, changes the output, from the plot alone, to a list containing the plot (\code{p}), its underlying data (\code{data}),
@@ -311,6 +365,22 @@ yPlot <- function(
     line.color = "black",
     line.linewidth = 0.5,
     line.opacity = 1,
+    add.pvalues = NULL,
+    pvalues.subgroup.usage = c("within", "across", "ignore"),
+    pvalues.round.digits = 4,
+    pvalues.sample.by = NULL,
+    pvalues.sample.summary = "mean",
+    pvalues.test.method = "wilcox.test",
+    pvalues.test.adjust = list(),
+    pvalues.plot.symbols = FALSE,
+    pvalues.plot.adjust = list(),
+    pvalues.adjust = TRUE,
+    pvalues.adjust.method = "fdr",
+    pvalues.offset.first = 0.1,
+    pvalues.offset.between = 0.2,
+    pvalues.offset.above = 0.1,
+    pvalues.do.fc = FALSE,
+    pvalues.fc.pseudocount = 0,
     legend.show = TRUE,
     legend.title = "make",
     data.out = FALSE) {
@@ -318,6 +388,7 @@ yPlot <- function(
     ridgeplot.shape <- match.arg(ridgeplot.shape)
     multivar.aes <- match.arg(multivar.aes)
     multivar.split.dir <- match.arg(multivar.split.dir)
+    pvalues.subgroup.usage <- match.arg(pvalues.subgroup.usage)
 
     #Populate rows.use with a list of names if it was given anything else.
     rows.use <- .which_rows(rows.use, data_frame)
@@ -390,6 +461,67 @@ yPlot <- function(
         cols_use$hover.text <- "hover.string"
     }
 
+    # Stats prep
+    stats_calcd <- FALSE
+    stats_plot <- NULL
+    if (!identical(add.pvalues, NULL)) {
+        .error_if_no_ggpubr()
+
+        ### Directionality Options
+        # group only or group and color (same), btwn groups
+        # group and color (sub), btwn colors within groups == "within"
+        # group and color (sub), btwn groups within colors == "across"
+        # group and color (sub), btwn groups ignoring colors == "ignore"
+        # group and color (super), btwn groups
+        # group and color (super), btwn colors **Unsupported**
+        rel <- .determine_color_to_group_relation(
+            Target_data, cols_use$group.by, cols_use$color.by)
+        secondary.offset <- NULL
+        p.split.by <- split.by
+        if (rel %in% c("same","super") || pvalues.subgroup.usage == "ignore") {
+            cols_use$p.by <- cols_use$group.by
+        } else {
+            if (pvalues.subgroup.usage == "within") {
+                cols_use$p.by <- cols_use$color.by
+                p.split.by <- c(cols_use$group.by, split.by)
+            } else { # "across"
+                cols_use$p.by <- cols_use$group.by
+                p.split.by <- c(cols_use$color.by, split.by)
+                secondary.offset <- cols_use$color.by
+            }
+        }
+
+        comps <- .validate_comparison_sets(
+            add.pvalues, cols_use$p.by, Target_data)
+
+        stats <- .calc_stats(
+            Target_data,
+            cols_use$var, cols_use$p.by, comps, color.by = cols_use$color.by,
+            sample.by = pvalues.sample.by, sample.summary = pvalues.sample.summary,
+            split.by = p.split.by,
+            test.method = pvalues.test.method, test.adjust = pvalues.test.adjust,
+            p.symbols = pvalues.plot.symbols,
+            p.round.digits = pvalues.round.digits,
+            do.adjust = pvalues.adjust, p.adjust.method = pvalues.adjust.method,
+            do.fc = pvalues.do.fc, fc.pseudocount = pvalues.fc.pseudocount)
+
+        if (is.null(stats)) {
+            warning("'add.pvalues' skipped: Comparisons setup did not yield any valid comparisons.")
+        } else {
+            stats_calcd <- TRUE
+            stats_plot <- .add_x_pos(
+                stats,
+                Target_data, cols_use$group.by, cols_use$p.by,
+                secondary.offset, boxplot.position.dodge, split.by, split.adjust
+            )
+
+            stats_plot <- .add_y_offset(
+                stats_plot, cols_use$p.by, cols_use$group.by, secondary.offset,
+                pvalues.offset.first, pvalues.offset.between, split.by, split.adjust
+            )
+        }
+    }
+
     # Make the plot
     p <- ggplot(Target_data, aes(fill=.data[[cols_use$color.by]])) +
         theme +
@@ -408,16 +540,18 @@ yPlot <- function(
             vlnplot.lineweight, vlnplot.width, vlnplot.scaling,
             vlnplot.quantiles,
             x.labels.rotate, do.hover, y.breaks, min, max, data_frame,
-            cols_use$group.aes)
+            cols_use$group.aes,
+            stats_plot, cols_use$p.by, pvalues.offset.above, pvalues.plot.adjust)
     } else {
         p <- .yPlot_add_data_x_direction(
             p, Target_data, cols_use$var, cols_use$group.by,
             plots, xlab, ylab, jitter.size, jitter.color,
             jitter.shape.legend.size, jitter.shape.legend.show,
             ridgeplot.lineweight, ridgeplot.scale, ridgeplot.ymax.expansion,
-            ridgeplot.shape, ridgeplot.bins, ridgeplot.binwidth,
-            x.labels.rotate, do.hover, color.panel,
-            colors, y.breaks, min, max)
+            ridgeplot.shape, ridgeplot.bins, ridgeplot.binwidth, add.line,
+            line.linetype, line.color, x.labels.rotate, do.hover, color.panel,
+            colors, y.breaks, min, max,
+            stats_plot, cols_use$p.by, pvalues.offset.above, pvalues.plot.adjust)
     }
 
     # Extra tweaks
@@ -447,10 +581,14 @@ yPlot <- function(
 
     # DONE. Return the plot +/- data
     if (data.out) {
-        list(
+        out <- list(
             p = p,
             data = Target_data,
             cols_used = cols_use)
+        if (stats_calcd) {
+            out$stats <- stats
+        }
+        out
     } else {
         p
     }
@@ -466,7 +604,9 @@ yPlot <- function(
     boxplot.fill, boxplot.position.dodge, boxplot.lineweight,
     vlnplot.lineweight, vlnplot.width, vlnplot.scaling, vlnplot.quantiles,
     x.labels.rotate, do.hover, y.breaks, min, max,
-    data_frame, group.aes) {
+    data_frame, group.aes,
+    stats = NULL, p.by, pvalues.offset.above, pvalues.plot.adjust
+    ) {
     # This function takes in a partial yPlot ggplot data_frame without any data
     # overlay, and parses adding the main data visualizations.
     # Adds plots based on what is requested in plots, ordered by their order.
@@ -582,6 +722,25 @@ yPlot <- function(
         p <- p + theme(axis.text.x= element_text(angle=45, hjust = 1, vjust = 1))
     }
 
+    # Add p-value brackets
+    if (!is.null(stats)) {
+        # Plot (with empty string geom_text to ensure visibility)
+        pvalues.plot.adjust$data <- stats
+        pvalues.plot.adjust$mapping <- aes(group = .data[[p.by]])
+        pvalues.plot.adjust$label <- "p_show"
+        pvalues.plot.adjust$y.position <- "plot_y_pos"
+        pvalues.plot.adjust$position <- "identity"
+        p <- p + do.call(
+            ggpubr::stat_pvalue_manual,
+            pvalues.plot.adjust
+        ) + geom_text(
+            data = stats, aes(
+                x = .data[[group.by]],
+                y = .data$plot_y_pos + pvalues.offset.above*.data$plot_y_range
+            ), label = ""
+        )
+    }
+
     p
 }
 
@@ -592,8 +751,9 @@ yPlot <- function(
     jitter.shape.legend.size, jitter.shape.legend.show,
     ridgeplot.lineweight, ridgeplot.scale,
     ridgeplot.ymax.expansion, ridgeplot.shape, ridgeplot.bins,
-    ridgeplot.binwidth,
-    x.labels.rotate, do.hover, color.panel, colors, y.breaks, min, max) {
+    ridgeplot.binwidth, add.line, line.linetype, line.color,
+    x.labels.rotate, do.hover, color.panel, colors, y.breaks, min, max,
+    stats = stats, p.by, pvalues.offset.above, pvalues.plot.adjust) {
     #This function takes in a partial yPlot ggplot object without any data overlay, and parses adding the main data visualizations.
 
     # Now that we know the plot's direction, set direction & "y"-axis limits
@@ -644,6 +804,10 @@ yPlot <- function(
         p <- p + theme(axis.text.y= element_text(angle=45, hjust = 1, vjust = 1))
     }
 
+    if (!is.null(stats)) {
+        warning("stats calculated, but plotting with ridgeplots is not implemented")
+    }
+
     p
 }
 
@@ -668,4 +832,52 @@ boxPlot <- function(..., plots = c("boxplot","jitter")){ yPlot(..., plots = plot
     } else {
         plotly::ggplotly(p)
     }
+}
+
+.validate_comparison_sets <- function(comp_sets, group.by, data_frame, var.name = "add.pvalues") {
+
+    valid_groups <- colLevels(group.by, data_frame)
+
+    # Alternative options
+    if (!is.list(comp_sets)) {
+        if (identical(comp_sets, "all")) {
+            combs <- combn(valid_groups, 2)
+            # auto-made, valid, so just return
+            return( lapply(seq_len(ncol(combs)), function(i) { combs[,i] }) )
+        }
+        if (length(comp_sets)==2) {
+            # User made, still check
+            comp_sets <- list(comp_sets)
+        }
+    }
+
+    # Checks
+    errors <- list()
+    for (ind in seq_along(comp_sets)) {
+        new_errors <- c()
+        this_comp <- comp_sets[[ind]]
+        if (length(this_comp)!=2) {
+            new_errors <- "is not length 2"
+        }
+        if (!this_comp[1] %in% valid_groups) {
+            new_errors <- c(new_errors, paste0(
+                "targets an invalid level of '", group.by, "', ", this_comp[1]))
+        }
+        if (!this_comp[2] %in% valid_groups) {
+            new_errors <- c(new_errors, paste0(
+                "targets an invalid level of '", group.by, "', ", this_comp[2]))
+        }
+        if (length(new_errors)!=0) {
+            errors <- c(errors, paste0(
+                "The ", ind, " element of ", var.name, " ",
+                new_errors, collapse = ", and ",
+                ". "
+            ))
+        }
+    }
+    if (length(errors!=0)) {
+        stop(var.name, " cannot be interpretted because: ", errors)
+    }
+
+    comp_sets
 }

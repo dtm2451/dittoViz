@@ -166,6 +166,7 @@
 #'     plots = "jitter")
 #'
 #' @author Daniel Bunis
+#' @importFrom utils combn
 #' @export
 
 freqPlot <- function(
@@ -175,12 +176,23 @@ freqPlot <- function(
     group.by,
     color.by = group.by,
     vars.use = NULL,
+    add.pvalues = NULL,
+    pvalues.round.digits = 4,
+    pvalues.test.method = "wilcox.test",
+    pvalues.test.adjust = list(),
+    pvalues.adjust = TRUE,
+    pvalues.adjust.method = "fdr",
+    pvalues.offset.first = 0.1,
+    pvalues.offset.between = 0.2,
+    pvalues.offset.above = 0.1,
+    pvalues.do.fc = FALSE,
+    pvalues.fc.pseudocount = 0,
     scale = c("percent", "count"),
     max.normalize = FALSE,
     plots = c("boxplot","jitter"),
     split.nrow = NULL,
     split.ncol = NULL,
-    split.adjust = list(),
+    split.adjust = list(scale = "free_y"),
     rows.use = NULL,
     data.out = FALSE,
     data.only = FALSE,
@@ -260,7 +272,7 @@ freqPlot <- function(
 
     # Subset to vars.use
     if (!is.null(vars.use)) {
-        data <- data[data$label %in% vars.use,]
+        data <- data[data$Y %in% vars.use,]
     }
 
     # Adjust BarPlot-ready data for dittoPlot plotter expectation
@@ -272,11 +284,15 @@ freqPlot <- function(
 
     #Build Plot
     yPlot(
-        data, scale, group.by = "grouping", color.by = color.by,
-        shape.by = NULL, split.by = "label", plots = plots,
+        data, scale, group.by = "grouping",
+        color.by = ifelse(color.by==group.by, "grouping", color.by),
+        shape.by = NULL, split.by = "Y", rows.use = NULL, plots = plots,
         var.adjustment = NULL, var.adj.fxn = NULL,
         do.hover = do.hover, hover.round.digits = hover.round.digits,
-        hover.data = unique(c("grouping", "label", sample.by, color.by, "count", "percent")),
+        hover.data = unique(c(
+            "grouping", "Y", sample.by,
+            ifelse(color.by==group.by, "grouping", color.by),
+            "count", "percent")),
         color.panel = color.panel, colors = colors,
         theme = theme, main = main, sub = sub, ylab = ylab, y.breaks = y.breaks,
         min = min, max = max, xlab = xlab, x.labels = x.labels,
@@ -303,6 +319,17 @@ freqPlot <- function(
         ridgeplot.shape = ridgeplot.shape,
         ridgeplot.bins = ridgeplot.bins,
         ridgeplot.binwidth = ridgeplot.binwidth,
+        add.pvalues = add.pvalues,
+        pvalues.round.digits = pvalues.round.digits,
+        pvalues.test.method = pvalues.test.method,
+        pvalues.test.adjust = pvalues.test.adjust,
+        pvalues.adjust = pvalues.adjust,
+        pvalues.adjust.method = pvalues.adjust.method,
+        pvalues.offset.first = pvalues.offset.first,
+        pvalues.offset.between = pvalues.offset.between,
+        pvalues.offset.above = pvalues.offset.above,
+        pvalues.do.fc = pvalues.do.fc,
+        pvalues.fc.pseudocount = pvalues.fc.pseudocount,
         add.line = add.line,
         line.linetype = line.linetype,
         line.color = line.color,
@@ -320,5 +347,154 @@ freqPlot <- function(
     if (length(unique(groupings)) != length(unique(pairs))) {
         stop("Unable to interpret '", input.name,"' with 'sample.by'. '",
              check, "' data does not map 1 per sample.")
+    }
+}
+
+#' Calculate per-sample frequencies of clusters or cell annotations, and compare them across group.
+#' @inheritParams freqPlot
+#' @param freq.by Single string representing the name of a column of \code{data_frame} that contains the cluster or cell identities to quantify and assess.
+#' @param sample.by Single string representing the name of a column of \code{data_frame} that denotes which sample each observation belongs to.
+#' @param group.by Single string representing the name of a column of \code{data_frame} that contains group identities.
+#' @param group.1,group.2 Single strings naming the 2 sets of \code{group.by}-data to compare.
+#' @param freq.targs Single string or a string vector naming which cell/cluster/\code{freq.by}-data identities to target.
+#' When not provided, the function will loop through all identities in the \code{freq.by} column.
+#' @param wilcox.adjust named list providing any desired additional inputs for the p-value calculation with \code{\link[stats]{wilcox.test}}.
+#' \code{x} and \code{y} inputs are filled in by this function, but all others can be adjusted if desired.
+#' @param do.adjust Logical stating whether to perform p-value adjustment per multiple hypothesis testing.
+#' Highly recommended, but if you are performing multiple iterations of this function,
+#' proper correction requires running this correction once on all p-values.
+#' See \code{\link[stats]{p.adjust}}.
+#' @param p.adjust.method String, "fdr" by default, passed along to the \code{method} input of \code{\link[stats]{p.adjust}}, any valid option for that input will work.
+#' @param do.fc Logical stating whether to calculate \code{group.1} and \code{group.2} medians and the fold-changes between them.
+#' @param fc.pseudocount Number, zero by default. A value to add within fold_change calculations only, to both \code{group.1} and \code{group.2} median frequencies in order to avoid division by zero errors.
+#' When needed, we recommend something small relative to the lowest expected cell frequencies of the data, 0.000001 perhaps.
+#' Although a relatively small value like this can lead to heavily inflated log fold change values in the extreme cases where \code{group.1} or \code{group.2} frequencies are 0 or near 0, a tiny pseudocount leaves all other fold change values only minimally affected.
+#' @param comp.data.out Logical. When set to \code{TRUE}, changes the output from the stats data.frame alone to a named list containing both the stats ("stats") and the underlying per-sample frequency calculations ("data").
+#' @param data.direct Logical, primarily for internal use. Tells the function that the provided \code{data_frame} is already the output of dittoViz's composition calculation, so that does not need to be re-run.
+#' @return a data.frame. Or if \code{data.out} was set to \code{TRUE}, a named list containing 2 data.frames: \itemize{
+#' \item 'stats' = the standard output
+#' \item 'data' = the composition summary statistics are based upon.
+#' }
+#' @details The function starts by utilizing the same code behind \code{\link{freqPlot}} and \code{\link{barPlot}} composition calculations for
+#' \code{freq.by}-identity frequency calculation within \code{sample.by}-samples.
+#' Observations are first trimmed based on any given \code{rows.use} selection,
+#' then frequencies are calculated and percent normalized,
+#' and which \code{sample.by}-samples belong to which \code{group.by}-groups are marked.
+#' (Set \code{comp.data.out = TRUE} to output this composition data.frame as well!)
+#'
+#' Afterwards, it loops through all \code{freq.targs}, building a row of the eventual stats return for each.
+#' P values are calculated viz the \code{\link[stats]{wilcox.test}} function.
+#'
+#' If \code{do.fc} is left as \code{TRUE}, group medians and fold change between them are calculated.
+#' Of note, a \code{pseudocount} can be introduced in median fold change calculation to prevent errors from division by zero. The use of a \code{pseudocount} has no effect on p-values.
+#'
+#' If \code{do.adjust} is left as \code{TRUE}, p-values will be adjusted based on the \code{p.adjust.method} which default to the false discovery rate method.
+#'
+#' @section The stats data.frame return:
+#' Each row holds statistics for an individual comparison.
+#' The columns represent:
+#' \itemize{
+#' \item Y: cell/cluster/\code{freq.by}-data identity
+#' \item group1: \code{group.1},
+#' (for compatibility with running the function multiple times, each targeting distinct groups, and then concatenating all outputs together!)
+#' \item group2: \code{group.2}, "
+#' \item max_freq: The maximum frequency of either group, which can be helpful to know for plotting purposes
+#' \item p: The p-value associated with comparison of percent frequencies of group.1 samples versus group.2 samples using a Mann Whitney U Test / wilcoxon rank sum test (\code{\link[stats]{wilcox.test}}).
+#' \item padj (\code{do.adjust = TRUE}): p-values corrected by the chosen \code{p.adjust.method}, FDR by default, built from running \code{p.adjust(stats$p, method = p.adjust.method)} per all hypotheses tested in this call to the \code{freq_stats} function.
+#' \item median_g1 (\code{do.fc = TRUE}): the median frequency within samples from \code{group.1}
+#' \item median_g2 (\code{do.fc = TRUE}): the median frequency within samples from \code{group.2}
+#' \item median_fold_change (\code{do.fc = TRUE}): \code{(median_g1 + pseudocount) / (median_g2 + pseudocount)}.
+#' \item median_log2_fold_change (\code{do.fc = TRUE}): \code{log2(median_fold_change)}
+#' \item positive_fc_means_up_in (\code{do.fc = TRUE}): Always \code{group.1}. A minor note to help remember the directionality of these fold changes!
+#' }
+#' @author Daniel Bunis
+#' @export
+#' @importFrom stats wilcox.test
+#' @importFrom stats p.adjust
+#' @importFrom stats median
+freq_stats <- function(
+    data_frame,
+    freq.by,
+    sample.by,
+    group.by, group.1, group.2,
+    freq.targs = NULL,
+    rows.use = NULL,
+    wilcox.adjust = list(),
+    do.adjust = TRUE,
+    p.adjust.method = "fdr",
+    do.fc = TRUE,
+    fc.pseudocount = 0,
+    comp.data.out = FALSE,
+    data.direct = FALSE
+) {
+
+    # Collect stats
+    if (data.direct) {
+        data <- data_frame
+    } else {
+        data <- .make_composition_summary_df(
+            data_frame, freq.by, group.by, split.by = c(sample.by),
+            rows.use, NULL, NULL,
+            NULL, NULL, FALSE, 1,
+            FALSE, TRUE, FALSE, TRUE, TRUE)
+    }
+
+    # Trim to selected targets
+    if (!is.null(freq.targs)) {
+        data <- data[data$Y %in% freq.targs,]
+    }
+
+    # Here, we loop through all the cell_groups being targeted, 1- calculating stats and 2- building a data.frame during each iteration.
+    #  The lapply call performs the iteration, and gathers the data.frames output by each iteration into a list.
+    #  That list of data.frames created in our lapply is then 'rbind'ed into a single data.frame.
+    stats <- list()
+    for (cell in unique(data$Y)) {
+        data_use <- data[data$Y==cell,]
+        g1s <- as.vector(data_use[[group.by]]==group.1)
+        g2s <- as.vector(data_use[[group.by]]==group.2)
+
+        if (length(g1s)==0 || length(g2s)==0) {
+            warning("No data")
+            next
+        }
+
+        new <- data.frame(
+            Y = cell,
+            group1 = group.1,
+            group2 = group.2,
+            max_freq = max(data_use$percent),
+            stringsAsFactors = FALSE
+        )
+
+        if (do.fc) {
+            new$median_g1 <- median(data_use$percent[g1s], na.rm = TRUE)
+            new$median_g2 <- median(data_use$percent[g2s], na.rm = TRUE)
+            if (new$median_g2==0 && fc.pseudocount==0) {
+                warning("Looks like a pseudocount will be needed to avoid division by zero errors. Try adding 'fc.pseudocount = 0.000001' to your call and see the '?freq_stats' documentation for details.")
+            }
+            new$median_fold_change <- (new$median_g1 + fc.pseudocount) / (new$median_g2 + fc.pseudocount)
+            new$median_log2_fold_change <- log2(new$median_fold_change)
+            new$positive_fc_means_up_in <- group.1
+        }
+
+        wilcox.adjust_this <- wilcox.adjust
+        wilcox.adjust_this$x <- data_use$percent[g1s]
+        wilcox.adjust_this$y <- data_use$percent[g2s]
+        new$p <- do.call(wilcox.test, wilcox.adjust_this)$p.value
+
+        stats[[length(stats)+1]] <- new
+    }
+    stats <- do.call(rbind, stats)
+
+    # Apply FDR correction
+    if (do.adjust) {
+        stats$padj <- p.adjust(stats$p, method = p.adjust.method)
+    }
+
+    # Output
+    if (comp.data.out) {
+        list(stats = stats, data = data)
+    } else {
+        stats
     }
 }

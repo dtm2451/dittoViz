@@ -71,6 +71,22 @@ yPlot(
   line.color = "black",
   line.linewidth = 0.5,
   line.opacity = 1,
+  add.pvalues = NULL,
+  pvalues.subgroup.usage = c("within", "across", "ignore"),
+  pvalues.round.digits = 4,
+  pvalues.sample.by = NULL,
+  pvalues.sample.summary = "mean",
+  pvalues.test.method = "wilcox.test",
+  pvalues.test.adjust = list(),
+  pvalues.plot.symbols = FALSE,
+  pvalues.plot.adjust = list(),
+  pvalues.adjust = TRUE,
+  pvalues.adjust.method = "fdr",
+  pvalues.offset.first = 0.1,
+  pvalues.offset.between = 0.2,
+  pvalues.offset.above = 0.1,
+  pvalues.do.fc = FALSE,
+  pvalues.fc.pseudocount = 0,
   legend.show = TRUE,
   legend.title = "make",
   data.out = FALSE
@@ -285,6 +301,74 @@ Alternatively, a vector of numbers of the same length as \code{add.line} can be 
 
 \item{line.opacity}{Number that sets the opacity of the \code{add.line} line(s). Default = 1.
 Alternatively, a vector of numbers of the same length as \code{add.line} can be given to set the opacity of each line individually.}
+
+\item{add.pvalues}{NULL (off), "all", or a list of length 2 string vectors which each name a pairwise set of 2 \code{group.by}-values to compare between.
+Giving "all" will determine, and run comparisons for, all possible pairwise combinations of \code{group.by}-values.}
+
+\item{pvalues.subgroup.usage}{"within", "across", or "ignore". Sets which data groupings to compare when \code{color.by} establishes subgroups of \code{group.by} groups:\itemize{
+\item "within": Compare color-subgroups to each other, within each grouping.
+\item "across": Compare each color-subgroup across the larger groupings.
+\item "ignore": Ignore subgroupings entirely. Compare larger groupings as if no \code{color.by} subgroups were established.
+}}
+
+\item{pvalues.round.digits}{Integer number which sets how many decimal digits to round to,}
+
+\item{pvalues.sample.by}{NULL (off), or Single string representing the name of a column of \code{data_frame} that contains an indicator of which sample each observation belongs to.
+When provided, data of each sample are summarized into a single data point per sample prior to statistical comparison.}
+
+\item{pvalues.sample.summary}{String naming a function for performing per sample summarization.
+Default is \code{"mean"}.
+The function must:\itemize{
+\item accept a vector or numeric values as input
+\item return a single numeric value as output
+}}
+
+\item{pvalues.test.method}{String naming a function for performing the desired statistical test.
+Base R stats functions or other functions that perform similarly should work.
+Default is \code{"wilcox.test"}.
+The function must:\itemize{
+\item accept comparison group data passed in as inputs \code{x} and \code{y}.
+\item have a \code{$p.value} element to its return, and this should be the single-test p-value, not one that is already multiple-hypothesis test corrected.
+}}
+
+\item{pvalues.test.adjust}{named list providing any desired additional inputs for the p-value calculation with \code{\link[stats]{wilcox.test}}.
+\code{x} and \code{y} inputs are filled internally, but all others can be adjusted if desired.}
+
+\item{pvalues.plot.symbols}{Logical which controls whether pvalues will be replaced with the below symbol representations
+OR a custom function that inputs a numeric vector of p-values and outputs vector of desired labels, where the output is the same length as the input.
+
+When set to \code{TRUE}, symbols will be used which represent:\itemize{
+\item \code{ns}: non significant, p-value > 0.05
+\item \code{*}: 0.01 < p-value <= 0.05
+\item \code{**}: 0.001 < p-value <= 0.01
+\item \code{***}: 0.0001 < p-value <= 0.001
+\item \code{****}: pvalue <= 0.00001
+}}
+
+\item{pvalues.plot.adjust}{named list providing additional inputs, to pass to \code{\link[ggpubr]{stat_pvalue_manual}}, for adjustment of how pvalue brackets and labels are plotted}
+
+\item{pvalues.adjust}{Logical stating whether to perform multiple hypothesis test correction and plot the corrected p-values.
+Highly recommended, but if you are performing multiple iterations of this function,
+proper correction requires running this correction once on all p-values.
+See \code{\link[stats]{p.adjust}}.}
+
+\item{pvalues.adjust.method}{String used only when \code{pvalues.adjust = TRUE}, and "fdr" by default.
+Passed along to the \code{method} input of \code{\link[stats]{p.adjust}}.
+Any valid option for that input will work.}
+
+\item{pvalues.offset.first, pvalues.offset.between, pvalues.offset.above}{Numbers which set the heights at which pvalue brackets will be plotted, in fractions of y-data values:
+\itemize{
+\item \code{pvalues.offset.first}: the height between the highest data point and the first p-value bracket plotted.
+\item \code{pvalues.offset.between}: if multiple comparisons are to be run, the additional offset to add between them.
+\item \code{pvalues.offset.above}: the additional height, above all brackets, to add to the plot in order to ensure p-values are visible. (This is accomplished using a geom_text layer of empty strings, and only required because the ggpubr package does not ensure visibility on its own!)
+}}
+
+\item{pvalues.do.fc}{Logical stating whether to calculate medians and the fold-changes between them, alongside of p-value calculations.
+Only helpful when also using \code{data.out = TRUE}.}
+
+\item{pvalues.fc.pseudocount}{Number, zero by default. A value to add within fold_change calculations only, to both \code{group.1} and \code{group.2} median frequencies in order to avoid division by zero errors.
+When needed, we recommend something small relative to the lowest expected cell frequencies of the data, 0.000001 perhaps.
+Although a relatively small value like this can lead to heavily inflated log fold change values in the extreme cases where \code{group.1} or \code{group.2} frequencies are 0 or near 0, a tiny pseudocount leaves all other fold change values only minimally affected.}
 
 \item{legend.show}{Logical. Whether the legend should be displayed. Default = \code{TRUE}.}
 

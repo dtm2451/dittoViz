@@ -11,12 +11,23 @@ freqPlot(
   group.by,
   color.by = group.by,
   vars.use = NULL,
+  add.pvalues = NULL,
+  pvalues.round.digits = 4,
+  pvalues.test.method = "wilcox.test",
+  pvalues.test.adjust = list(),
+  pvalues.adjust = TRUE,
+  pvalues.adjust.method = "fdr",
+  pvalues.offset.first = 0.1,
+  pvalues.offset.between = 0.2,
+  pvalues.offset.above = 0.1,
+  pvalues.do.fc = FALSE,
+  pvalues.fc.pseudocount = 0,
   scale = c("percent", "count"),
   max.normalize = FALSE,
   plots = c("boxplot", "jitter"),
   split.nrow = NULL,
   split.ncol = NULL,
-  split.adjust = list(),
+  split.adjust = list(scale = "free_y"),
   rows.use = NULL,
   data.out = FALSE,
   data.only = FALSE,
@@ -90,6 +101,45 @@ If left as \code{NULL}, all values are shown.
 Hint: use \code{\link{colLevels}} or \code{unique(data_frame[,var])} to assess options.
 
 Note: When \code{var.labels.rename} is jointly utilized to update how the \code{var}-values are shown, the \strong{updated} values must be used.}
+
+\item{add.pvalues}{NULL (off), "all", or a list of length 2 string vectors which each name a pairwise set of 2 \code{group.by}-values to compare between.
+Giving "all" will determine, and run comparisons for, all possible pairwise combinations of \code{group.by}-values.}
+
+\item{pvalues.round.digits}{Integer number which sets how many decimal digits to round to,}
+
+\item{pvalues.test.method}{String naming a function for performing the desired statistical test.
+Base R stats functions or other functions that perform similarly should work.
+Default is \code{"wilcox.test"}.
+The function must:\itemize{
+\item accept comparison group data passed in as inputs \code{x} and \code{y}.
+\item have a \code{$p.value} element to its return, and this should be the single-test p-value, not one that is already multiple-hypothesis test corrected.
+}}
+
+\item{pvalues.test.adjust}{named list providing any desired additional inputs for the p-value calculation with \code{\link[stats]{wilcox.test}}.
+\code{x} and \code{y} inputs are filled internally, but all others can be adjusted if desired.}
+
+\item{pvalues.adjust}{Logical stating whether to perform multiple hypothesis test correction and plot the corrected p-values.
+Highly recommended, but if you are performing multiple iterations of this function,
+proper correction requires running this correction once on all p-values.
+See \code{\link[stats]{p.adjust}}.}
+
+\item{pvalues.adjust.method}{String used only when \code{pvalues.adjust = TRUE}, and "fdr" by default.
+Passed along to the \code{method} input of \code{\link[stats]{p.adjust}}.
+Any valid option for that input will work.}
+
+\item{pvalues.offset.first, pvalues.offset.between, pvalues.offset.above}{Numbers which set the heights at which pvalue brackets will be plotted, in fractions of y-data values:
+\itemize{
+\item \code{pvalues.offset.first}: the height between the highest data point and the first p-value bracket plotted.
+\item \code{pvalues.offset.between}: if multiple comparisons are to be run, the additional offset to add between them.
+\item \code{pvalues.offset.above}: the additional height, above all brackets, to add to the plot in order to ensure p-values are visible. (This is accomplished using a geom_text layer of empty strings, and only required because the ggpubr package does not ensure visibility on its own!)
+}}
+
+\item{pvalues.do.fc}{Logical stating whether to calculate medians and the fold-changes between them, alongside of p-value calculations.
+Only helpful when also using \code{data.out = TRUE}.}
+
+\item{pvalues.fc.pseudocount}{Number, zero by default. A value to add within fold_change calculations only, to both \code{group.1} and \code{group.2} median frequencies in order to avoid division by zero errors.
+When needed, we recommend something small relative to the lowest expected cell frequencies of the data, 0.000001 perhaps.
+Although a relatively small value like this can lead to heavily inflated log fold change values in the extreme cases where \code{group.1} or \code{group.2} frequencies are 0 or near 0, a tiny pseudocount leaves all other fold change values only minimally affected.}
 
 \item{scale}{"count" or "percent". Sets whether data should be shown as counts versus percentage.}
 
