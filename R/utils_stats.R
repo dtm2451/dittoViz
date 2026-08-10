@@ -42,6 +42,102 @@
     }
 }
 
+.finalize_p_cols <- function(
+    p_df,
+    do.adjust,
+    p.adjust.method,
+    p.symbols,
+    p.round.digits
+) {
+
+    # Multiple Hypothesis Correction
+    p_use <- "p"
+    if ('padj' %in% colnames(p_df)) {
+        p_use <- "padj"
+    } else if (do.adjust) {
+        message("Running ", p.adjust.method, " p-value adjustment")
+        p_df$padj <- p.adjust(p_df$p, method = p.adjust.method)
+        p_use <- "padj"
+    }
+
+    # Symbolize or Round p-values
+    if (identical(p.symbols, TRUE)) {
+        p.symbolize <- function(p) {
+            ifelse(p > 0.05, "ns",
+                   ifelse(p > 0.01, "*",
+                          ifelse(p > 0.001, "**",
+                                 ifelse(p > 0.0001, "***",
+                                        "****"))))
+        }
+        p_df$p_show <- p.symbolize(p_df[,p_use])
+    } else if (is.function(p.symbols)) {
+        p_df$p_show <- p.symbols(p_df[,p_use])
+    } else {
+        # Round shown p-values when p.symbols not 'on'
+        p_df$p_show <- round(p_df[,p_use], p.round.digits)
+    }
+
+    p_df
+}
+
+.prep_stats <- function(
+    p_df,
+    data_frame,
+    var,
+    p.by,
+    group.by,
+    color.by,
+    split.by,
+    do.adjust,
+    p.adjust.method,
+    p.symbols,
+    p.round.digits
+) {
+    if (is.null(split.by)) {
+        p_df$max_data <- max(data_frame[,var], na.rm = TRUE)
+        p_df$min_data <- min(data_frame[,var], na.rm = TRUE)
+    } else if (length(split.by) == 1) {
+        p_df$max_data <- NA
+        p_df$min_data <- NA
+        for (split in unique(p_df[,split.by])) {
+            in_split_p <- p_df[,split.by]==split
+            in_split_df <- data_frame[,split.by]==split
+            p_df[in_split_p,"max_data"] <- max(data_frame[in_split_df,var], na.rm = TRUE)
+            p_df[in_split_p,"min_data"] <- min(data_frame[in_split_df,var], na.rm = TRUE)
+        }
+    } else {
+        p_df$max_data <- NA
+        p_df$min_data <- NA
+        splits <- unique(p_df[,split.by])
+        for (i in 1:nrow(splits)) {
+            in_split_p <- apply(p_df[,split.by],1,function(x) {identical(x,unlist(splits[i,]))})
+            in_split_df <- apply(data_frame[,split.by],1,function(x) {identical(x,unlist(splits[i,]))})
+            p_df[in_split_p,"max_data"] <- max(data_frame[in_split_df,var], na.rm = TRUE)
+            p_df[in_split_p,"min_data"] <- min(data_frame[in_split_df,var], na.rm = TRUE)
+        }
+    }
+
+    if (p.by==group.by) {
+        # ToDo: Remove should-be unecessary nrows
+        p_df[,group.by] <- p_df[,'group1']
+        # if (color.by != group.by && color.by %in% split.by) {
+        if (!color.by %in% colnames(p_df)) {
+            p_df[,color.by] <- data_frame[1,color.by]
+        }
+    } else {
+        p_df[,color.by] <- p_df[,'group1']
+        # p_df[,group.by] <- data_frame[1,group.by]
+    }
+
+    .finalize_p_cols(
+        p_df,
+        do.adjust,
+        p.adjust.method,
+        p.symbols,
+        p.round.digits
+    )
+}
+
 .calc_stats <- function(
     data_frame,
     var,
@@ -161,7 +257,7 @@
         out <- do.call(rbind, stats)
         # Needed to avoid a ggplot2 complaint
         if (length(stats) > 0) {
-            out[,comp.by] <- group.1
+            out[,comp.by] <- out$group1
             if (!color.by %in% colnames(out)) {
                 match(out[,comp.by], data_frame[,color.by])
                 out[,color.by] <- data_frame[match(out[,comp.by], data_frame[,color.by]), color.by]
@@ -171,28 +267,13 @@
 
     # If no valid statistical comparisons, out will be NULL
     if (outermost && !is.null(out)) {
-        # Multiple Hypothesis Correction
-        p_use <- "p"
-        if (do.adjust) {
-            out$padj <- p.adjust(out$p, method = p.adjust.method)
-            p_use <- "padj"
-        }
-        # Symbolize or Round p-values
-        if (identical(p.symbols, TRUE)) {
-            p.symbolize <- function(p) {
-                ifelse(p > 0.05, "ns",
-                       ifelse(p > 0.01, "*",
-                              ifelse(p > 0.001, "**",
-                                     ifelse(p > 0.0001, "***",
-                                            "****"))))
-            }
-            out$p_show <- p.symbolize(out[,p_use])
-        } else if (is.function(p.symbols)) {
-            out$p_show <- p.symbols(out[,p_use])
-        } else {
-            # Round shown p-values when p.symbols not 'on'
-            out$p_show <- round(out[,p_use], p.round.digits)
-        }
+        out <- .finalize_p_cols(
+            out,
+            do.adjust,
+            p.adjust.method,
+            p.symbols,
+            p.round.digits
+        )
         # ToDo: Add description in first row of the data frame
         # out$stat_calc_method_description <- NA
         # out$stat_calc_method_description[1] <- description
@@ -207,7 +288,7 @@
 .add_x_pos <- function(
     stats,
     data,
-    primary.by,
+    group.by,
     p.by,
     secondary.by,
     dodge,
@@ -239,34 +320,34 @@
             out_list[[length(out_list)+1]] <- .add_x_pos(
                 stats[in_this_split_stats,],
                 data[in_this_split_data,],
-                primary.by, p.by, secondary.by, dodge,
+                group.by, p.by, secondary.by, dodge,
                 split.by, split.adjust,
                 data_all = data_all,
                 split.by.internal = next_split.by)
         }
         do.call(rbind, out_list)
     } else {
-        .add_x_pos_per_set(stats, data, primary.by, p.by, secondary.by, dodge)
+        .add_x_pos_per_set(stats, data, group.by, p.by, secondary.by, dodge)
     }
 }
 
 .add_x_pos_per_set <- function(
     stats,
     data,
-    primary.by,
+    group.by,
     p.by,
     secondary.by,
     dodge
 ) {
     # ggpubr::stat_pvalue_manual looks to group1 and group2 columns except if
     # xmin and xmax columns exist.  Then, these are used instead.
-    if (p.by != primary.by) {
+    if (p.by != group.by) {
         # Case: btwn subgroups, within groups
         dodge_steps <- list()
         dodge_vals <- list()
-        primary <- setNames(as.numeric(as.factor(stats[,primary.by])), stats[,primary.by])
-        for (this_group in colLevels(primary.by, data)) {
-            these_levs <- colLevels(p.by, data[data[,primary.by]==this_group,])
+        primary <- setNames(as.numeric(as.factor(stats[,group.by])), stats[,group.by])
+        for (this_group in colLevels(group.by, data)) {
+            these_levs <- colLevels(p.by, data[data[,group.by]==this_group,])
             # x dodge distance between groups
             dodge_steps[[this_group]] <- dodge / length(these_levs)
             # centered unit locations of groups
@@ -276,10 +357,10 @@
             )
         }
         stats$xmin <- sapply(seq_len(nrow(stats)), function(i) {
-            primary[i] + dodge_vals[[stats[i,primary.by]]][stats[i,"group1"]] * dodge_steps[[stats[i,primary.by]]]
+            primary[i] + dodge_vals[[stats[i,group.by]]][stats[i,"group1"]] * dodge_steps[[stats[i,group.by]]]
         })
         stats$xmax <- sapply(seq_len(nrow(stats)), function(i) {
-            primary[i] + dodge_vals[[stats[i,primary.by]]][stats[i,"group2"]] * dodge_steps[[stats[i,primary.by]]]
+            primary[i] + dodge_vals[[stats[i,group.by]]][stats[i,"group2"]] * dodge_steps[[stats[i,group.by]]]
         })
     } else {
         if (!is.null(secondary.by)) {
@@ -287,9 +368,9 @@
             dodge_steps <- list()
             dodge_vals <- list()
             x_vals <- list()
-            for (this_group in colLevels(primary.by, data)) {
+            for (this_group in colLevels(group.by, data)) {
                 x_vals[[this_group]] <- length(x_vals)+1
-                these_levs <- colLevels(secondary.by, data[data[,primary.by]==this_group,])
+                these_levs <- colLevels(secondary.by, data[data[,group.by]==this_group,])
                 # x dodge distance between groups
                 dodge_steps[[this_group]] <- dodge / length(these_levs)
                 # centered unit locations of groups
@@ -332,8 +413,8 @@
     #   Identify p-values with potential be shown over the same x-locations within the same facet
     # To do so:
     #   1. Split / iterate per facet
-    #   2. If p.by is across primary grouping yet performed within subgrouping sets, skip directly to 4, else...
-    #   3. Split / iterate per primary grouping, BUT ensuring y-positions can calculated similarly as these will still share the same facet
+    #   2. If p.by is across primary grouping yet performed within subgrouping sets, skip directly to 4.
+    #   3. Split / iterate per primary grouping, BUT ensuring y-positions are calculated similarly as these will still share the same facet
     #   4. Use inner function to perform height increases per p-value in each iteration set
 
     # 1. Iterate for faceting
@@ -355,7 +436,7 @@
         do.call(rbind, out_list)
     } else {
         # Add position now (should end up being per secondary / color.by set)
-        if (p.by==group.by && !identical(secondary.by, NULL)) {
+        if (p.by==group.by && identical(secondary.by, NULL)) {
             .add_y_offset_per_set(
                 stats, offset.first, offset.between,
                 split.by, split.adjust, stats_all)

@@ -478,6 +478,12 @@ yPlot(example_df, "gene1", "timepoint",
     main = "CD3E",
     legend.show = FALSE)
 
+# Modify the look with intuitive inputs
+yPlot(example_df, "gene1", "timepoint",
+    add.pvalues = "all")
+yPlot(example_df, "gene1", "timepoint",
+    add.pvalues = "all", split.by = "SNP")
+
 \dontrun{
 # (Due to unfortunate CRAN submission constraints)
 

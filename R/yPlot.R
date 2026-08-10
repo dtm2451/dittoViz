@@ -269,6 +269,12 @@
 #'     main = "CD3E",
 #'     legend.show = FALSE)
 #'
+#' # Modify the look with intuitive inputs
+#' yPlot(example_df, "gene1", "timepoint",
+#'     add.pvalues = "all")
+#' yPlot(example_df, "gene1", "timepoint",
+#'     add.pvalues = "all", split.by = "SNP")
+#'
 #' \dontrun{
 #' # (Due to unfortunate CRAN submission constraints)
 #'
@@ -477,38 +483,46 @@ yPlot <- function(
         rel <- .determine_color_to_group_relation(
             Target_data, cols_use$group.by, cols_use$color.by)
         secondary.offset <- NULL
-        p.split.by <- split.by
+        p.calc.split.by <- split.by
         if (rel %in% c("same","super") || pvalues.subgroup.usage == "ignore") {
             cols_use$p.by <- cols_use$group.by
         } else {
             if (pvalues.subgroup.usage == "within") {
                 cols_use$p.by <- cols_use$color.by
-                p.split.by <- c(cols_use$group.by, split.by)
+                p.calc.split.by <- c(cols_use$group.by, split.by)
             } else { # "across"
                 cols_use$p.by <- cols_use$group.by
-                p.split.by <- c(cols_use$color.by, split.by)
+                p.calc.split.by <- c(cols_use$color.by, split.by)
                 secondary.offset <- cols_use$color.by
             }
         }
 
-        comps <- .validate_comparison_sets(
-            add.pvalues, cols_use$p.by, Target_data)
+        if (is.data.frame(add.pvalues)) {
+            stats <- .prep_stats(
+                add.pvalues, Target_data,
+                cols_use$var, cols_use$p.by, cols_use$group.by, cols_use$color.by, split.by,
+                pvalues.adjust, pvalues.adjust.method, pvalues.plot.symbols, pvalues.round.digits)
+        } else {
+            comps <- .validate_comparison_sets(
+                add.pvalues, cols_use$p.by, Target_data)
 
-        stats <- .calc_stats(
-            Target_data,
-            cols_use$var, cols_use$p.by, comps, color.by = cols_use$color.by,
-            sample.by = pvalues.sample.by, sample.summary = pvalues.sample.summary,
-            split.by = p.split.by,
-            test.method = pvalues.test.method, test.adjust = pvalues.test.adjust,
-            p.symbols = pvalues.plot.symbols,
-            p.round.digits = pvalues.round.digits,
-            do.adjust = pvalues.adjust, p.adjust.method = pvalues.adjust.method,
-            do.fc = pvalues.do.fc, fc.pseudocount = pvalues.fc.pseudocount)
+            stats <- .calc_stats(
+                Target_data,
+                cols_use$var, cols_use$p.by, comps, color.by = cols_use$color.by,
+                sample.by = pvalues.sample.by, sample.summary = pvalues.sample.summary,
+                split.by = p.calc.split.by,
+                test.method = pvalues.test.method, test.adjust = pvalues.test.adjust,
+                p.symbols = pvalues.plot.symbols,
+                p.round.digits = pvalues.round.digits,
+                do.adjust = pvalues.adjust, p.adjust.method = pvalues.adjust.method,
+                do.fc = pvalues.do.fc, fc.pseudocount = pvalues.fc.pseudocount)
+        }
 
         if (is.null(stats)) {
             warning("'add.pvalues' skipped: Comparisons setup did not yield any valid comparisons.")
         } else {
             stats_calcd <- TRUE
+            print(stats)
             stats_plot <- .add_x_pos(
                 stats,
                 Target_data, cols_use$group.by, cols_use$p.by,
@@ -519,6 +533,7 @@ yPlot <- function(
                 stats_plot, cols_use$p.by, cols_use$group.by, secondary.offset,
                 pvalues.offset.first, pvalues.offset.between, split.by, split.adjust
             )
+            print(stats_plot)
         }
     }
 
