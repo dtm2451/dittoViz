@@ -38,6 +38,7 @@ NULL
 #'         subcategory = rep(as.character(rep(1:3,4)), each = nobs/12),
 #'         row.names = paste0("obs", 1:nobs)
 #'         )
+#' example_df$supergroups <- ifelse(example_df$groups %in% c("A","B"), "set1", "set2")
 #'
 #' # cleanup
 #' rm(example_pca, nobs)
@@ -72,6 +73,12 @@ NULL
 .error_if_no_ggplot.multistats <- function() {
     if (!requireNamespace("ggplot.multistats", quietly = TRUE)) {
         stop("ggplot.multistats installation required for supplying 'color.by' to dittoHex plotters.")
+    }
+}
+
+.error_if_no_ggpubr <- function() {
+    if (!requireNamespace("ggpubr", quietly = TRUE)) {
+        stop("ggpubrs installation required for plotting pvalues using 'add.pvalues'.")
     }
 }
 
