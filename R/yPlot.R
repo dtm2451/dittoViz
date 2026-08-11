@@ -522,7 +522,6 @@ yPlot <- function(
             warning("'add.pvalues' skipped: Comparisons setup did not yield any valid comparisons.")
         } else {
             stats_calcd <- TRUE
-            print(stats)
             stats_plot <- .add_x_pos(
                 stats,
                 Target_data, cols_use$group.by, cols_use$p.by,
@@ -533,7 +532,6 @@ yPlot <- function(
                 stats_plot, cols_use$p.by, cols_use$group.by, secondary.offset,
                 pvalues.offset.first, pvalues.offset.between, split.by, split.adjust
             )
-            print(stats_plot)
         }
     }
 
